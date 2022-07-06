@@ -1,3 +1,6 @@
 [submodule "F446-Playground/Lib/FEB_CAN"]
 	path = F446-Playground/Lib/FEB_CAN
 	url = git@github.com:Berkeley-Formula-Electric/FEB_CAN.git
+[submodule "APPS/Lib/FEB_CAN"]
+	path = APPS/Lib/FEB_CAN
+	url = git@github.com:Berkeley-Formula-Electric/FEB_CAN.git
