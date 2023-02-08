@@ -4,8 +4,6 @@ try:
 	import tkinter as tk
 except:
 	import Tkinter as tk
-from time import time
-import random
 
 # active
 PROGRAM_RUN = True
@@ -37,13 +35,13 @@ BANK_ID_MASK 		= 0b1110
 MESSAGE_MASK		= 0b0001
 
 class Table:
-	def __init__(self, root, width, height):
+	def __init__(self, root: tk.Tk, width: int, height: int):
 		self.root = root
 		self.cells = {}
 
 		self.create_table(width, height)
 
-	def create_table(self, width, height):
+	def create_table(self, width, height) -> None:
 		cell_width = 15
 
 		# header
@@ -69,11 +67,11 @@ class Table:
 				self.cells[(row - 2, col - 1, "V")] = volt_label
 				self.cells[(row - 2, col - 1, "T")] = temp_label
 	
-	def update(self, bank, segment, type, value):
+	def update(self, bank: int, segment: int, type: str, value: int) -> None:
 		self.cells[(bank, segment, type.upper())].configure(text = str(value))
 
 
-def serial_connection_init(port, baudrate, bytesize, parity, stopbits):
+def serial_connection_init(port: str, baudrate: int, bytesize: int, parity: str, stopbits: int) -> serial.Serial:
 	print(f"Active ports: {[tuple(x)[0] for x in list(serial.tools.list_ports.comports())]}")
 	print("Waiting for connection...")
 	while True:
@@ -88,7 +86,7 @@ def serial_connection_init(port, baudrate, bytesize, parity, stopbits):
 
 	return serial_connection
 
-def setup_gui():
+def setup_gui() -> tuple[tk.Tk, Table]:
 	root = tk.Tk()
 	root.title("BMS Information")
 
@@ -108,17 +106,15 @@ def setup_gui():
 
 	return root, tk_table
 
-def on_frame_configuration(canvas):
+def on_frame_configuration(canvas: tk.Canvas) -> None:
     '''Reset the scroll region to encompass the inner frame'''
     canvas.configure(scrollregion=canvas.bbox("all"))
 
-def serial_monitor(root, tk_table, serial_connection):
+def serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
 	while PROGRAM_RUN:
-		message = [str(random.randint(3, 10))]
-		for i in range(17):
-			message += [str(random.random() * 3)]
+		message = ""
 		try:
-			# message = serial_connection.readline().decode().replace("\x00", "").replace("\n", "").split(" ")
+			message = serial_connection.readline().decode().replace("\x00", "").replace("\n", "").split(" ")
 
 			bank_id = (int(message[0]) & BANK_ID_MASK) >> BITS_PER_MESSAGE
 			message_id = MESSAGES[int(message[0]) & MESSAGE_MASK]
@@ -127,18 +123,16 @@ def serial_monitor(root, tk_table, serial_connection):
 			for i in range(CELLS_PER_BANK):
 				cell_data = round(float(message[i + 1]), RESOLUTION)
 				data.append(cell_data)
-				# tk_table.update(bank_id, i, message_id, cell_data)
+				tk_table.update(bank_id, i, message_id, cell_data)
 
 			log_data(bank_id, message_id, data)
 		except:
 			if message:
-				print(message)
+				print("Error: " + message)
 	
-		break
-	
-def log_data(bank_id: int, message_id: str, data: list):
+def log_data(bank_id: int, message_id: str, data: list) -> None:
 	data_str_arr = []
-	data_str_arr.append(str(time()))
+	data_str_arr.append(str(time.time()))
 	data_str_arr.append(str(bank_id))
 	data_str_arr.append(message_id)
 	for d in data:
@@ -148,22 +142,25 @@ def log_data(bank_id: int, message_id: str, data: list):
 	write_data_to_file(DATA_LOG_FILE_PATH, data_str)
 
 
-def write_data_to_file(file_path: str, data: str):
+def write_data_to_file(file_path: str, data: str) -> None:
 	assert isinstance(data, str)
 
 	with open(file_path, 'a') as file:
 		file.write(data)
 
-def thread_serial_monitor(root, tk_table, serial_connection):
-	t1 = threading.Thread(target = serial_monitor, args = [root, tk_table, serial_connection])
+def thread_serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
+	t1 = threading.Thread(target = serial_monitor, args = [tk_table, serial_connection])
 	t1.start()
 
-def main():
+def main() -> None:
 	serial_connection = serial_connection_init(PORT, BAUD_RATE, BYTESIZE, PARITY, STOPBITS)
+
+	# initialize data logging state
+	write_data_to_file(DATA_LOG_FILE_PATH, "\n\n")
 
 	# setup gui
 	root, tk_table = setup_gui()
-	root.after(100, thread_serial_monitor, root, tk_table, serial_connection)
+	root.after(100, thread_serial_monitor, tk_table, serial_connection)
 	root.mainloop()
 	
 	# end program
