@@ -267,6 +267,8 @@ int main(void)
     MAX_VOLTAGE = 4.2;
   }
 
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+
   // start charging
   if (IS_CHARGING) {
 	  BMS_MESSAGE.max_voltage = (uint16_t) (MAX_VOLTAGE * CELLS_PER_BANK * 10);
@@ -397,7 +399,7 @@ int main(void)
 				float cell_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
 				if (cell_voltage < MIN_VOLTAGE || cell_voltage > MAX_VOLTAGE) {
 					// initiate shutdown circuit
-					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
 
 					sprintf(str, "Bank %d, Cell %d: Voltage\n", bank_idx, cell_idx);
 					HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), 100);
@@ -408,7 +410,7 @@ int main(void)
 				float cell_temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
 				if (cell_temperature < MIN_TEMPERATURE || cell_temperature > MAX_TEMPERATURE) {
 					// initiate shutdown circuit
-					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
 
 					sprintf(str, "Bank %d, Cell %d: Temperature\n", bank_idx, cell_idx);
 					HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), 100);

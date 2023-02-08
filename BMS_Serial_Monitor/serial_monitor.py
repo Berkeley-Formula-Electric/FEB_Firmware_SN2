@@ -4,23 +4,26 @@ try:
 	import tkinter as tk
 except:
 	import Tkinter as tk
+from time import time
+import random
 
 # active
 PROGRAM_RUN = True
 RESOLUTION = 3
 
 # battery configuration
-BANKS = 1
+BANKS = 2
 CELLS_PER_BANK = 17
 
 # serial settings
-PORT = '/dev/cu.usbmodem1103'
+PORT = '/dev/cu.usbmodem103'
 BAUD_RATE = 115200
 BYTESIZE = serial.SEVENBITS
 PARITY = serial.PARITY_EVEN
 STOPBITS = serial.STOPBITS_ONE
 
 # data format
+DATA_LOG_FILE_PATH = "data.csv"
 BITS_PER_MESSAGE 	= 1
 BITS_PER_BANK		= 3
 
@@ -32,8 +35,6 @@ MESSAGES = {VOLTAGE_ID: "V", TEMPERATURE_ID: "T"}
 # masks
 BANK_ID_MASK 		= 0b1110
 MESSAGE_MASK		= 0b0001
-VOLTAGE_MASK 		= 0b0001
-TEMPERATURE_MASK 	= 0b0001
 
 class Table:
 	def __init__(self, root, width, height):
@@ -113,19 +114,45 @@ def on_frame_configuration(canvas):
 
 def serial_monitor(root, tk_table, serial_connection):
 	while PROGRAM_RUN:
-		message = ""
+		message = [str(random.randint(3, 10))]
+		for i in range(17):
+			message += [str(random.random() * 3)]
 		try:
-			message = serial_connection.readline().decode().replace("\x00", "").replace("\n", "").split(" ")
+			# message = serial_connection.readline().decode().replace("\x00", "").replace("\n", "").split(" ")
 
 			bank_id = (int(message[0]) & BANK_ID_MASK) >> BITS_PER_MESSAGE
 			message_id = MESSAGES[int(message[0]) & MESSAGE_MASK]
+			data = []
 
 			for i in range(CELLS_PER_BANK):
-				data = round(float(message[i + 1]), RESOLUTION)
-				tk_table.update(bank_id, i, message_id, data)
+				cell_data = round(float(message[i + 1]), RESOLUTION)
+				data.append(cell_data)
+				# tk_table.update(bank_id, i, message_id, cell_data)
+
+			log_data(bank_id, message_id, data)
 		except:
 			if message:
 				print(message)
+	
+		break
+	
+def log_data(bank_id: int, message_id: str, data: list):
+	data_str_arr = []
+	data_str_arr.append(str(time()))
+	data_str_arr.append(str(bank_id))
+	data_str_arr.append(message_id)
+	for d in data:
+		data_str_arr.append(str(d))
+
+	data_str = ','.join(data_str_arr) + '\n'
+	write_data_to_file(DATA_LOG_FILE_PATH, data_str)
+
+
+def write_data_to_file(file_path: str, data: str):
+	assert isinstance(data, str)
+
+	with open(file_path, 'a') as file:
+		file.write(data)
 
 def thread_serial_monitor(root, tk_table, serial_connection):
 	t1 = threading.Thread(target = serial_monitor, args = [root, tk_table, serial_connection])
@@ -138,7 +165,7 @@ def main():
 	root, tk_table = setup_gui()
 	root.after(100, thread_serial_monitor, root, tk_table, serial_connection)
 	root.mainloop()
-
+	
 	# end program
 	global PROGRAM_RUN
 	PROGRAM_RUN = False
