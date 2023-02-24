@@ -1,4 +1,7 @@
-#include <string.h>
+#ifndef INC_FEB_CAN_NODE_H_
+#define INC_FEB_CAN_NODE_H_
+
+#include "string.h"
 
 /*** SETTINGS ***/
 #define ID_LENGTH_BITS 11
@@ -123,8 +126,6 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 
 
 /*** RX Arrays ***/
-
-
 const AddressIdType BMS_RX_ID[] = {SM_ID};
 const FilterArrayLength BMS_RX_NUM = 1;
 
@@ -189,3 +190,5 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
             break;
     }
 }
+
+#endif /* INC_FEB_CAN_H_ */

@@ -2,12 +2,12 @@ import csv
 import pandas as pd
 import os
 
-REMOVE_CSV_FILE = True
+REMOVE_CSV_FILE = False
 
 # set file path and file name
 XLSX_FILE_DIRECTORY = ""
 XLSX_FILE_NAME = "data"
-HEADER_FILE_NAME = "FEB_NODE_ID"
+HEADER_FILE_NAME = "FEB_CAN_NODE"
 
 # extensions
 HEADER_EXTENSION = ".h"
@@ -32,7 +32,7 @@ class C:
 
     @staticmethod
     def include(file_name):
-        return f"#include <{file_name}>"
+        return f"#include \"{file_name}\""
 
     @staticmethod
     def struct(name, attributes):
@@ -77,6 +77,9 @@ class HeaderFile:
         file_contents = ""
 
         # ------includes------
+        file_contents += "#ifndef INC_FEB_CAN_NODE_H_\n"
+        file_contents += "#define INC_FEB_CAN_NODE_H_\n\n"
+
         file_contents += C.include("string.h")
         file_contents += "\n" * 2
 
@@ -113,8 +116,10 @@ class HeaderFile:
         rx_str_lst.append(C.comment(f"RX Arrays"))
         
         for board in boards:
-            rx_str_lst.append(board.rx_string())
-            rx_str_lst.append("")
+            rx_string = board.rx_string()
+            if rx_string:
+                rx_str_lst.append(rx_string)
+                rx_str_lst.append("")
 
         file_contents += "\n".join(rx_str_lst)
         file_contents += "\n"
@@ -171,9 +176,14 @@ class HeaderFile:
 
         file_contents += "\n".join(store_msg_str_arr)
 
+        # ------includes------
+        file_contents += "\n\n#endif /* INC_FEB_CAN_H_ */\n"
+
         return file_contents
 
 class Board:
+    board_id_list = []
+
     def __init__(self, name, data, board_id, id_length_bits, bits_per_id, bits_per_message_type):
         self.name = name
         self.data = data
@@ -315,7 +325,7 @@ def main():
     header_file = HeaderFile(data["id_length_bits"], data["bits_per_id"], data["boards"])
     file_contents = str(header_file)
 
-    # test
+    # write file
     with open(HEADER_FILE_PATH, "w") as header_file:
         header_file.write(file_contents)
 
