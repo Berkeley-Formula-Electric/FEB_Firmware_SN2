@@ -32,7 +32,18 @@ void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_
 	}
 }
 
-void FEB_CAN_Init(CAN_HandleTypeDef* hcan, uint32_t NODE_ID, uint8_t FIFO_Assignment, uint32_t FIFO_Interrupt) {
+void FEB_CAN_Init(CAN_HandleTypeDef* hcan, uint32_t NODE_ID) {
+	// Select Rx FIFO
+	uint8_t FIFO_Assignment;
+	uint32_t FIFO_Interrupt;
+	if (hcan->Instance == CAN1) {
+		FIFO_Assignment = CAN_RX_FIFO0;
+		FIFO_Interrupt = CAN_IT_RX_FIFO0_MSG_PENDING;
+	} else if (hcan->Instance == CAN2) {
+		FIFO_Assignment = CAN_RX_FIFO1;
+		FIFO_Interrupt = CAN_IT_RX_FIFO1_MSG_PENDING;
+	}
+
 	// Initialize transmission header
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
