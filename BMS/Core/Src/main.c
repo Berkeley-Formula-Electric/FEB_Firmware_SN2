@@ -136,6 +136,8 @@ int main(void)
 		UART_Str = FEB_LTC6811_UART_String_Temperature(bank_idx);
 		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 	}
+
+	HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
