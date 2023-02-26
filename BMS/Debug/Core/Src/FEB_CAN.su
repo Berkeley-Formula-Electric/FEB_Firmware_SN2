@@ -1,2 +1,0 @@
-../Core/Src/FEB_CAN.c:3:6:FEB_CAN_initFilter	64	static
-../Core/Src/FEB_CAN.c:26:19:FEB_CAN_transmit	56	static

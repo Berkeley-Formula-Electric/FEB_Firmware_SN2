@@ -1,5 +1,4 @@
-"./Core/Src/FEB_CAN.o"
-"./Core/Src/FEB_logger.o"
+"./Core/Src/FEB_LTC6811.o"
 "./Core/Src/LTC6811.o"
 "./Core/Src/LTC681x.o"
 "./Core/Src/bms_hardware.o"

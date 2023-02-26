@@ -1,0 +1,16 @@
+../Core/Src/FEB_LTC6811.c:31:6:FEB_LTC6811_Setup	40	static
+../Core/Src/FEB_LTC6811.c:50:6:FEB_LTC6811_Start_Cell_ADC_Measurement	8	static
+../Core/Src/FEB_LTC6811.c:56:6:FEB_LTC6811_Read_Cell_Voltage_Registers	8	static
+../Core/Src/FEB_LTC6811.c:87:7:FEB_LTC6811_Convert_Voltage	8	static
+../Core/Src/FEB_LTC6811.c:61:6:FEB_LTC6811_Store_Voltage	16	static
+../Core/Src/FEB_LTC6811.c:44:6:FEB_LTC6811_Poll_Voltage	8	static
+../Core/Src/FEB_LTC6811.c:96:6:FEB_LTC6811_Validate_Voltage	40	static
+../Core/Src/FEB_LTC6811.c:109:7:FEB_LTC6811_UART_String_Voltage	272	static
+../Core/Src/FEB_LTC6811.c:142:6:FEB_LTC6811_Update_GPIO	48	static
+../Core/Src/FEB_LTC6811.c:157:6:FEB_LTC6811_Start_GPIO_ADC_Measurement	8	static
+../Core/Src/FEB_LTC6811.c:163:6:FEB_LTC6811_Read_Aux_Voltages	8	static
+../Core/Src/FEB_LTC6811.c:168:6:FEB_LTC6811_Store_Temperature	24	static
+../Core/Src/FEB_LTC6811.c:133:6:FEB_LTC6811_Poll_Temperature	16	static
+../Core/Src/FEB_LTC6811.c:205:7:FEB_LTC6811_Convert_Temperature	0	static
+../Core/Src/FEB_LTC6811.c:215:6:FEB_LTC6811_Validate_Temperature	32	static
+../Core/Src/FEB_LTC6811.c:228:7:FEB_LTC6811_UART_String_Temperature	272	static

@@ -1,0 +1,105 @@
+#ifndef INC_FEB_LTC6811_H_
+#define INC_FEB_LTC6811_H_
+
+// ********************************** Include **********************************
+
+#include "LTC6811.h"
+
+// ********************************** Accumulator Configuration **********************************
+
+// accumulator configuration
+#define CELLS_PER_BANK 	17
+#define NUM_BANKS 		8
+#define NUM_IC	 		NUM_BANKS * 2
+
+// temperature thresholds
+#define MIN_OPERATION_TEMPERATURE	-20
+#define MAX_OPERATION_TEMPERATURE	60
+#define MIN_CHARGING_TEMPERATURE	0
+#define MAX_CHARGING_TEMPERATURE	60
+
+// voltage thresholds
+#define MIN_VOLTAGE	3.0
+#define MAX_VOLTAGE	4.2
+
+// ********************************** Connectivity Configuration **********************************
+
+#define UART_BITS_PER_MESSAGE 1
+#define UART_VOLTAGE_ID 0b0
+#define UART_TEMPERATURE_ID 0b1
+
+// ********************************** Structs **********************************
+
+typedef struct {
+	float temperature;
+	float voltage;
+} Cell;
+
+typedef struct {
+	Cell cells[CELLS_PER_BANK];
+} Bank;
+
+typedef struct {
+	cell_asic IC_config[NUM_IC];
+	Bank banks[NUM_BANKS];
+} Accumulator;
+
+// ********************************** LTC6811 Configuration **********************************
+
+#define ENABLED 			1
+#define DISABLED 			0
+#define DATALOG_ENABLED 	1
+#define DATALOG_DISABLED 	0
+
+#define ADC_OPT 			ADC_OPT_DISABLED 	//!< ADC Mode option bit
+#define ADC_CONVERSION_MODE MD_7KHZ_3KHZ 		//!< ADC Mode
+#define ADC_DCP 			DCP_ENABLED 		//!< Discharge Permitted
+#define CELL_CH_TO_CONVERT 	CELL_CH_ALL 		//!< Channel Selection for ADC conversion
+#define AUX_CH_TO_CONVERT 	AUX_CH_ALL 			//!< Channel Selection for ADC conversion
+#define STAT_CH_TO_CONVERT 	STAT_CH_ALL 		//!< Channel Selection for ADC conversion
+#define SEL_ALL_REG 		REG_ALL 			//!< Register Selection
+#define SEL_REG_A 			REG_1 				//!< Register Selection
+#define SEL_REG_B 			REG_2				//!< Register Selection
+
+#define MEASUREMENT_LOOP_TIME 500				//!< Loop Time in milliseconds(ms)
+
+// Voltage thresholds (0.1 mV)
+#define OV_THRESHOLD MAX_VOLTAGE * 10000 	//!< Over voltage threshold ADC Code. LSB = 0.0001 ---(4.2V)
+#define UV_THRESHOLD MIN_VOLTAGE * 10000	//!< Under voltage threshold ADC Code. LSB = 0.0001 ---(3V)
+
+// Loop measurement setup
+#define WRITE_CONFIG 	DISABLED	//!< This is to ENABLED or DISABLED writing into to configuration registers in a continuous loop
+#define READ_CONFIG 	DISABLED	//!< This is to ENABLED or DISABLED reading the configuration registers in a continuous loop
+#define MEASURE_CELL	ENABLED 	//!< This is to ENABLED or DISABLED measuring the cell voltages in a continuous loop
+#define MEASURE_AUX 	DISABLED 	//!< This is to ENABLED or DISABLED reading the auxiliary registers in a continuous loop
+#define MEASURE_STAT 	DISABLED 	//!< This is to ENABLED or DISABLED reading the status registers in a continuous loop
+#define PRINT_PEC 		DISABLED 	//!< This is to ENABLED or DISABLED printing the PEC Error Count in a continuous loop
+
+// ********************************** Function Declarations **********************************
+
+void FEB_LTC6811_Setup(void);
+
+// Read voltage
+void FEB_LTC6811_Poll_Voltage(void);
+void FEB_LTC6811_Start_Cell_ADC_Measurement(void);
+void FEB_LTC6811_Read_Cell_Voltage_Registers(void);
+void FEB_LTC6811_Store_Voltage(void);
+float FEB_LTC6811_Convert_Voltage(uint16_t value);
+
+// Voltage interface
+void FEB_LTC6811_Validate_Voltage(void);
+char* FEB_LTC6811_UART_String_Voltage(uint8_t bank_idx);
+
+// Read temperature
+void FEB_LTC6811_Poll_Temperature(void);
+void FEB_LTC6811_Update_GPIO(uint8_t channel);
+void FEB_LTC6811_Start_GPIO_ADC_Measurement(void);
+void FEB_LTC6811_Read_Aux_Voltages(void);
+void FEB_LTC6811_Store_Temperature(uint8_t channel);
+float FEB_LTC6811_Convert_Temperature(uint16_t value);
+
+// Temperature interface
+void FEB_LTC6811_Validate_Temperature(void);
+char* FEB_LTC6811_UART_String_Temperature(uint8_t bank_idx);
+
+#endif /* INC_FEB_LTC6811_H_ */

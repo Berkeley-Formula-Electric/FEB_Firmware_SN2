@@ -10,11 +10,11 @@ PROGRAM_RUN = True
 RESOLUTION = 3
 
 # battery configuration
-BANKS = 2
+BANKS = 1
 CELLS_PER_BANK = 17
 
 # serial settings
-PORT = '/dev/cu.usbmodem103'
+PORT = '/dev/cu.usbmodem2103'
 BAUD_RATE = 115200
 BYTESIZE = serial.SEVENBITS
 PARITY = serial.PARITY_EVEN
@@ -69,7 +69,6 @@ class Table:
 	
 	def update(self, bank: int, segment: int, type: str, value: int) -> None:
 		self.cells[(bank, segment, type.upper())].configure(text = str(value))
-
 
 def serial_connection_init(port: str, baudrate: int, bytesize: int, parity: str, stopbits: int) -> serial.Serial:
 	print(f"Active ports: {[tuple(x)[0] for x in list(serial.tools.list_ports.comports())]}")
@@ -128,7 +127,7 @@ def serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
 			log_data(bank_id, message_id, data)
 		except:
 			if message:
-				print("Error: " + message)
+				print("Error:", message)
 	
 def log_data(bank_id: int, message_id: str, data: list) -> None:
 	data_str_arr = []
