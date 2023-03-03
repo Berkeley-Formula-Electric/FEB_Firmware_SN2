@@ -229,7 +229,7 @@ char* FEB_LTC6811_UART_String_Temperature(uint8_t bank_idx) {
 	char temp_str[256];
 
 	// Add bank_idx, cell_idx to {@code str}
-	sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_VOLTAGE_ID);
+	sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_TEMPERATURE_ID);
 
 
 	// Add values to {@code str}

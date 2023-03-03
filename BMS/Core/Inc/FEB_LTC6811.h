@@ -9,7 +9,7 @@
 
 // accumulator configuration
 #define CELLS_PER_BANK 	17
-#define NUM_BANKS 		8
+#define NUM_BANKS 		1
 #define NUM_IC	 		NUM_BANKS * 2
 
 // temperature thresholds

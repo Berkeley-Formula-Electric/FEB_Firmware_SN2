@@ -1,3 +1,4 @@
+"./Core/Src/FEB_BMS_Shutdown.o"
 "./Core/Src/FEB_LTC6811.o"
 "./Core/Src/LTC6811.o"
 "./Core/Src/LTC681x.o"
