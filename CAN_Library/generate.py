@@ -35,6 +35,11 @@ class C:
         return f"#include \"{file_name}\""
 
     @staticmethod
+    def indent(n):
+        indent_size = 4
+        return " " * indent_size * n
+
+    @staticmethod
     def struct(name, attributes):
         """
         >>> name = 'BMS_MESSAGE_TYPE'
@@ -100,10 +105,8 @@ class HeaderFile:
 
         # ------boards------
         boards = []
-        board_id = 0
         for board_name in self.board_data.keys():
-            boards.append(Board(board_name, self.board_data[board_name], board_id, self.id_length_bits, self.bits_per_id, self.bits_per_message_type))
-            board_id += 1
+            boards.append(Board(board_name, self.board_data[board_name], self.id_length_bits, self.bits_per_id, self.bits_per_message_type))
         
         for board in boards:
             file_contents += str(board)
@@ -182,15 +185,26 @@ class HeaderFile:
         return file_contents
 
 class Board:
-    board_id_list = []
+    id_lst = []
+    id_counter = 0
 
-    def __init__(self, name, data, board_id, id_length_bits, bits_per_id, bits_per_message_type):
+    def __init__(self, name, data, id_length_bits, bits_per_id, bits_per_message_type):
         self.name = name
         self.data = data
-        self.board_id = board_id
+        self.board_id = self.__get_available_id()
         self.id_length_bits = id_length_bits
         self.bits_per_id = bits_per_id
         self.bits_per_message_type = bits_per_message_type
+
+    def __get_available_id(self):
+        while Board.id_counter in Board.id_lst:
+            Board.id_counter += 1
+        Board.add_board_id(Board.id_counter)
+        return Board.id_counter
+    
+    @staticmethod
+    def add_board_id(id: int) -> None:
+        Board.id_lst.append(id)
     
     def rx_string(self):
         if not self.data["rx_data"]:
@@ -262,18 +276,31 @@ class Board:
 
         return string
 
-def xlsx_to_csv(xlsx_file_path, csv_file_path):
-    data_xls = pd.read_excel(xlsx_file_path, 'main', index_col=None)
+class Message:
+    message_lst = []
+
+    def __init__(self, name: str, id: int, datatype: str):
+        self.name = name
+        self.id = id
+        self.datatype = datatype
+
+        Message.message_lst.append(self)
+
+    def __str__(self):
+        return f"({self.name}, {self.id}, {self.datatype})"
+
+def xlsx_to_csv(xlsx_file_path, csv_file_path, sheet):
+    data_xls = pd.read_excel(xlsx_file_path, sheet, index_col=None)
     data_xls.to_csv(csv_file_path, encoding='utf-8', index=False)
     
-def read_csv(filepath):
+def read_csv(filepath: str) -> list:
     assert ".csv" in filepath
     
     with open(filepath) as csv_file:
         reader = csv.reader(csv_file, delimiter=",", quotechar='"')
         return list(reader)
 
-def extract_csv_data(csv_data):
+def extract_csv_data(csv_data: list) -> dict:
     # column locations
     ID_LENGTH_BITS = 0
     BITS_PER_ID = 1
@@ -281,6 +308,7 @@ def extract_csv_data(csv_data):
     RX_BOARDS = 3
     MESSAGE_TYPES = 4
     MESSAGE_DATA_TYPES = 5
+    RX_ANY_BOOL = 6
 
     data = {}
     
@@ -299,6 +327,7 @@ def extract_csv_data(csv_data):
             boards[current_board] = {}
             boards[current_board]["rx_data"] = []
             boards[current_board]["message_type"] = []
+            boards[current_board]["rx_any"] = False
 
         if csv_data[RX_BOARDS][i]:
             boards[current_board]["rx_data"].extend(csv_data[RX_BOARDS][i].upper().split(" "))
@@ -307,13 +336,46 @@ def extract_csv_data(csv_data):
             message_data_type = csv_data[MESSAGE_DATA_TYPES][i]
 
             boards[current_board]["message_type"].append({"name": message_name, "data_type": message_data_type})
+        if csv_data[RX_ANY_BOOL][i]:
+            rx_bool = False if csv_data[RX_ANY_BOOL][i].lower() == "f" else True
+            boards[current_board]["rx_any"] = rx_bool
+
     data["boards"] = boards
     
     return data
 
+def extract_csv_ids(csv_data: list) -> list:
+    # column locations
+    MSG_NAME_COL = 0
+    MSG_ID_COL = 1
+    MSG_DATA_TYPE_COL = 2
+    MSG_RECEIVE_BOOL_COL = 3
+
+    START_ROW = 1
+    NUM_ROWS = len(csv_data)
+    ID_BASE = 16
+
+    for row in range(START_ROW, NUM_ROWS):
+        name = csv_data[row][MSG_NAME_COL]
+        id = int(csv_data[row][MSG_ID_COL], ID_BASE)
+        datatype = csv_data[row][MSG_DATA_TYPE_COL]
+        rx = False if csv_data[row][MSG_RECEIVE_BOOL_COL].lower() == "f" else True
+
+        # block ID
+        Board.add_board_id(id)
+
+        # store message
+        if rx:
+            Message(name, id, datatype)
+
 def main():
-    # read data
-    xlsx_to_csv(XLSX_FILE_PATH, CSV_FILE_PATH)
+    # read set IDs
+    xlsx_to_csv(XLSX_FILE_PATH, CSV_FILE_PATH, 'identifiers')
+    csv_data = read_csv(CSV_FILE_PATH)
+    extract_csv_ids(csv_data)
+
+    # read main data
+    xlsx_to_csv(XLSX_FILE_PATH, CSV_FILE_PATH, 'main')
     csv_data = read_csv(CSV_FILE_PATH)
     csv_data_transposed = [*zip(*csv_data)]
     data = extract_csv_data(csv_data_transposed)
