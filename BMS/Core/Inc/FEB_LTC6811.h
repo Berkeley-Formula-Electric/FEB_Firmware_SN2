@@ -7,9 +7,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "stm32f4xx_hal.h"
 #include "LTC6811.h"
 #include "FEB_BMS_Shutdown.h"
-#include "stm32f4xx_hal.h"
+#include "FEB_LTC6811_Temp_LUT.h"
 
 // ********************************** Accumulator Configuration **********************************
 

@@ -30,7 +30,8 @@ Core/Src/FEB_BMS_Shutdown.o: ../Core/Src/FEB_BMS_Shutdown.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/FEB_CAN_Charger.h ../Core/Inc/main.h \
  ../Core/Inc/FEB_LTC6811.h ../Core/Inc/LTC6811.h ../Core/Inc/LTC681x.h \
- ../Core/Inc/FEB_BMS_Shutdown.h ../Core/Inc/FEB_CAN_IVT.h
+ ../Core/Inc/FEB_BMS_Shutdown.h ../Core/Inc/FEB_LTC6811_Temp_LUT.h \
+ ../Core/Inc/FEB_CAN_IVT.h
 ../Core/Inc/FEB_BMS_Shutdown.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -66,4 +67,5 @@ Core/Src/FEB_BMS_Shutdown.o: ../Core/Src/FEB_BMS_Shutdown.c \
 ../Core/Inc/LTC6811.h:
 ../Core/Inc/LTC681x.h:
 ../Core/Inc/FEB_BMS_Shutdown.h:
+../Core/Inc/FEB_LTC6811_Temp_LUT.h:
 ../Core/Inc/FEB_CAN_IVT.h:

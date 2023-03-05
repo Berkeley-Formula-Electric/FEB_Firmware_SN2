@@ -225,7 +225,7 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value) {
 	if (value == 65535) {
 		return -42;
 	}
-	return value * 0.0001;
+	return FEB_LTC6811_Temp_LUT_Get_Temperature(value * 0.0001);
 }
 
 // ******************** Temperature Interface ********************
