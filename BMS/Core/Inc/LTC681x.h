@@ -100,7 +100,7 @@
 #define CELL 1
 #define AUX 2
 #define STAT 3
-#define CFGR 0
+#define LTC681x_CFGR 0
 #define CFGRB 4
 #define CS_PIN 10
 

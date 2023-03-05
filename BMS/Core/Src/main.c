@@ -22,11 +22,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <string.h>
-
-#include "FEB_LTC6811.h"
-#include "FEB_BMS_Shutdown.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,8 +100,6 @@ int main(void)
   FEB_LTC6811_Setup();
   FEB_BMS_Shutdown_Startup();
 
-  char* UART_Str;
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,23 +112,12 @@ int main(void)
 	// *********************** Voltage ***********************
 	FEB_LTC6811_Poll_Voltage();
 	FEB_LTC6811_Validate_Voltage();
-
-	// UART transmit voltage
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		UART_Str = FEB_LTC6811_UART_String_Voltage(bank_idx);
-		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
-	}
-
+	FEB_LTC6811_UART_Transmit_Voltage();
 
 	// *********************** Temperature ***********************
 	FEB_LTC6811_Poll_Temperature();
 	FEB_LTC6811_Validate_Temperature();
-
-	// UART transmit temperature
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		UART_Str = FEB_LTC6811_UART_String_Temperature(bank_idx);
-		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
-	}
+	FEB_LTC6811_UART_Transmit_Temperature();
 
 	HAL_Delay(1000);
   }

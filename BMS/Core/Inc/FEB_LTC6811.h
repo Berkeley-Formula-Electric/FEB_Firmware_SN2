@@ -3,7 +3,13 @@
 
 // ********************************** Include **********************************
 
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include "LTC6811.h"
+#include "FEB_BMS_Shutdown.h"
+#include "stm32f4xx_hal.h"
 
 // ********************************** Accumulator Configuration **********************************
 
@@ -88,7 +94,7 @@ float FEB_LTC6811_Convert_Voltage(uint16_t value);
 
 // Voltage interface
 void FEB_LTC6811_Validate_Voltage(void);
-char* FEB_LTC6811_UART_String_Voltage(uint8_t bank_idx);
+void FEB_LTC6811_UART_Transmit_Voltage(void);
 
 // Read temperature
 void FEB_LTC6811_Poll_Temperature(void);
@@ -100,6 +106,6 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value);
 
 // Temperature interface
 void FEB_LTC6811_Validate_Temperature(void);
-char* FEB_LTC6811_UART_String_Temperature(uint8_t bank_idx);
+void FEB_LTC6811_UART_Transmit_Temperature(void);
 
 #endif /* INC_FEB_LTC6811_H_ */

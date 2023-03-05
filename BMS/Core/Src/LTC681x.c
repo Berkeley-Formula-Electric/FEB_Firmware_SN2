@@ -317,7 +317,7 @@ int8_t LTC681x_rdcfg(uint8_t total_ic, //Number of ICs in the system
 		}
 		else ic[c_ic].config.rx_pec_match = 0;
 	}
-	LTC681x_check_pec(total_ic,CFGR,ic);
+	LTC681x_check_pec(total_ic,LTC681x_CFGR,ic);
 
 	return(pec_error);
 }
@@ -2022,7 +2022,7 @@ void LTC681x_check_pec(uint8_t total_ic, //Number of ICs in the system
 {
 	switch (reg)
 	{
-		case CFGR:
+		case LTC681x_CFGR:
 		  for (int current_ic = 0 ; current_ic < total_ic; current_ic++)
 		  {
 			ic[current_ic].crc_count.pec_count = ic[current_ic].crc_count.pec_count + ic[current_ic].config.rx_pec_match;

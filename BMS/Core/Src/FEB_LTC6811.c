@@ -1,11 +1,8 @@
-// ********************************** Includes **********************************
-
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
+// ********************************** Includes & External **********************************
 
 #include "FEB_LTC6811.h"
-#include "FEB_BMS_Shutdown.h"
+
+extern UART_HandleTypeDef huart2;
 
 // ********************************** LTC6811 Configuration **********************************
 
@@ -20,11 +17,6 @@ static bool DCTOBITS[4] = {1, 0, 1, 0}; 							//!< Discharge time value 	// Dct
 
 // Set accumulator
 static Accumulator accumulator;
-
-// ********************************** Connectivity **********************************
-
-// UART
-static char UART_Str[1024];
 
 // ********************************** Functions **********************************
 
@@ -105,27 +97,29 @@ void FEB_LTC6811_Validate_Voltage(void) {
 }
 
 // ******************** Transmit Voltage ********************
-
-char* FEB_LTC6811_UART_String_Voltage(uint8_t bank_idx) {
+void FEB_LTC6811_UART_Transmit_Voltage() {
+	char UART_Str[1024];
 	char temp_str[256];
 
-	// Add bank_idx, cell_idx to {@code str}
-	sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_VOLTAGE_ID);
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		// Add bank_idx, cell_idx to {@code UART_Str}
+		sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_VOLTAGE_ID);
 
 
-	// Add values to {@code str}
-	for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
-		float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
+		// Add values to {@code UART_Str}
+		for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
 
-		sprintf(temp_str, " %f", voltage);
+			sprintf(temp_str, " %f", voltage);
+			strncat(UART_Str, temp_str, strlen(temp_str));
+		}
+
+		// Add '\n' to {@code UART_Str}
+		sprintf(temp_str, "\n");
 		strncat(UART_Str, temp_str, strlen(temp_str));
+
+		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 	}
-
-	// Add '\n' to {@code str}
-	sprintf(temp_str, "\n");
-	strncat(UART_Str, temp_str, strlen(temp_str));
-
-	return UART_Str;
 }
 
 // ******************** Read Temperature ********************
@@ -225,24 +219,26 @@ void FEB_LTC6811_Validate_Temperature(void) {
 
 // ******************** Transmit Temperature ********************
 
-char* FEB_LTC6811_UART_String_Temperature(uint8_t bank_idx) {
+void FEB_LTC6811_UART_Transmit_Temperature() {
+	char UART_Str[1024];
 	char temp_str[256];
 
-	// Add bank_idx, cell_idx to {@code str}
-	sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_TEMPERATURE_ID);
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		// Add bank_idx, cell_idx to {@code UART_Str}
+		sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_TEMPERATURE_ID);
 
 
-	// Add values to {@code str}
-	for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
-		float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
+		// Add values to {@code UART_Str}
+		for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
 
-		sprintf(temp_str, " %f", temperature);
+			sprintf(temp_str, " %f", temperature);
+			strncat(UART_Str, temp_str, strlen(temp_str));
+		}
+
+		// Add '\n' to {@code UART_Str}
+		sprintf(temp_str, "\n");
 		strncat(UART_Str, temp_str, strlen(temp_str));
+		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 	}
-
-	// Add '\n' to {@code str}
-	sprintf(temp_str, "\n");
-	strncat(UART_Str, temp_str, strlen(temp_str));
-
-	return UART_Str;
 }

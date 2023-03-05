@@ -32,6 +32,11 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <string.h>
+
+#include "FEB_LTC6811.h"
+#include "FEB_BMS_Shutdown.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
