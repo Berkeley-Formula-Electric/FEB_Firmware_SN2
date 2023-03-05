@@ -5,6 +5,8 @@
 
 #include "stm32f4xx_hal.h"
 
+#include "FEB_CAN_Charger.h"
+
 // ********************************** Functions **********************************
 
 void FEB_BMS_Shutdown_Startup(void);	// Close shutdown switch to start car

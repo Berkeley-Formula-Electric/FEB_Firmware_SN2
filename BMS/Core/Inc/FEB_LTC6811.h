@@ -27,6 +27,10 @@
 // voltage thresholds
 #define MIN_VOLTAGE	3.0
 #define MAX_VOLTAGE	4.2
+#define CHARGED_PERCENTAGE 0.95
+
+// current thresholds
+#define MAX_CURRENT 1.0
 
 // ********************************** Connectivity Configuration **********************************
 
@@ -95,6 +99,8 @@ float FEB_LTC6811_Convert_Voltage(uint16_t value);
 // Voltage interface
 void FEB_LTC6811_Validate_Voltage(void);
 void FEB_LTC6811_UART_Transmit_Voltage(void);
+float FEB_LTC6811_Total_Bank_Voltage(void);
+uint8_t FEB_LTC6811_Cells_Charged(void);
 
 // Read temperature
 void FEB_LTC6811_Poll_Temperature(void);

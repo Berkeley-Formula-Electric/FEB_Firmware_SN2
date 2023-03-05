@@ -84,7 +84,7 @@ float FEB_LTC6811_Convert_Voltage(uint16_t value) {
 	return value * 0.0001;
 }
 
-// ******************** Validate Voltage ********************
+// ******************** Voltage Interface ********************
 void FEB_LTC6811_Validate_Voltage(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
@@ -96,14 +96,13 @@ void FEB_LTC6811_Validate_Voltage(void) {
 	}
 }
 
-// ******************** Transmit Voltage ********************
 void FEB_LTC6811_UART_Transmit_Voltage() {
-	char UART_Str[1024];
+	char UART_str[1024];
 	char temp_str[256];
 
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
-		sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_VOLTAGE_ID);
+		sprintf(UART_str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_VOLTAGE_ID);
 
 
 		// Add values to {@code UART_Str}
@@ -111,15 +110,40 @@ void FEB_LTC6811_UART_Transmit_Voltage() {
 			float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
 
 			sprintf(temp_str, " %f", voltage);
-			strncat(UART_Str, temp_str, strlen(temp_str));
+			strncat(UART_str, temp_str, strlen(temp_str));
 		}
 
 		// Add '\n' to {@code UART_Str}
 		sprintf(temp_str, "\n");
-		strncat(UART_Str, temp_str, strlen(temp_str));
+		strncat(UART_str, temp_str, strlen(temp_str));
 
-		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
+		HAL_UART_Transmit(&huart2, (uint8_t*) UART_str, strlen(UART_str), 100);
 	}
+}
+
+float FEB_LTC6811_Total_Bank_Voltage(void) {
+	float total_voltage = 0;
+
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			total_voltage += accumulator.banks[bank_idx].cells[cell_idx].voltage;
+		}
+	}
+
+	return total_voltage;
+}
+
+uint8_t FEB_LTC6811_Cells_Charged(void) {
+	const float cell_voltage_threshold = MAX_VOLTAGE * CHARGED_PERCENTAGE;
+
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			float cell_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
+			if (cell_voltage < cell_voltage_threshold)
+				return 0;
+		}
+	}
+	return 1;
 }
 
 // ******************** Read Temperature ********************
@@ -204,7 +228,7 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value) {
 	return value * 0.0001;
 }
 
-// ******************** Validate Temperature ********************
+// ******************** Temperature Interface ********************
 
 void FEB_LTC6811_Validate_Temperature(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
@@ -216,8 +240,6 @@ void FEB_LTC6811_Validate_Temperature(void) {
 		}
 	}
 }
-
-// ******************** Transmit Temperature ********************
 
 void FEB_LTC6811_UART_Transmit_Temperature() {
 	char UART_Str[1024];

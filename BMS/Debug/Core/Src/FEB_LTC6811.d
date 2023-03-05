@@ -28,7 +28,9 @@ Core/Src/FEB_LTC6811.o: ../Core/Src/FEB_LTC6811.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Core/Inc/FEB_CAN_Charger.h ../Core/Inc/main.h \
+ ../Core/Inc/FEB_LTC6811.h ../Core/Inc/FEB_CAN_IVT.h
 ../Core/Inc/FEB_LTC6811.h:
 ../Core/Inc/LTC6811.h:
 ../Core/Inc/LTC681x.h:
@@ -61,3 +63,7 @@ Core/Src/FEB_LTC6811.o: ../Core/Src/FEB_LTC6811.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+../Core/Inc/FEB_CAN_Charger.h:
+../Core/Inc/main.h:
+../Core/Inc/FEB_LTC6811.h:
+../Core/Inc/FEB_CAN_IVT.h:

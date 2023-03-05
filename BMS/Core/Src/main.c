@@ -40,9 +40,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan1;
-
+CAN_HandleTypeDef hcan2;
 SPI_HandleTypeDef hspi1;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -55,6 +54,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_CAN2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,10 +95,13 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN1_Init();
   MX_SPI1_Init();
+  MX_CAN2_Init();
   /* USER CODE BEGIN 2 */
 
   FEB_LTC6811_Setup();
   FEB_BMS_Shutdown_Startup();
+  FEB_CAN_IVT_Init(&hcan1);
+  FEB_CAN_Charger_Init(&hcan2);
 
   /* USER CODE END 2 */
 
@@ -118,6 +121,12 @@ int main(void)
 	FEB_LTC6811_Poll_Temperature();
 	FEB_LTC6811_Validate_Temperature();
 	FEB_LTC6811_UART_Transmit_Temperature();
+
+	// *********************** IVT ***********************
+	FEB_CAN_IVT_Process();
+
+	// *********************** Charger ***********************
+	FEB_CAN_Charger_Process(&hcan2);
 
 	HAL_Delay(1000);
   }
@@ -205,6 +214,43 @@ static void MX_CAN1_Init(void)
   /* USER CODE BEGIN CAN1_Init 2 */
 
   /* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
+  * @brief CAN2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN2_Init(void)
+{
+
+  /* USER CODE BEGIN CAN2_Init 0 */
+
+  /* USER CODE END CAN2_Init 0 */
+
+  /* USER CODE BEGIN CAN2_Init 1 */
+
+  /* USER CODE END CAN2_Init 1 */
+  hcan2.Instance = CAN2;
+  hcan2.Init.Prescaler = 32;
+  hcan2.Init.Mode = CAN_MODE_NORMAL;
+  hcan2.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan2.Init.TimeSeg1 = CAN_BS1_2TQ;
+  hcan2.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan2.Init.TimeTriggeredMode = DISABLE;
+  hcan2.Init.AutoBusOff = DISABLE;
+  hcan2.Init.AutoWakeUp = DISABLE;
+  hcan2.Init.AutoRetransmission = DISABLE;
+  hcan2.Init.ReceiveFifoLocked = DISABLE;
+  hcan2.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN2_Init 2 */
+
+  /* USER CODE END CAN2_Init 2 */
 
 }
 

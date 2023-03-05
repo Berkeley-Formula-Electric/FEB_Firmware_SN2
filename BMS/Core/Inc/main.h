@@ -36,6 +36,8 @@ extern "C" {
 
 #include "FEB_LTC6811.h"
 #include "FEB_BMS_Shutdown.h"
+#include "FEB_CAN_IVT.h"
+#include "FEB_CAN_Charger.h"
 
 /* USER CODE END Includes */
 

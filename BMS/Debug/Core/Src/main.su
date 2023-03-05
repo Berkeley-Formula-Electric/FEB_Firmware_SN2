@@ -1,7 +1,8 @@
 ../Core/Src/main.c:71:5:main	8	static
-../Core/Src/main.c:131:6:SystemClock_Config	88	static
-../Core/Src/main.c:179:13:MX_CAN1_Init	8	static
-../Core/Src/main.c:216:13:MX_SPI1_Init	8	static
-../Core/Src/main.c:254:13:MX_USART2_UART_Init	8	static
-../Core/Src/main.c:287:13:MX_GPIO_Init	40	static
-../Core/Src/main.c:326:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:140:6:SystemClock_Config	88	static
+../Core/Src/main.c:188:13:MX_CAN1_Init	8	static
+../Core/Src/main.c:225:13:MX_CAN2_Init	8	static
+../Core/Src/main.c:262:13:MX_SPI1_Init	8	static
+../Core/Src/main.c:300:13:MX_USART2_UART_Init	8	static
+../Core/Src/main.c:333:13:MX_GPIO_Init	40	static
+../Core/Src/main.c:372:6:Error_Handler	4	static,ignoring_inline_asm
