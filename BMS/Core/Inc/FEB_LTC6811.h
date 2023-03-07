@@ -102,6 +102,7 @@ void FEB_LTC6811_Validate_Voltage(void);
 void FEB_LTC6811_UART_Transmit_Voltage(void);
 float FEB_LTC6811_Total_Bank_Voltage(void);
 uint8_t FEB_LTC6811_Cells_Charged(void);
+void FEB_LTC6811_Clear_Voltage(void);
 
 // Read temperature
 void FEB_LTC6811_Poll_Temperature(void);
@@ -114,5 +115,6 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value);
 // Temperature interface
 void FEB_LTC6811_Validate_Temperature(void);
 void FEB_LTC6811_UART_Transmit_Temperature(void);
+void FEB_LTC6811_Clear_Temperature(void);
 
 #endif /* INC_FEB_LTC6811_H_ */

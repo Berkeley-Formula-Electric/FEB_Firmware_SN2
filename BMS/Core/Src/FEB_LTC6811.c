@@ -139,11 +139,20 @@ uint8_t FEB_LTC6811_Cells_Charged(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
 			float cell_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
-			if (cell_voltage < cell_voltage_threshold)
+			if (cell_voltage < cell_voltage_threshold) {
 				return 0;
+			}
 		}
 	}
 	return 1;
+}
+
+void FEB_LTC6811_Clear_Voltage(void) {
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			accumulator.banks[bank_idx].cells[cell_idx].voltage = 0;
+		}
+	}
 }
 
 // ******************** Read Temperature ********************
@@ -262,5 +271,13 @@ void FEB_LTC6811_UART_Transmit_Temperature() {
 		sprintf(temp_str, "\n");
 		strncat(UART_Str, temp_str, strlen(temp_str));
 		HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
+	}
+}
+
+void FEB_LTC6811_Clear_Temperature(void) {
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			accumulator.banks[bank_idx].cells[cell_idx].temperature = 0;
+		}
 	}
 }

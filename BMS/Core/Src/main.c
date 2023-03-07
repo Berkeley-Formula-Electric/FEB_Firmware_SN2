@@ -112,12 +112,16 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	// *********************** Voltage ***********************
+	// *********************** Reset State ***********************
+	FEB_LTC6811_Clear_Voltage();
+	FEB_LTC6811_Clear_Temperature();
+
+	// *********************** Cell Voltage ***********************
 	FEB_LTC6811_Poll_Voltage();
 	FEB_LTC6811_Validate_Voltage();
 	FEB_LTC6811_UART_Transmit_Voltage();
 
-	// *********************** Temperature ***********************
+	// *********************** Cell Temperature ***********************
 	FEB_LTC6811_Poll_Temperature();
 	FEB_LTC6811_Validate_Temperature();
 	FEB_LTC6811_UART_Transmit_Temperature();
@@ -128,7 +132,12 @@ int main(void)
 	// *********************** Charger ***********************
 	FEB_CAN_Charger_Process(&hcan2);
 
-	HAL_Delay(1000);
+	if (FEB_CAN_CHARGER_CHARGE_BOOL == 1) {
+		HAL_Delay(1000);	// 1Hz
+	} else {
+		HAL_Delay(100);		// 10Hz
+	}
+
   }
   /* USER CODE END 3 */
 }
