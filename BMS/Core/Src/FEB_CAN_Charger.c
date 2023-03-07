@@ -20,7 +20,8 @@ static uint8_t FEB_CAN_Charger_Rx_Flag = 0;
 
 // ********************************** Charger Configuration **********************************
 
-static uint8_t FEB_CAN_Charge_Bool_Toggle = 0;
+static uint8_t FEB_CAN_Charger_State_Bool = 0;					// Charging or not-charging state
+static uint8_t FEB_CAN_Charger_Communication_State_Bool = 0;	// Monitor 2 consecutive communication state errors, 0 (no error), 1 (error)
 
 // ********************************** Functions **********************************
 
@@ -44,7 +45,9 @@ void FEB_CAN_Charger_Init(CAN_HandleTypeDef* hcan) {
 
 	// Set Charger
 	if (FEB_CAN_CHARGER_CHARGE_BOOL) {
-		FEB_CAN_Charge_Bool_Toggle = 1;
+		FEB_CAN_Charger_State_Bool = 1;
+	} else {
+		FEB_CAN_Charger_State_Bool = 0;
 	}
 }
 
@@ -151,7 +154,7 @@ void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {
 	}
 
 	// Check if stopped charging
-	if (FEB_CAN_Charge_Bool_Toggle == 0) {
+	if (FEB_CAN_Charger_State_Bool == 0) {
 		return;
 	}
 
@@ -165,7 +168,7 @@ void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {
 }
 
 void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan) {
-	FEB_CAN_Charge_Bool_Toggle = 0;
+	FEB_CAN_Charger_State_Bool = 0;
 
 	FEB_CAN_Charger_BMS_Message.max_voltage = 0;
 	FEB_CAN_Charger_BMS_Message.max_current = 0;
@@ -175,23 +178,35 @@ void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan) {
 }
 
 void FEB_CAN_Charger_Validate_Status(uint8_t status, CAN_HandleTypeDef* hcan) {
+	// Failure bits, 0 (no error), 1 (error)
 	uint8_t hardware_failure 			= (status >> 7) & 0b1;
 	uint8_t temperature_failure 		= (status >> 6) & 0b1;
 	uint8_t input_voltage_failure 		= (status >> 5) & 0b1;
 	uint8_t starting_state_failure 		= (status >> 4) & 0b1;
 	uint8_t communication_state_failure = (status >> 3) & 0b1;
 
-	if (hardware_failure == 1 				||
-		temperature_failure == 1 			||
-		input_voltage_failure == 1			||
-		starting_state_failure == 1 		||
-		communication_state_failure == 1) {
+	if (hardware_failure == 1 			||
+		temperature_failure == 1 		||
+		input_voltage_failure == 1		||
+		starting_state_failure == 1		) {
 		FEB_CAN_Charger_Stop_Charge(hcan);
 		FEB_BMS_Shutdown_Initiate();
 	}
 
+	// Trigger shutdown circuit for 2 consecutive communication state errors
+	if (FEB_CAN_Charger_Communication_State_Bool == 1) {
+		if (communication_state_failure == 1) {
+			FEB_CAN_Charger_Stop_Charge(hcan);
+			FEB_BMS_Shutdown_Initiate();
+		} else {
+			FEB_CAN_Charger_Communication_State_Bool = 0;
+		}
+	} else if (FEB_CAN_Charger_Communication_State_Bool == 0 && communication_state_failure == 1) {
+		FEB_CAN_Charger_Communication_State_Bool = 1;
+	}
+
 	// Transmit status
 	char UART_Str[128];
-	sprintf(UART_Str, "Status: %d", status);
+	sprintf(UART_Str, "Charger Status: %d", status);
 	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 }
