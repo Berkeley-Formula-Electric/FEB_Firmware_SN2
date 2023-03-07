@@ -47,12 +47,12 @@ void FEB_CAN_Charger_Reset_Rx_Flag(void);
 void FEB_CAN_Charger_CAN_Init(CAN_HandleTypeDef *hcan);
 void FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef *hcan, uint8_t FIFO_Assignment);
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);
-void FEB_CAN_Charger_Store_Msg(uint8_t RxData[]);
+void FEB_CAN_Charger_Store_Msg(uint8_t RxData[], CAN_HandleTypeDef* hcan);
 void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef *hcan);
-
 
 // Charger interface
 void FEB_CAN_Charger_Process(CAN_HandleTypeDef *hcan);
 void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef *hcan);
+void FEB_CAN_Charger_Validate_Status(uint8_t status, CAN_HandleTypeDef* hcan);
 
 #endif /* INC_FEB_CHARGE_H_ */

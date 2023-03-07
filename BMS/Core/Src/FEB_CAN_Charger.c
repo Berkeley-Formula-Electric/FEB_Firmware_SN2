@@ -1,6 +1,8 @@
-// ********************************** Includes **********************************
+// ********************************** Includes & External **********************************
 
 #include "FEB_CAN_Charger.h"
+
+extern UART_HandleTypeDef huart2;
 
 // ********************************** CAN Configuration **********************************
 
@@ -93,22 +95,25 @@ void FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignm
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* hcan) {
 	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &FEB_CAN_Charger_RxHeader, FEB_CAN_Charger_RxData);
-	FEB_CAN_Charger_Store_Msg(FEB_CAN_Charger_RxData);
+	FEB_CAN_Charger_Store_Msg(FEB_CAN_Charger_RxData, hcan);
 	FEB_CAN_Charger_Set_Rx_Flag();
 }
 
 
-void FEB_CAN_Charger_Store_Msg(uint8_t RxData[]) {
+void FEB_CAN_Charger_Store_Msg(uint8_t RxData[], CAN_HandleTypeDef* hcan) {
 	uint16_t operating_voltage = (RxData[0] << 8) + RxData[1];
 	uint16_t operating_current = (RxData[2] << 8) + RxData[3];
-	uint8_t control = RxData[4];
+	uint8_t status = RxData[4];
 
+	FEB_CAN_Charger_Validate_Status(status, hcan);
+
+	// Store data
 	memcpy(&(FEB_CAN_Charger_Charger_Message.operating_voltage), &operating_voltage, 2);
 	memcpy(&(FEB_CAN_Charger_Charger_Message.operating_current), &operating_current, 2);
-	memcpy(&(FEB_CAN_Charger_Charger_Message.status), &control, 1);
+	memcpy(&(FEB_CAN_Charger_Charger_Message.status), &status, 1);
 }
 
-void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef *hcan) {
+void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef* hcan) {
 	// Copy data to Tx buffer
 	FEB_CAN_Charger_TxData[0] = FEB_CAN_Charger_BMS_Message.max_voltage >> 8;
 	FEB_CAN_Charger_TxData[1] = FEB_CAN_Charger_BMS_Message.max_voltage & 0xFF;
@@ -169,3 +174,24 @@ void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan) {
 	FEB_CAN_Charger_Transmit(hcan);
 }
 
+void FEB_CAN_Charger_Validate_Status(uint8_t status, CAN_HandleTypeDef* hcan) {
+	uint8_t hardware_failure 			= (status >> 7) & 0b1;
+	uint8_t temperature_failure 		= (status >> 6) & 0b1;
+	uint8_t input_voltage_failure 		= (status >> 5) & 0b1;
+	uint8_t starting_state_failure 		= (status >> 4) & 0b1;
+	uint8_t communication_state_failure = (status >> 3) & 0b1;
+
+	if (hardware_failure == 1 				||
+		temperature_failure == 1 			||
+		input_voltage_failure == 1			||
+		starting_state_failure == 1 		||
+		communication_state_failure == 1) {
+		FEB_CAN_Charger_Stop_Charge(hcan);
+		FEB_BMS_Shutdown_Initiate();
+	}
+
+	// Transmit status
+	char UART_Str[128];
+	sprintf(UART_Str, "Status: %d", status);
+	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
+}
