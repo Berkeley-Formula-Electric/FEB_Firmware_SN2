@@ -110,6 +110,9 @@ def on_frame_configuration(canvas: tk.Canvas) -> None:
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 def serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
+	# read sample lines
+	serial_connection.readline()
+
 	while PROGRAM_RUN:
 		message = ""
 		try:
@@ -124,7 +127,7 @@ def serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
 				data.append(cell_data)
 				tk_table.update(bank_id, i, message_id, cell_data)
 
-			log_data(bank_id, message_id, data)
+			log_data(bank_id + 1, message_id, data)
 		except:
 			if message:
 				print("Error:", message)
