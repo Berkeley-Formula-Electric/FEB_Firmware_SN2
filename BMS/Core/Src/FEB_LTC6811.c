@@ -93,20 +93,20 @@ float FEB_LTC6811_Convert_Voltage(uint16_t value) {
 // ******************** Voltage Cell Balance ********************
 void FEB_LTC6811_Balance_Cells(void) {
     for (uint8_t s_pin_read; s_pin_read < CELLS_PER_DAUGHTER_BOARD; s_pin_read++) {
-    	wakeup_sleep(TOTAL_IC);
-    	LTC6811_set_discharge(s_pin_read,TOTAL_IC,BMS_IC);
-    	LTC6811_wrcfg(TOTAL_IC,BMS_IC);
-    	wakeup_idle(TOTAL_IC);
-    	LTC6811_rdcfg(TOTAL_IC,BMS_IC);
+    	wakeup_sleep(NUM_IC);
+    	LTC6811_set_discharge(s_pin_read,NUM_IC,accumulator.IC_config);
+    	LTC6811_wrcfg(NUM_IC,accumulator.IC_config);
+    	wakeup_idle(NUM_IC);
+    	LTC6811_rdcfg(NUM_IC,accumulator.IC_config);
     }
 }
 
 void FEB_LTC6811_Clear_Balance_Cells(void) {
-    wakeup_sleep(TOTAL_IC);
-    LTC6811_clear_discharge(TOTAL_IC,BMS_IC);
-    LTC6811_wrcfg(TOTAL_IC,BMS_IC);
-    wakeup_idle(TOTAL_IC);
-    LTC6811_rdcfg(TOTAL_IC,BMS_IC);
+    wakeup_sleep(NUM_IC);
+    LTC6811_clear_discharge(NUM_IC,accumulator.IC_config);
+    LTC6811_wrcfg(NUM_IC,accumulator.IC_config);
+    wakeup_idle(NUM_IC);
+    LTC6811_rdcfg(NUM_IC,accumulator.IC_config);
 }
 
 // ******************** Voltage Interface ********************

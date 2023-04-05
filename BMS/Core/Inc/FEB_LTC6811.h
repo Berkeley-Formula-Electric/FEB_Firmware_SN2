@@ -17,7 +17,7 @@
 // accumulator configuration
 #define CELLS_PER_BANK 				17
 #define NUM_BANKS 					1
-#define NUM_IC	 					NUM_BANKS * 2
+#define NUM_IC	 					NUM_BANKS * 2	// TOTAL_IC
 #define CELLS_PER_DAUGHTER_BOARD	12
 
 // temperature thresholds
@@ -53,7 +53,7 @@ typedef struct {
 
 typedef struct {
 	cell_asic IC_config[NUM_IC];
-	Bank banks[NUM_BANKS];
+	Bank banks[NUM_BANKS];			// BMS_IC
 } Accumulator;
 
 // ********************************** LTC6811 Configuration **********************************
@@ -104,6 +104,10 @@ void FEB_LTC6811_UART_Transmit_Voltage(void);
 float FEB_LTC6811_Total_Bank_Voltage(void);
 uint8_t FEB_LTC6811_Cells_Charged(void);
 void FEB_LTC6811_Clear_Voltage(void);
+
+// Voltage balance cells
+void FEB_LTC6811_Balance_Cells(void);
+void FEB_LTC6811_Clear_Balance_Cells(void);
 
 // Read temperature
 void FEB_LTC6811_Poll_Temperature(void);
