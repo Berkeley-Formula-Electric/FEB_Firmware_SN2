@@ -101,7 +101,7 @@ int main(void)
   FEB_LTC6811_Setup();
   FEB_BMS_Shutdown_Startup();
   FEB_CAN_IVT_Init(&hcan1);
-  FEB_CAN_Charger_Init(&hcan2);
+  // FEB_CAN_Charger_Init(&hcan2);
 
   /* USER CODE END 2 */
 
@@ -127,7 +127,7 @@ int main(void)
 	FEB_LTC6811_UART_Transmit_Temperature();
 
 	// *********************** IVT ***********************
-	FEB_CAN_IVT_Process();
+	// FEB_CAN_IVT_Process();
 
 	// *********************** Charger ***********************
 	FEB_CAN_Charger_Process(&hcan2);

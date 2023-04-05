@@ -21,14 +21,20 @@ static Accumulator accumulator;
 // ********************************** Functions **********************************
 
 void FEB_LTC6811_Setup(void) {
-	  LTC6811_init_cfg(NUM_IC, accumulator.IC_config);
+	// Set cell balancing
+	if (FEB_CAN_CHARGER_CHARGE_BOOL == 1) {
+		FEB_LTC6811_Balance_Cells();
+	}
 
-	  for (uint8_t current_ic = 0; current_ic < NUM_IC; current_ic++) {
-	    LTC6811_set_cfgr(current_ic, accumulator.IC_config, REFON, ADCOPT, GPIOBITS_A, DCCBITS_A, DCTOBITS, UV, OV);
-	  }
+	// Setup Board
+	LTC6811_init_cfg(NUM_IC, accumulator.IC_config);
 
-	  LTC6811_reset_crc_count(NUM_IC, accumulator.IC_config);
-	  LTC6811_init_reg_limits(NUM_IC, accumulator.IC_config);
+	for (uint8_t current_ic = 0; current_ic < NUM_IC; current_ic++) {
+		LTC6811_set_cfgr(current_ic, accumulator.IC_config, REFON, ADCOPT, GPIOBITS_A, DCCBITS_A, DCTOBITS, UV, OV);
+	}
+
+	LTC6811_reset_crc_count(NUM_IC, accumulator.IC_config);
+	LTC6811_init_reg_limits(NUM_IC, accumulator.IC_config);
 }
 
 // ******************** Read Voltage ********************
@@ -82,6 +88,25 @@ float FEB_LTC6811_Convert_Voltage(uint16_t value) {
 		return -42;
 	}
 	return value * 0.0001;
+}
+
+// ******************** Voltage Cell Balance ********************
+void FEB_LTC6811_Balance_Cells(void) {
+    for (uint8_t s_pin_read; s_pin_read < CELLS_PER_DAUGHTER_BOARD; s_pin_read++) {
+    	wakeup_sleep(TOTAL_IC);
+    	LTC6811_set_discharge(s_pin_read,TOTAL_IC,BMS_IC);
+    	LTC6811_wrcfg(TOTAL_IC,BMS_IC);
+    	wakeup_idle(TOTAL_IC);
+    	LTC6811_rdcfg(TOTAL_IC,BMS_IC);
+    }
+}
+
+void FEB_LTC6811_Clear_Balance_Cells(void) {
+    wakeup_sleep(TOTAL_IC);
+    LTC6811_clear_discharge(TOTAL_IC,BMS_IC);
+    LTC6811_wrcfg(TOTAL_IC,BMS_IC);
+    wakeup_idle(TOTAL_IC);
+    LTC6811_rdcfg(TOTAL_IC,BMS_IC);
 }
 
 // ******************** Voltage Interface ********************
@@ -234,6 +259,7 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value) {
 	if (value == 65535) {
 		return -42;
 	}
+	//return value * 0.0001;
 	return FEB_LTC6811_Temp_LUT_Get_Temperature(value * 0.0001);
 }
 

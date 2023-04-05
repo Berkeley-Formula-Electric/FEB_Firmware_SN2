@@ -20,7 +20,7 @@ static uint8_t FEB_CAN_Charger_Rx_Flag = 0;
 
 // ********************************** Charger Configuration **********************************
 
-static uint8_t FEB_CAN_Charger_State_Bool = 0;					// Charging or not-charging state
+static uint8_t FEB_CAN_Charger_State_Bool = 0;					// 0 (actively charging), 1 (finished charging)
 static uint8_t FEB_CAN_Charger_Communication_State_Bool = 0;	// Monitor 2 consecutive communication state errors, 0 (no error), 1 (error)
 
 // ********************************** Functions **********************************
@@ -164,16 +164,18 @@ void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {
 	} else {
 		// Continue charging
 		FEB_CAN_Charger_Transmit(hcan);
+		FEB_LTC6811_Balance_Cells();
 	}
 }
 
 void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan) {
+	FEB_LTC6811_Clear_Balance_Cells();
 	FEB_CAN_Charger_State_Bool = 0;
 
+	// Transmit Stop Message
 	FEB_CAN_Charger_BMS_Message.max_voltage = 0;
 	FEB_CAN_Charger_BMS_Message.max_current = 0;
 	FEB_CAN_Charger_BMS_Message.control = 1;
-
 	FEB_CAN_Charger_Transmit(hcan);
 }
 
@@ -189,14 +191,12 @@ void FEB_CAN_Charger_Validate_Status(uint8_t status, CAN_HandleTypeDef* hcan) {
 		temperature_failure == 1 		||
 		input_voltage_failure == 1		||
 		starting_state_failure == 1		) {
-		FEB_CAN_Charger_Stop_Charge(hcan);
 		FEB_BMS_Shutdown_Initiate();
 	}
 
 	// Trigger shutdown circuit for 2 consecutive communication state errors
 	if (FEB_CAN_Charger_Communication_State_Bool == 1) {
 		if (communication_state_failure == 1) {
-			FEB_CAN_Charger_Stop_Charge(hcan);
 			FEB_BMS_Shutdown_Initiate();
 		} else {
 			FEB_CAN_Charger_Communication_State_Bool = 0;

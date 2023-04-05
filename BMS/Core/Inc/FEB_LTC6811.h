@@ -15,9 +15,10 @@
 // ********************************** Accumulator Configuration **********************************
 
 // accumulator configuration
-#define CELLS_PER_BANK 	17
-#define NUM_BANKS 		1
-#define NUM_IC	 		NUM_BANKS * 2
+#define CELLS_PER_BANK 				17
+#define NUM_BANKS 					1
+#define NUM_IC	 					NUM_BANKS * 2
+#define CELLS_PER_DAUGHTER_BOARD	12
 
 // temperature thresholds
 #define MIN_OPERATION_TEMPERATURE	-20

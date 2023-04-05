@@ -14,7 +14,7 @@ BANKS = 1
 CELLS_PER_BANK = 17
 
 # serial settings
-PORT = '/dev/cu.usbmodem2103'
+PORT = '/dev/cu.usbmodem103'
 BAUD_RATE = 115200
 BYTESIZE = serial.SEVENBITS
 PARITY = serial.PARITY_EVEN
