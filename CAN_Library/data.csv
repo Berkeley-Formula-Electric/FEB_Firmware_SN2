@@ -9,3 +9,4 @@ CAN ID Length,Bits per Board,Boards,Rx,Message Types,Data Type,Rx Any (T/F),Comm
 ,,,,Brake Pedal,float,,
 ,,,,Torque ,float,,
 ,,RMS,SM,, ,,
+,,SW,SM,Driver Input,uint8_t,,
