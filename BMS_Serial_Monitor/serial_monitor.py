@@ -12,9 +12,13 @@ RESOLUTION = 3
 # battery configuration
 BANKS = 1
 CELLS_PER_BANK = 17
+MIN_TEMPERATURE = 0
+MAX_TEMPERATURE = 60
+MIN_VOLTAGE = 3.0
+MAX_VOLTAGE = 4.2
 
 # serial settings
-PORT = '/dev/cu.usbmodem103'
+PORT = '/dev/cu.usbmodem2102'
 BAUD_RATE = 115200
 BYTESIZE = serial.SEVENBITS
 PARITY = serial.PARITY_EVEN
@@ -42,13 +46,13 @@ class Table:
 		self.create_table(width, height)
 
 	def create_table(self, width, height) -> None:
-		cell_width = 15
+		cell_width = 8
 
 		# header
-		tk.Label(self.root, text = "Bank Number", borderwidth = 1, width = cell_width * 2, height = 5, bd = 1, relief = "solid").grid(row = 0, column = 0, rowspan = 2, sticky = "nesw")
+		tk.Label(self.root, text = "Cell Number", borderwidth = 1, width = cell_width * 2, height = 5, bd = 1, relief = "solid").grid(row = 0, column = 0, rowspan = 2, sticky = "nesw")
 
 		for col in range(1, width + 1):
-			tk.Label(self.root, text = f"Cell {col}", borderwidth = 1, height = 2, bd = 1, relief = "solid").grid(row = 0, column = col * 2 - 1, columnspan = 2, sticky = "nesw")
+			tk.Label(self.root, text = f"Bank {col}", borderwidth = 1, height = 2, bd = 1, relief = "solid").grid(row = 0, column = col * 2 - 1, columnspan = 2, sticky = "nesw")
 			tk.Label(self.root, text = "V", borderwidth = 1, width = cell_width, height = 1, bd = 1, relief = "solid").grid(row = 1, column = col * 2 - 1, sticky = "nesw")
 			tk.Label(self.root, text = "T", borderwidth = 1, width = cell_width, height = 1, bd = 1, relief = "solid").grid(row = 1, column = col * 2, sticky = "nesw")
 		
@@ -67,8 +71,19 @@ class Table:
 				self.cells[(row - 2, col - 1, "V")] = volt_label
 				self.cells[(row - 2, col - 1, "T")] = temp_label
 	
-	def update(self, bank: int, segment: int, type: str, value: int) -> None:
-		self.cells[(bank, segment, type.upper())].configure(text = str(value))
+	def update(self, bank: int, segment: int, type: str, value: float) -> None:
+		# update text
+		self.cells[(segment, bank, type.upper())].configure(text = str(value))
+		
+		# update cell color
+		cell_color = "systemWindowBackgroundColor"
+		if type.upper() == MESSAGES[TEMPERATURE_ID]:
+			if value < MIN_TEMPERATURE or value > MAX_TEMPERATURE:
+				cell_color = "#fc5c47"
+		elif type.upper() == MESSAGES[VOLTAGE_ID]:
+			if value < MIN_VOLTAGE or value > MAX_VOLTAGE:
+				cell_color = "#fc5c47"
+		self.cells[(segment, bank, type.upper())].configure(bg = cell_color)
 
 def serial_connection_init(port: str, baudrate: int, bytesize: int, parity: str, stopbits: int) -> serial.Serial:
 	print(f"Active ports: {[tuple(x)[0] for x in list(serial.tools.list_ports.comports())]}")
@@ -101,7 +116,7 @@ def setup_gui() -> tuple[tk.Tk, Table]:
 	canvas.create_window((4, 4), window = frame, anchor="nw")
 
 	frame.bind("<Configure>", lambda event, canvas=canvas: on_frame_configuration(canvas))
-	tk_table = Table(frame, CELLS_PER_BANK, BANKS)
+	tk_table = Table(frame, BANKS, CELLS_PER_BANK)
 
 	return root, tk_table
 
