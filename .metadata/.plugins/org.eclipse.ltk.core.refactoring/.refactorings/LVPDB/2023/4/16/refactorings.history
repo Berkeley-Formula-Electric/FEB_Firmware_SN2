@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;LVPDB/stm32f446re_can_bus.ioc&apos; to &apos;LVPDB.ioc&apos;" description="Rename resource &apos;stm32f446re_can_bus.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="stm32f446re_can_bus.ioc" name="LVPDB.ioc" stamp="1681680415405" updateReferences="true"/>
+</session>
