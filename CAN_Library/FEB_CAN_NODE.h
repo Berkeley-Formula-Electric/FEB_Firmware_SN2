@@ -125,6 +125,26 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 #define RMS_ID 0b0000100
 
 
+/*** SW IDs ***/
+#define SW_ID 0b0000101
+#define SW_DRIVER_INPUT 0b00001010000
+
+/*** SW MESSSAGE BUFFER ***/
+#define SW_DRIVER_INPUT_TYPE uint8_t
+
+typedef struct SW_MESSAGE_TYPE {
+    SW_DRIVER_INPUT_TYPE driver_input;
+} SW_MESSAGE_TYPE;
+SW_MESSAGE_TYPE SW_MESSAGE;
+
+void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
+    switch (RxId){
+        case SW_DRIVER_INPUT:
+            memcpy(&(SW_MESSAGE.driver_input), RxData, data_length);
+            break;
+    }
+}
+
 /*** RX Arrays ***/
 const AddressIdType BMS_RX_ID[] = {SM_ID};
 const FilterArrayLength BMS_RX_NUM = 1;
@@ -137,6 +157,9 @@ const FilterArrayLength APPS_RX_NUM = 1;
 
 const AddressIdType RMS_RX_ID[] = {SM_ID};
 const FilterArrayLength RMS_RX_NUM = 1;
+
+const AddressIdType SW_RX_ID[] = {SM_ID};
+const FilterArrayLength SW_RX_NUM = 1;
 
 const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
     switch(NODE_ID) {
@@ -151,6 +174,9 @@ const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
             break;
         case RMS_ID:
             return RMS_RX_ID;
+            break;
+        case SW_ID:
+            return SW_RX_ID;
             break;
     }
     return 0;
@@ -170,6 +196,9 @@ FilterArrayLength assign_filter_array_legnth(AddressIdType NODE_ID) {
         case RMS_ID:
             return RMS_RX_NUM;
             break;
+        case SW_ID:
+            return SW_RX_NUM;
+            break;
     }
     return 0;
 }
@@ -187,6 +216,9 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
             break;
         case APPS_ID:
             Store_APPS_Msg(pHeader->StdId, RxData, pHeader->DLC);
+            break;
+        case SW_ID:
+            Store_SW_Msg(pHeader->StdId, RxData, pHeader->DLC);
             break;
     }
 }
