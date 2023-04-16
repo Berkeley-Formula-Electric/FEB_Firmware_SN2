@@ -122,45 +122,49 @@ int main(void)
 //	FEB_CAN_Init(&hcan1, SM_ID);
 //	uint8_t emergency = 0;
 
+	// lv i2c address = 1000000
+	// write to lv hotswap that i want to alert undervoltage for bus
+	// set limit to 22V
+
+	// coolant pump i2c address = 1000100
+	// accumulator fans i2c address = 1000101
+	// extra i2c address = 1000001
+	// for each of these hotswaps, want to alert for overpower
+	// set limit to 14 * 24 for coolant pump, 8 * 24 for accumulator fans
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /* Node_1 */
-//	  temp = temp + 1;
-//	  FEB_CAN_Transmit(&hcan1, BMS_TEMPERATURE, &temp, sizeof(BMS_TEMPERATURE_TYPE));
-//	  volt = volt + 2;
-//	  FEB_CAN_Transmit(&hcan1, BMS_VOLTAGE, &volt, sizeof(BMS_VOLTAGE_TYPE));
-//	  buf_len = sprintf(buf, "BMS node. Receiving \nSM_CMD1: %d \nEmergency: %d \n\n", SM_MESSAGE.command_1, EMERGENCY_MESSAGE.sm_emergency);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+	  // Brake Light
+	  // receive brake positioning float point value from APPS
+	  // if value > 0 :
+	  	  // PA1 high
+	  // else:
+	  	  // PA1 low
 
-	  /* Node_2 */
-//	  cmd_1 += 1;
-//	  FEB_CAN_Transmit(&hcan1, SM_COMMAND_1, &cmd_1, sizeof(SM_COMMAND_1_TYPE));
-//	  buf_len = sprintf(buf, "SM node. Receiving \nBMS_temp:%d BMS_volt:%d \n\n", BMS_MESSAGE.temperature, BMS_MESSAGE.voltage);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+	  // for lv hotswap
+	  // if receives undervoltage alert, pull all ENs for other hotswaps low and turn off brake light
 
-	  /* Node_3 */
-//	  acc_1 = acc_1 + 0.1;
-//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR1_PEDAL, &acc_1, sizeof(APPS_ACCELERATOR1_PEDAL_TYPE));
-//	  acc_2 = acc_2 + 0.2;
-//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR2_PEDAL, &acc_2, sizeof(APPS_ACCELERATOR2_PEDAL_TYPE));
-//	  brake = acc_2 + 0.3;
-//	  FEB_CAN_Transmit(&hcan1, APPS_BRAKE_PEDAL, &brake, sizeof(APPS_BRAKE_PEDAL_TYPE));
-//	  torque = torque + 0.4;
-//	  FEB_CAN_Transmit(&hcan1, APPS_TORQUE, &torque, sizeof(APPS_TORQUE_TYPE));
-//	  buf_len = sprintf(buf, "APPS node. Receiving \nSM_CMD1: %d \n\n", SM_MESSAGE.command_1);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+	  // for coolant pump hotswap
+	  // pull PC11 to EN
+	  // if receives overpower alert, pull EN low
+	  // if shunt voltage, bus voltage, current over limits, pull EN low
+	  // if PG switches to low while EN is on, pull EN low
 
-	  /* Node_4 */
-//	  emergency += 1;
-//	  FEB_CAN_Transmit(&hcan1, EMERGENCY_SM_EMERGENCY, &emergency, sizeof(EMERGENCY_SM_EMERGENCY_TYPE));
+	  // for accumulator fans hotswap
+	  // pull PB5 to EN
+	  // if receives overpower alert, pull EN low
+	  // if shunt voltage, bus voltage, current over limits, pull EN low
+	  // if PG switches to low while EN is on, pull EN low
 
-	  /* Brake Light Switch */
-	  FEB_CAN_Receive
-
+	  // for extra hotswap
+	  // pull PC3 to EN
+	  // if receives overpower alert, pull EN low
+	  // if shunt voltage, bus voltage, current over limits, pull EN low
+	  // if PG switches to low while EN is on, pull EN low
 
     /* USER CODE END WHILE */
 
@@ -336,7 +340,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -344,18 +348,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pins : PA1 LD2_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
