@@ -1,0 +1,16 @@
+!SESSION 2023-04-16 13:12:58.129 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -keyring /Users/sshashi/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/sshashi/.eclipse_keyring
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-04-16 13:13:32.871
+!MESSAGE Log4j initialized with config file /Users/sshashi/Desktop/FEB/FEB_Firmware_2023/.metadata/.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-04-16 13:13:37.207
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2023-04-16 13:14:13.570
+!MESSAGE Indexed 'LVPDB' (25 sources, 121 headers) in 10 sec: 11,516 declarations; 58,685 references; 2 unresolved inclusions; 42 syntax errors; 160 unresolved names (0.23%)

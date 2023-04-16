@@ -137,10 +137,10 @@ int main(void)
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
 
 	  /* Node_2 */
-	  cmd_1 += 1;
-	  FEB_CAN_Transmit(&hcan1, SM_COMMAND_1, &cmd_1, sizeof(SM_COMMAND_1_TYPE));
-	  buf_len = sprintf(buf, "SM node. Receiving \nBMS_temp:%d BMS_volt:%d \n\n", BMS_MESSAGE.temperature, BMS_MESSAGE.voltage);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+//	  cmd_1 += 1;
+//	  FEB_CAN_Transmit(&hcan1, SM_COMMAND_1, &cmd_1, sizeof(SM_COMMAND_1_TYPE));
+//	  buf_len = sprintf(buf, "SM node. Receiving \nBMS_temp:%d BMS_volt:%d \n\n", BMS_MESSAGE.temperature, BMS_MESSAGE.voltage);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
 
 	  /* Node_3 */
 //	  acc_1 = acc_1 + 0.1;
@@ -157,6 +157,9 @@ int main(void)
 	  /* Node_4 */
 //	  emergency += 1;
 //	  FEB_CAN_Transmit(&hcan1, EMERGENCY_SM_EMERGENCY, &emergency, sizeof(EMERGENCY_SM_EMERGENCY_TYPE));
+
+	  /* Brake Light Switch */
+	  FEB_CAN_Receive
 
 
     /* USER CODE END WHILE */
