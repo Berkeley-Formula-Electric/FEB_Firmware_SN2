@@ -48,7 +48,12 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+static const uint8_t LV_ADDR = 0x40 << 1;
+static const uint8_t CP_ADDR = 0x44 << 1;
+static const uint8_t AF_ADDR = 0x45 << 1;
+static const uint8_t EX_ADDR = 0x41 << 1;
+static const uint8_t ENABLE_REG = 0x06 << 1;
+static const uint8_t LIMIT_REG = 0x07 << 1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,7 +78,7 @@ static void MX_I2C1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	HAL_StatusTypeDef ret;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -98,9 +103,9 @@ int main(void)
   MX_CAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t sleep_time = 10;
-  char buf[128];
-  uint8_t buf_len;
+//  uint8_t sleep_time = 10;
+//  char buf[128];
+//  uint8_t buf_len;
 
 	/* Node_1 */
 //	FEB_CAN_Init(&hcan1, BMS_ID);
@@ -109,7 +114,7 @@ int main(void)
 
 	/* Node_2 */
 	FEB_CAN_Init(&hcan1, SM_ID);
-	uint8_t cmd_1 = 0;
+//	uint8_t cmd_1 = 0;
 
 	/* Node_3 */
 //	FEB_CAN_Init(&hcan1, APPS_ID);
@@ -122,13 +127,10 @@ int main(void)
 //	FEB_CAN_Init(&hcan1, SM_ID);
 //	uint8_t emergency = 0;
 
-	// lv i2c address = 1000000
 	// write to lv hotswap that i want to alert undervoltage for bus
+
 	// set limit to 22V
 
-	// coolant pump i2c address = 1000100
-	// accumulator fans i2c address = 1000101
-	// extra i2c address = 1000001
 	// for each of these hotswaps, want to alert for overpower
 	// set limit to 14 * 24 for coolant pump, 8 * 24 for accumulator fans
 
@@ -340,7 +342,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3|GPIO_PIN_11, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|LD2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -348,12 +356,44 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PC1 PC2 PC10 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC3 PC11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PA1 LD2_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_1|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB4 PB6 PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
