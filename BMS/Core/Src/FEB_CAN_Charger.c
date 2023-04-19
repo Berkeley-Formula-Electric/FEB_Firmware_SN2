@@ -18,6 +18,9 @@ static uint32_t FEB_CAN_Charger_TxMailbox;
 
 static uint8_t FEB_CAN_Charger_Rx_Flag = 0;
 
+// ********************************** CAN TEST **********************************
+uint8_t charger_msg = 0;
+
 // ********************************** Charger Configuration **********************************
 
 static uint8_t FEB_CAN_Charger_State_Bool = 0;					// 0 (actively charging), 1 (finished charging)
@@ -27,6 +30,7 @@ static uint8_t FEB_CAN_Charger_Communication_State_Bool = 0;	// Monitor 2 consec
 
 void FEB_CAN_Charger_Set_Rx_Flag() {
 	FEB_CAN_Charger_Rx_Flag = 1;
+	charger_msg = 1;
 }
 
 void FEB_CAN_Charger_Reset_Rx_Flag() {
@@ -36,10 +40,15 @@ void FEB_CAN_Charger_Reset_Rx_Flag() {
 // ******************** Startup ********************
 
 void FEB_CAN_Charger_Init(CAN_HandleTypeDef* hcan) {
+	if (FEB_CAN_CHARGER_CHARGE_BOOL == 0) {
+		FEB_LTC6811_Clear_Balance_Cells();
+		return;
+	}
+
 	FEB_CAN_Charger_CAN_Init(hcan);
 
 	// Initialize charger settings
-	FEB_CAN_Charger_BMS_Message.max_voltage = (uint16_t) (MAX_VOLTAGE * 10);
+	FEB_CAN_Charger_BMS_Message.max_voltage = (uint16_t) (MAX_VOLTAGE * CELLS_PER_BANK * NUM_BANKS * 10);
 	FEB_CAN_Charger_BMS_Message.max_current = (uint16_t) (MAX_CURRENT * 10);
 	FEB_CAN_Charger_BMS_Message.control = 0;
 
@@ -55,8 +64,8 @@ void FEB_CAN_Charger_Init(CAN_HandleTypeDef* hcan) {
 
 void FEB_CAN_Charger_CAN_Init(CAN_HandleTypeDef* hcan) {
 	// Select Rx FIFO
-	uint8_t FIFO_Assignment = CAN_RX_FIFO1;
-	uint32_t FIFO_Interrupt = CAN_IT_RX_FIFO1_MSG_PENDING;
+	uint8_t FIFO_Assignment = CAN_RX_FIFO0;
+	uint32_t FIFO_Interrupt = CAN_IT_RX_FIFO0_MSG_PENDING;
 
 	// Initialize transmission header
 	FEB_CAN_Charger_TxHeader.DLC = 8;
@@ -83,10 +92,10 @@ void FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignm
 	my_can_filter_config.FilterActivation = CAN_FILTER_ENABLE;
 	my_can_filter_config.FilterBank = 0;
 	my_can_filter_config.FilterFIFOAssignment = FIFO_Assignment;
-	my_can_filter_config.FilterIdHigh = FEB_CAN_CHARGER_CHARGER_ID >> (FEB_CAN_CHARGER_BITS_PER_ID - 16);	// set first 16 bits
-	my_can_filter_config.FilterIdLow = FEB_CAN_CHARGER_CHARGER_ID & 0x1FFF;									// set last 13 bits
-	my_can_filter_config.FilterMaskIdHigh = 0xFFFF;															// mask first 16 bits
-	my_can_filter_config.FilterMaskIdLow = 0x1FFF;															// mask last 13 bits
+	my_can_filter_config.FilterIdHigh = FEB_CAN_CHARGER_CHARGER_ID >> (FEB_CAN_CHARGER_BITS_PER_ID - 16); 			// First 16 bits
+	my_can_filter_config.FilterIdLow = (FEB_CAN_CHARGER_CHARGER_ID & 0x1FFF) << (32 - FEB_CAN_CHARGER_BITS_PER_ID);	// Last 13 bits
+	my_can_filter_config.FilterMaskIdHigh = 0xFFFF; // mask first 16 bits
+	my_can_filter_config.FilterMaskIdLow = 0xFFF8;	// mask last 13 bits
 	my_can_filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
 	my_can_filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
 	my_can_filter_config.SlaveStartFilterBank = 27;
@@ -97,9 +106,13 @@ void FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignm
 }
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* hcan) {
-	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &FEB_CAN_Charger_RxHeader, FEB_CAN_Charger_RxData);
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &FEB_CAN_Charger_RxHeader, FEB_CAN_Charger_RxData);
 	FEB_CAN_Charger_Store_Msg(FEB_CAN_Charger_RxData, hcan);
 	FEB_CAN_Charger_Set_Rx_Flag();
+
+	char str[128];
+	sprintf(str, "Message Rx! %li, %li, %li\n", FEB_CAN_Charger_RxHeader.ExtId, FEB_CAN_Charger_RxHeader.StdId, FEB_CAN_Charger_RxHeader.DLC);
+	HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), 100);
 }
 
 
@@ -204,9 +217,4 @@ void FEB_CAN_Charger_Validate_Status(uint8_t status, CAN_HandleTypeDef* hcan) {
 	} else if (FEB_CAN_Charger_Communication_State_Bool == 0 && communication_state_failure == 1) {
 		FEB_CAN_Charger_Communication_State_Bool = 1;
 	}
-
-	// Transmit status
-	char UART_Str[128];
-	sprintf(UART_Str, "Charger Status: %d", status);
-	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 }

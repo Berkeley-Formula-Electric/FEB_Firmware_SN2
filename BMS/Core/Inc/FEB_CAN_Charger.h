@@ -13,7 +13,7 @@
 
 // ********************************** Charger Configuration **********************************
 
-#define FEB_CAN_CHARGER_CHARGE_BOOL 0
+#define FEB_CAN_CHARGER_CHARGE_BOOL 0	// 0 (No charge), 1 (Charge)
 
 // ********************************** CAN Configuration **********************************
 
@@ -46,7 +46,7 @@ void FEB_CAN_Charger_Set_Rx_Flag(void);
 void FEB_CAN_Charger_Reset_Rx_Flag(void);
 void FEB_CAN_Charger_CAN_Init(CAN_HandleTypeDef *hcan);
 void FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef *hcan, uint8_t FIFO_Assignment);
-void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 void FEB_CAN_Charger_Store_Msg(uint8_t RxData[], CAN_HandleTypeDef* hcan);
 void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef *hcan);
 

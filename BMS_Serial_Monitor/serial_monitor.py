@@ -15,10 +15,10 @@ CELLS_PER_BANK = 17
 MIN_TEMPERATURE = 0
 MAX_TEMPERATURE = 60
 MIN_VOLTAGE = 3.0
-MAX_VOLTAGE = 4.2
+MAX_VOLTAGE = 3.8
 
 # serial settings
-PORT = '/dev/cu.usbmodem2102'
+PORT = '/dev/cu.usbmodem2103'
 BAUD_RATE = 115200
 BYTESIZE = serial.SEVENBITS
 PARITY = serial.PARITY_EVEN
@@ -26,6 +26,7 @@ STOPBITS = serial.STOPBITS_ONE
 
 # data format
 DATA_LOG_FILE_PATH = "data.csv"
+LOG_DATA_TO_CSV = False
 BITS_PER_MESSAGE 	= 1
 BITS_PER_BANK		= 3
 
@@ -142,7 +143,8 @@ def serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
 				data.append(cell_data)
 				tk_table.update(bank_id, i, message_id, cell_data)
 
-			log_data(bank_id + 1, message_id, data)
+			if LOG_DATA_TO_CSV:
+				log_data(bank_id + 1, message_id, data)
 		except:
 			if message:
 				print("Error:", message)

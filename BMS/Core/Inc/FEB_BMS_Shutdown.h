@@ -4,8 +4,10 @@
 // ********************************** Includes **********************************
 
 #include "stm32f4xx_hal.h"
+#include <string.h>
 
 #include "FEB_CAN_Charger.h"
+#include "FEB_BMS_Precharge.h"
 
 // ********************************** Functions **********************************
 

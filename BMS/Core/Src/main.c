@@ -41,7 +41,9 @@
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan1;
 CAN_HandleTypeDef hcan2;
+
 SPI_HandleTypeDef hspi1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -100,8 +102,8 @@ int main(void)
 
   FEB_LTC6811_Setup();
   FEB_BMS_Shutdown_Startup();
-  FEB_CAN_IVT_Init(&hcan1);
-  // FEB_CAN_Charger_Init(&hcan2);
+  FEB_BMS_Precharge_Open();
+  //FEB_CAN_Init();
 
   /* USER CODE END 2 */
 
@@ -127,15 +129,20 @@ int main(void)
 	FEB_LTC6811_UART_Transmit_Temperature();
 
 	// *********************** IVT ***********************
-	// FEB_CAN_IVT_Process();
+	//FEB_CAN_IVT_Process();
 
 	// *********************** Charger ***********************
-	FEB_CAN_Charger_Process(&hcan2);
+	//FEB_CAN_Charger_Process(&hcan1);
+
+	// TODO: Remove after charging is complete, TEST
+	//FEB_LTC6811_Balance_Cells();
+
+	FEB_BMS_Precharge_Close();
 
 	if (FEB_CAN_CHARGER_CHARGE_BOOL == 1) {
 		HAL_Delay(1000);	// 1Hz
 	} else {
-		HAL_Delay(100);		// 10Hz
+		HAL_Delay(200);		// 10Hz
 	}
 
   }
@@ -242,7 +249,7 @@ static void MX_CAN2_Init(void)
 
   /* USER CODE END CAN2_Init 1 */
   hcan2.Instance = CAN2;
-  hcan2.Init.Prescaler = 32;
+  hcan2.Init.Prescaler = 16;
   hcan2.Init.Mode = CAN_MODE_NORMAL;
   hcan2.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan2.Init.TimeSeg1 = CAN_BS1_2TQ;
@@ -349,13 +356,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1|GPIO_PIN_2, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pins : PC1 PC2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

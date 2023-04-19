@@ -1,4 +1,4 @@
-Core/Src/FEB_BMS_Shutdown.o: ../Core/Src/FEB_BMS_Shutdown.c \
+Core/Src/FEB_BMS_Precharge.o: ../Core/Src/FEB_BMS_Precharge.c \
  ../Core/Inc/FEB_BMS_Shutdown.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
