@@ -1,0 +1,13 @@
+!SESSION 2023-04-16 13:10:53.784 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -keyring /Users/sshashi/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/sshashi/.eclipse_keyring
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-04-16 13:11:13.399
+!MESSAGE Log4j initialized with config file /Users/sshashi/Desktop/FEB/FEB_Firmware_2023/LVPDB/.metadata/.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-04-16 13:11:17.967
+!MESSAGE Started RMI Server, listening on port 41337
