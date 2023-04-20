@@ -54,6 +54,10 @@ static const uint8_t AF_ADDR = 0x45 << 1;
 static const uint8_t EX_ADDR = 0x41 << 1;
 static const uint8_t ENABLE_REG = 0x06 << 1;
 static const uint8_t LIMIT_REG = 0x07 << 1;
+
+uint8_t UNDERV[2] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t OVERP[2] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t TWENTYTWO[2] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,7 +82,7 @@ static void MX_I2C1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_StatusTypeDef ret;
+  HAL_StatusTypeDef ret;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -128,11 +132,23 @@ int main(void)
 //	uint8_t emergency = 0;
 
 	// write to lv hotswap that i want to alert undervoltage for bus
-
+	HAL_I2C_Mem_Write(&hi2c1, LV_ADDR, ENABLE_REG, sizeof(ENABLE_REG), UNDERV, sizeof(UNDERV), HAL_MAX_DELAY);
 	// set limit to 22V
+	HAL_I2C_Mem_Write(&hi2c1, LV_ADDR, LIMIT_REG, sizeof(LIMIT_REG), TWENTY_TWO, sizeof(TWENTY_TWO), HAL_MAX_DELAY);
 
 	// for each of these hotswaps, want to alert for overpower
-	// set limit to 14 * 24 for coolant pump, 8 * 24 for accumulator fans
+	
+	// set CP to alert for overpower
+	HAL_I2C_Mem_Write(&hi2c1, CP_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
+	// set limit to 14 * 24
+	
+	// set AF to alert for overpower
+	HAL_I2C_Mem_Write(&hi2c1, AF_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
+	// set limit to 8 * 24
+	
+	// set EX to alert for overpower
+	HAL_I2C_Mem_Write(&hi2c1, EX_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
+	// set limit to ...? 
 
   /* USER CODE END 2 */
 
@@ -148,23 +164,23 @@ int main(void)
 	  	  // PA1 low
 
 	  // for lv hotswap
-	  // if receives undervoltage alert, pull all ENs for other hotswaps low and turn off brake light
+	  // if receives undervoltage alert (PB7 pulled low), pull all ENs for other hotswaps low and turn off brake light
 
 	  // for coolant pump hotswap
 	  // pull PC11 to EN
-	  // if receives overpower alert, pull EN low
+	  // if receives overpower alert (PA15 pulled low), pull EN low
 	  // if shunt voltage, bus voltage, current over limits, pull EN low
 	  // if PG switches to low while EN is on, pull EN low
 
 	  // for accumulator fans hotswap
 	  // pull PB5 to EN
-	  // if receives overpower alert, pull EN low
+	  // if receives overpower alert (PC12 pulled low), pull EN low
 	  // if shunt voltage, bus voltage, current over limits, pull EN low
 	  // if PG switches to low while EN is on, pull EN low
 
 	  // for extra hotswap
 	  // pull PC3 to EN
-	  // if receives overpower alert, pull EN low
+	  // if receives overpower alert (PC1 pulled low), pull EN low
 	  // if shunt voltage, bus voltage, current over limits, pull EN low
 	  // if PG switches to low while EN is on, pull EN low
 
