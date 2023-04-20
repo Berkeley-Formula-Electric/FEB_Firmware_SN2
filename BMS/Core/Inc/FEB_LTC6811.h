@@ -29,10 +29,11 @@
 // voltage thresholds
 #define MIN_VOLTAGE	3.0
 #define MAX_VOLTAGE	4.0
-#define CHARGED_PERCENTAGE 0.95
+#define CHARGED_PERCENTAGE 0.98
 
 // current thresholds
-#define MAX_CURRENT 0.1
+#define MAX_CHARGING_CURRENT 0.1
+#define MAX_OPERATING_CURRENT 55
 
 // ********************************** Connectivity Configuration **********************************
 

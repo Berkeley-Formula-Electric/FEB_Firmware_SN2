@@ -103,7 +103,7 @@ int main(void)
   FEB_LTC6811_Setup();
   FEB_BMS_Shutdown_Startup();
   FEB_BMS_Precharge_Open();
-  //FEB_CAN_Init();
+  FEB_CAN_Init();
 
   /* USER CODE END 2 */
 
@@ -129,17 +129,14 @@ int main(void)
 	FEB_LTC6811_UART_Transmit_Temperature();
 
 	// *********************** IVT ***********************
-	//FEB_CAN_IVT_Process();
+	FEB_CAN_IVT_Process();
 
 	// *********************** Charger ***********************
-	//FEB_CAN_Charger_Process(&hcan1);
-
-	// TODO: Remove after charging is complete, TEST
-	//FEB_LTC6811_Balance_Cells();
+	FEB_CAN_Charger_Process(&hcan1);
 
 	FEB_BMS_Precharge_Close();
 
-	if (FEB_CAN_CHARGER_CHARGE_BOOL == 1) {
+	if (FEB_CAN_CHARGER_START_CHARGE == 1) {
 		HAL_Delay(1000);	// 1Hz
 	} else {
 		HAL_Delay(200);		// 10Hz

@@ -25,18 +25,11 @@ void FEB_LTC6811_Setup(void) {
 		DCCBITS_A[i] = 0;
 	}
 
-	// Set cell balancing
-	if (FEB_CAN_CHARGER_CHARGE_BOOL == 1) {
-		FEB_LTC6811_Balance_Cells();
-	}
-
 	// Setup Board
 	LTC6811_init_cfg(NUM_IC, accumulator.IC_config);
-
 	for (uint8_t current_ic = 0; current_ic < NUM_IC; current_ic++) {
 		LTC6811_set_cfgr(current_ic, accumulator.IC_config, REFON, ADCOPT, GPIOBITS_A, DCCBITS_A, DCTOBITS, UV, OV);
 	}
-
 	LTC6811_reset_crc_count(NUM_IC, accumulator.IC_config);
 	LTC6811_init_reg_limits(NUM_IC, accumulator.IC_config);
 }
@@ -164,7 +157,6 @@ float FEB_LTC6811_Total_Bank_Voltage(void) {
 
 uint8_t FEB_LTC6811_Cells_Charged(void) {
 	const float cell_voltage_threshold = MAX_VOLTAGE * CHARGED_PERCENTAGE;
-
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
 			float cell_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;

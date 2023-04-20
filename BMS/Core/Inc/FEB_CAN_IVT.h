@@ -9,6 +9,7 @@
 
 #include "FEB_LTC6811.h"
 #include "FEB_BMS_Precharge.h"
+#include "FEB_BMS_Shutdown.h"
 
 // ********************************** CAN Configuration **********************************
 
@@ -17,12 +18,6 @@
 #define FEB_CAN_IVT_VOLTAGE1_ID 0x522
 #define FEB_CAN_IVT_VOLTAGE2_ID 0x523
 #define FEB_CAN_IVT_VOLTAGE3_ID 0x524
-
-// Message Types
-#define FEB_CAN_IVT_CURRENT_TYPE long
-#define FEB_CAN_IVT_VOLTAGE1_TYPE long
-#define FEB_CAN_IVT_VOLTAGE2_TYPE long
-#define FEB_CAN_IVT_VOLTAGE3_TYPE long
 
 // ********************************** Type Definitions **********************************
 
@@ -34,10 +29,10 @@ typedef struct FEB_CAN_IVT_FLAG_TYPE {
 } FEB_CAN_IVT_FLAG_TYPE;
 
 typedef struct FEB_CAN_IVT_MESSAGE_TYPE {
-	FEB_CAN_IVT_CURRENT_TYPE IVT_Current;	// mA
-	FEB_CAN_IVT_VOLTAGE1_TYPE IVT_Voltage1;	// mV
-	FEB_CAN_IVT_VOLTAGE2_TYPE IVT_Voltage2;	// mV
-	FEB_CAN_IVT_VOLTAGE3_TYPE IVT_Voltage3; // mV
+	long IVT_Current;	// mA
+	long IVT_Voltage1;	// mV
+	long IVT_Voltage2;	// mV
+	long IVT_Voltage3; 	// mV
 } FEB_CAN_IVT_MESSAGE_TYPE;
 
 // ********************************** Functions **********************************

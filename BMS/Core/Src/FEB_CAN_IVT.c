@@ -13,14 +13,11 @@ static uint16_t FEB_CAN_IVT_Filter_ID_Arr[] = {
 		FEB_CAN_IVT_VOLTAGE3_ID
 };
 
-// TODO: Remove UART
-extern UART_HandleTypeDef huart2;
-
-
 // ********************************** Functions **********************************
 
 
 // ******************** CAN ********************
+
 uint8_t FEB_CAN_IVT_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignment, uint8_t bank) {
 	for (int i = 0; i < 4; i++, bank++) {
 		CAN_FilterTypeDef filter_config;
@@ -44,21 +41,25 @@ uint8_t FEB_CAN_IVT_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignme
 }
 
 void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
+	uint32_t value;
     switch(pHeader->StdId) {
     	case FEB_CAN_IVT_CURRENT_ID:
-    		memcpy(&FEB_CAN_IVT_MESSAGE.IVT_Current, &RxData[2], 4);
-    		FEB_CAN_IVT_FLAG.IVT_Current = 1;
+    		value = (RxData[2] << 24) + (RxData[3] << 16) + (RxData[4] << 8) + RxData[5];
+    	    FEB_CAN_IVT_MESSAGE.IVT_Current = unsignedToSignedLong(value);
+    	    FEB_CAN_IVT_FLAG.IVT_Current = 1;
     		break;
     	case FEB_CAN_IVT_VOLTAGE1_ID:
-    		memcpy(&FEB_CAN_IVT_MESSAGE.IVT_Voltage1, &RxData[2], 4);
-    		FEB_CAN_IVT_FLAG.IVT_Voltage1 = 1;
+    		value = (RxData[2] << 24) + (RxData[3] << 16) + (RxData[4] << 8) + RxData[5];
+    	    FEB_CAN_IVT_MESSAGE.IVT_Voltage1 = unsignedToSignedLong(value);
+    	    FEB_CAN_IVT_FLAG.IVT_Voltage1 = 1;
     		break;
     	case FEB_CAN_IVT_VOLTAGE2_ID:
-    		memcpy(&FEB_CAN_IVT_MESSAGE.IVT_Voltage2, &RxData[2], 4);
-    		FEB_CAN_IVT_FLAG.IVT_Voltage2 = 1;
+    		value = (RxData[2] << 24) + (RxData[3] << 16) + (RxData[4] << 8) + RxData[5];
+    	    FEB_CAN_IVT_MESSAGE.IVT_Voltage2 = unsignedToSignedLong(value);
+    	    FEB_CAN_IVT_FLAG.IVT_Voltage2 = 1;
     		break;
-    	case FEB_CAN_IVT_VOLTAGE3_ID:;
-    		uint32_t value = (RxData[2] << 24) + (RxData[3] << 16) + (RxData[4] << 8) + RxData[5];
+    	case FEB_CAN_IVT_VOLTAGE3_ID:
+    		value = (RxData[2] << 24) + (RxData[3] << 16) + (RxData[4] << 8) + RxData[5];
     		FEB_CAN_IVT_MESSAGE.IVT_Voltage3 = unsignedToSignedLong(value);
     		FEB_CAN_IVT_FLAG.IVT_Voltage3 = 1;
     		break;
@@ -70,7 +71,10 @@ void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
 void FEB_CAN_IVT_Process(void) {
 	if (FEB_CAN_IVT_FLAG.IVT_Current == 1) {
 		FEB_CAN_IVT_FLAG.IVT_Current = 0;
-		// Do Something
+		float Ivt_Current_A = (float) FEB_CAN_IVT_MESSAGE.IVT_Voltage3 * 0.001;
+		if (Ivt_Current_A > MAX_OPERATING_CURRENT) {
+			FEB_BMS_Shutdown_Initiate();
+		}
 	}
 	if (FEB_CAN_IVT_FLAG.IVT_Voltage1 == 1) {
 		FEB_CAN_IVT_FLAG.IVT_Voltage1 = 0;
@@ -94,7 +98,5 @@ void FEB_CAN_IVT_Process(void) {
 }
 
 long unsignedToSignedLong(uint32_t value) {
-	long rValue = value & 0x7FFFFFFF;
-	rValue -= value & (0b1 << 31);
-	return rValue;
+	return (value & 0x7FFFFFFF) - (value & (0b1 << 31));
 }

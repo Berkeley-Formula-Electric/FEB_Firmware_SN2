@@ -4,16 +4,16 @@
 // ********************************** Includes **********************************
 
 #include <string.h>
-#include "main.h"
 #include "stm32f4xx_hal.h"
 
 #include "FEB_LTC6811.h"
 #include "FEB_BMS_Shutdown.h"
+#include "FEB_CAN.h"
 
 
 // ********************************** Charger Configuration **********************************
 
-#define FEB_CAN_CHARGER_CHARGE_BOOL 0	// 0 (No charge), 1 (Charge)
+#define FEB_CAN_CHARGER_START_CHARGE 0 			// 0 (No charge), 1 (Charge)
 
 // ********************************** CAN Configuration **********************************
 
@@ -39,20 +39,16 @@ typedef struct FEB_CAN_CHAERGER_CHARGER_MESSAGE_TYPE {
 // ********************************** Functions **********************************
 
 // Initialize
-void FEB_CAN_Charger_Init(CAN_HandleTypeDef *hcan);
+void FEB_CAN_Charger_Init(CAN_HandleTypeDef* hcan);
 
 // CAN
-void FEB_CAN_Charger_Set_Rx_Flag(void);
-void FEB_CAN_Charger_Reset_Rx_Flag(void);
-void FEB_CAN_Charger_CAN_Init(CAN_HandleTypeDef *hcan);
-void FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef *hcan, uint8_t FIFO_Assignment);
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
-void FEB_CAN_Charger_Store_Msg(uint8_t RxData[], CAN_HandleTypeDef* hcan);
-void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef *hcan);
+uint8_t FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignment, uint8_t bank);
+void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef* hcan);
+void FEB_CAN_Charger_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]);
 
-// Charger interface
-void FEB_CAN_Charger_Process(CAN_HandleTypeDef *hcan);
-void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef *hcan);
-void FEB_CAN_Charger_Validate_Status(uint8_t status, CAN_HandleTypeDef* hcan);
+// Process Data
+void FEB_CAN_Charger_Validate_Status(uint8_t status);
+void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan);
+void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan);
 
 #endif /* INC_FEB_CHARGE_H_ */
