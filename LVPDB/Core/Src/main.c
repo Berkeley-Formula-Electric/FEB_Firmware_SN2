@@ -148,7 +148,15 @@ int main(void)
 	
 	// set EX to alert for overpower
 	HAL_I2C_Mem_Write(&hi2c1, EX_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
-	// set limit to ...? 
+	// set limit to ...?
+
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to EN coolant pump
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to EN accumulator fans
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to EN extra
+
+	// set 3 different buffers to hold messages from each of the hotswaps
+	// recieve from each of the hotswaps and put data in buffer
+
 
   /* USER CODE END 2 */
 
@@ -157,33 +165,55 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  // receive brake positioning float point value from APPS
-	  // if value > 0 :
-	  	  // PA1 high
-	  // else:
-	  	  // PA1 low
+	  if (APPS_MESSAGE_TYPE.brake_pedal > 0) {// if value > 0 :
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
+	  } else {
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
+	  }
 
 	  // for lv hotswap
-	  // if receives undervoltage alert (PB7 pulled low), pull all ENs for other hotswaps low and turn off brake light
+	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
+	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7) == GPIO_PIN_RESET) || (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)) {
+		  // pull all ENs low
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+		  //turn off brake light
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+	  }
 
 	  // for coolant pump hotswap
-	  // pull PC11 to EN
 	  // if receives overpower alert (PA15 pulled low), pull EN low
+	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) == GPIO_PIN_RESET) {
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+	  }
 	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG switches to low while EN is on, pull EN low
+	  // if PG (PC10) switches to low while EN is on, pull EN low
+	  if ((HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11) == GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10) == GPIO_PIN_RESET)) {
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+	  }
 
 	  // for accumulator fans hotswap
-	  // pull PB5 to EN
 	  // if receives overpower alert (PC12 pulled low), pull EN low
+	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_12) == GPIO_PIN_RESET) {
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+	  }
 	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG switches to low while EN is on, pull EN low
+	  // if PG (PB4) switches to low while EN is on, pull EN low
+	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET)) {
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+	  }
 
 	  // for extra hotswap
-	  // pull PC3 to EN
 	  // if receives overpower alert (PC1 pulled low), pull EN low
+	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_RESET) {
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+	  }
 	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG switches to low while EN is on, pull EN low
-
+	  // if PG (PC2) switches to low while EN is on, pull EN low
+	  if ((HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_3) == GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET)) {
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
