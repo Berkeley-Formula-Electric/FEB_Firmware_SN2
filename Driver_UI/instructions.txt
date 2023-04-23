@@ -1,0 +1,6 @@
+[NodeJS] Initialise
+npm init
+npm install --save
+
+[NodeJS] Run
+npm run start/dev
