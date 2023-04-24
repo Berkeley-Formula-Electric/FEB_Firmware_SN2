@@ -25,19 +25,19 @@ app.get("/", (req, res) => {
 
 // TEST DATA
 const data = {
-    temperature: 1000,
-    voltage: 3.5,
-    speed: 100
+    temperature: 26,
+    voltage: 632,
+    speed: 54
 }
 
 io.on('connection', (socket) => {
-    socket.emit("data", data)
+    // socket.emit("data", data)
     setInterval(() => {
-        data.temperature += 1
-        data.voltage += 1
-        data.speed += 1
+        data.temperature += (Math.random() - 0.5) * 0.1
+        data.voltage += (Math.random() - 0.5) * 0.1
+        data.speed += (Math.random() - 0.5) * 0.1
         socket.emit("data", data)
-    }, 10000)
+    }, 100)
 });
 
 server.listen(PORT, () => {
