@@ -17,21 +17,14 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#define TIME_DELAY 100
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FEB_CAN.h"
+#include "stdio.h"
+#include <stdlib.h>
 
-struct {
-	float sensor1;
-	float sensor2;
-	float finalPos;
-	float brakePos;
-	float torque;
-	uint8_t flag;
-}PEDALS;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +34,11 @@ struct {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define ACC_PEDAL_1_RESET 0.0
+#define ACC_PEDAL_1_FULL 3.3
+
+#define ACC_PEDAL_2_RESET 0.0
+#define ACC_PEDAL_2_FULL 3.3
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,30 +47,107 @@ struct {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CAN_HandleTypeDef hcan1;
+ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
-I2C_HandleTypeDef hi2c1;
+CAN_HandleTypeDef hcan1;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+uint32_t buffer[6]; //Storing two values in the buffer
+uint8_t flag=0;
+
+struct {
+  uint16_t torque;
+  uint8_t enabled;
+} RMSControl;
+
+float normalized_acc;
+float normalized_brake;
+
+float pedal1;
+float pedal2;
+float pedal3;
+float pedal4;
+/*  VALUES FOR DEBUGGING THE BUFFER
+float pedal5;
+float pedal6;
+*/
+
+float getPedal(uint32_t variable){
+	return (float)variable*3.3/4096;
+}
+
+float FEB_Normalized_Acc_Pedals(){
+	float acc_pedal_1 = getPedal(buffer[2]);
+	float acc_pedal_2 = getPedal(buffer[3]);
+
+	float ped1_normalized = (acc_pedal_1 - ACC_PEDAL_1_RESET)/ (ACC_PEDAL_1_FULL - ACC_PEDAL_1_RESET);
+	float ped2_normalized = (acc_pedal_2 - ACC_PEDAL_2_RESET) / (ACC_PEDAL_2_FULL - ACC_PEDAL_2_RESET);
+
+	if(abs(ped1_normalized - ped2_normalized) > 0.1 ){
+		flag = 1;
+	}
+
+	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
+
+	final_normalized = final_normalized > 1 ? 1 : final_normalized;
+	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
+
+	return final_normalized;
+
+}
+void FEB_LVPDB_sendBrake(){
+	FEB_CAN_Transmit(&hcan1,LVPDB_ID,normalized_brake,sizeof(float));
+}
+
+void FEB_RMS_updateTorque() {
+  uint8_t message_data[8] = {RMSControl.torque & 0xFF, RMSControl.torque >> 8, 0, 0, 0, RMSControl.enabled, 0, 0};
+  FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
+}
+
+void FEB_RMS_setTorque(uint16_t torque) {
+  RMSControl.torque = torque * 10;
+  FEB_RMS_updateTorque();
+}
+
+void FEB_RMS_enable() {
+  RMSControl.enabled = 1;
+  FEB_RMS_updateTorque();
+}
+
+void FEB_RMS_disable() {
+  RMSControl.enabled = 0;
+  FEB_RMS_updateTorque();
+}
+
+void FEB_RMS_Init(){
+	uint8_t message_data[8] = {0,0,0,0,0,0,0};
+	normalized_acc = 0;
+	normalized_brake = 0;
+
+	for (int i=0; i<100; i+=1) {
+		FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
+	    HAL_Delay(100);
+	}
+	FEB_RMS_enable();
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
-static void MX_I2C1_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-	FEB_CAN_Receive(hcan);
-}
 
 /* USER CODE END 0 */
 
@@ -104,64 +179,105 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_CAN1_Init();
-  MX_I2C1_Init();
+  MX_ADC1_Init();
+
   /* USER CODE BEGIN 2 */
-
-  FEB_CAN_Init(&hcan1, SM_ID);
-  FEB_APPS_Init();
+  HAL_ADC_Start_DMA(&hadc1,buffer,6);
 
 
-  //char str[128];
+//  uint8_t sleep_time = 10;
+  char buf[128];
+  uint8_t buf_len;
+
+	/* Node_1 */
+//	FEB_CAN_Init(&hcan1, BMS_ID);
+//	float temp = 0.0;
+//	float volt = 0.0;
+
+	/* Node_2 */
+//	FEB_CAN_Init(&hcan1, SM_ID);
+//	uint8_t cmd_1 = 0;
+
+	/* Node_3 */
+	//FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
+	//FEB_RMS_Init();
+//	float acc_1 = 0.0;
+//	float acc_2 = 0.0;
+//	float brake = 0.0;
+//	float torque = 0.0;
+
+	/* Node_4 */
+//	FEB_CAN_Init(&hcan1, SM_ID);
+//	uint8_t emergency = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+  while(1)
   {
+	  /* Node_1 */
+//	  temp = temp + 1;
+//	  FEB_CAN_Transmit(&hcan1, BMS_TEMPERATURE, &temp, sizeof(BMS_TEMPERATURE_TYPE));
+//	  volt = volt + 2;
+//	  FEB_CAN_Transmit(&hcan1, BMS_VOLTAGE, &volt, sizeof(BMS_VOLTAGE_TYPE));
+//	  buf_len = sprintf(buf, "BMS node. Receiving \nSM_CMD1: %d \nEmergency: %d \n\n", SM_MESSAGE.command_1, EMERGENCY_MESSAGE.sm_emergency);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+
+	  /* Node_2 */
+//	  cmd_1 += 1;
+//	  FEB_CAN_Transmit(&hcan1, SM_COMMAND_1, &cmd_1, sizeof(SM_COMMAND_1_TYPE));
+//	  buf_len = sprintf(buf, "SM node. Receiving \nBMS_temp:%d BMS_volt:%d \n\n", BMS_MESSAGE.temperature, BMS_MESSAGE.voltage);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+
+	  /* Node_3 */
+//	  acc_1 = acc_1 + 0.1;
+//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR1_PEDAL, &acc_1, sizeof(APPS_ACCELERATOR1_PEDAL_TYPE));
+//	  acc_2 = acc_2 + 0.2;
+//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR2_PEDAL, &acc_2, sizeof(APPS_ACCELERATOR2_PEDAL_TYPE));
+//	  brake = acc_2 + 0.3;
+//	  FEB_CAN_Transmit(&hcan1, APPS_BRAKE_PEDAL, &brake, sizeof(APPS_BRAKE_PEDAL_TYPE));
+//	  torque = torque + 0.4;
+//	  FEB_CAN_Transmit(&hcan1, APPS_TORQUE, &torque, sizeof(APPS_TORQUE_TYPE));
+//	  buf_len = sprintf(buf, "APPS node. Receiving \nSM_CMD1: %d \n\n", SM_MESSAGE.command_1);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+
+	  /* Node_4 */
+//	  emergency += 1;
+//	  FEB_CAN_Transmit(&hcan1, EMERGENCY_SM_EMERGENCY, &emergency, sizeof(EMERGENCY_SM_EMERGENCY_TYPE));
+
+	  //void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData, uint8_t size) {
+
+
     /* USER CODE END WHILE */
-	  PEDALS.brakePos = FEB_APPS_getBrakePedal();
-	  PEDALS.finalPos = FEB_APPS_getAccPedal();
-	  float deviation = abs(PEDALS.sensor1-PEDALS.sensor2);
-	  if(PEDALS.flag){
-		  if(deviation>0.1){
-			  //Error message
-			  TransmitTorque();
-		  }
-	  }else{
-		  if(deviation > 0.1){
-			  flag = 1;
-		  }else{
-			 TransmitTorque();
-		  }
 
-	  }
-
-	  //TODO Potential brake sensor code required
-	  // Transmit pedal 1, pedal 2, and brake sensor
-	  FEB_CAN_Transmit(&hcan1, APPS_BRAKE_PEDAL,&PEDALS.brakePos,sizeof(PEDALS.brakePos));
-	  FEB_CAN_Transmit(&hcan1,APPS_ACCELERATOR1_PEDAL,&PEDALS.sensor1 ,sizeof(PEDALS.sensor1));
-	  FEB_CAN_Transmit(&hcan1,APPS_ACCELERATOR1_PEDAL,&PEDALS.sensor2 ,sizeof(PEDALS.sensor2));
-
-	  //Delay 100ms for next sensor reading
-	  HAL_Delay(TIME_DELAY);
     /* USER CODE BEGIN 3 */
+	  pedal1 = getPedal(buffer[2]);
+	  pedal2 = getPedal(buffer[3]);
 
+	  pedal3 = getPedal(buffer[4]);
+	  pedal4 = getPedal(buffer[5]);
+
+	  normalized_acc = pedal1/3.3;
+	  normalized_brake = pedal3/3.3;
+
+	  buf_len = sprintf(buf, "Pedal Value: %.6f \n", normalized_acc);
+	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len,10);
+	  uint16_t torque = normalized_acc * 50;
+
+
+	  //Transmit CAN messages to other boards
+
+	  //FEB_RMS_setTorque(torque);
+	  //FEB_LVPDB_sendBrake();
+
+	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
-
-//Transmits Torque based on battery Charge, Pedal Settings, and battery temp
-void TransmitTorque(){
-	//Uses Temperature, Battery charge, Pedal Settings
-	uint16_t torqueData=1;
-	FEB_CAN_Transmit(&hcan1, SM_TORQUE,&torqueData,sizeof(torqueData));
-
-
-}
-
-
 
 /**
   * @brief System Clock Configuration
@@ -201,12 +317,109 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 6;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_84CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Rank = 4;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Rank = 5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = 6;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -247,40 +460,6 @@ static void MX_CAN1_Init(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -314,6 +493,22 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -328,70 +523,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
-
-}
-//Sets all values to 0 initially
-void FEB_APPS_Init(){
-	PEDALS.brakePos=0;
-	PEDALS.sensor1=0;
-	PEDALS.sensor2=0;
-	PEDALS.flag = 0;
-
-	//NOTE May be more set up things I need to transmit
 }
 
 /* USER CODE BEGIN 4 */
-//TODO The ADC Channel has changed due to the new microbasic
-float FEB_APPS_getBrakePedal() {
-  float brake_pedal = FEB_ADC_sampleChannel(&hadc1, ADC_CHANNEL_13);
-//  char str[128];
-//  sprintf(str, "%f\t", brake_pedal);
-//  FEB_log("", "", str);
-  float brake_normalized = (brake_pedal - BRAKE_PEDAL_RESET) / (BRAKE_PEDAL_FULL - BRAKE_PEDAL_RESET);
 
-  /* clamp */
-  brake_normalized = brake_normalized > 1 ? 1 : brake_normalized;
-  brake_normalized = brake_normalized < 0.05 ? 0 : brake_normalized;
-
-  return brake_normalized;
-}
-
-// TODO The rules states that the pedals can't deviate by 10%
-// TODO The ADC Channel has changed due to the new microbasic
-float FEB_APPS_getAccPedal() {
-  ACCPEDAL.sensor1 = FEB_ADC_sampleChannel(&hadc1, ADC_CHANNEL_10);
-  ACCPEDAL.sensor2= FEB_ADC_sampleChannel(&hadc1, ADC_CHANNEL_11);
-//  char str[128];
-//  sprintf(str, "%f\t%f\t", acc_pedal_0, acc_pedal_1);
-//  FEB_log("", "", str);
-
-
-  float acc_0_normalized = (acc_pedal_0 - ACC_PEDAL_0_RESET) / (ACC_PEDAL_0_FULL - ACC_PEDAL_0_RESET);
-  float acc_1_normalized = (acc_pedal_1 - ACC_PEDAL_1_RESET) / (ACC_PEDAL_1_FULL - ACC_PEDAL_1_RESET);
-
-  float acc_normalized = 0.5 * (acc_0_normalized + acc_1_normalized);
-
-  /* clamp */
-  acc_normalized = acc_normalized > 1 ? 1 : acc_normalized;
-  acc_normalized = acc_normalized < 0.05 ? 0 : acc_normalized;
-
-  return acc_normalized;
-}
 /* USER CODE END 4 */
 
 /**
