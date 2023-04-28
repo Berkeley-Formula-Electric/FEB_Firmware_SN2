@@ -27,7 +27,10 @@ app.get("/", (req, res) => {
 const data = {
     temperature: 26,
     voltage: 632,
-    speed: 54
+    speed: 54,
+    timerStart: true,
+    timerStop: false,
+    timerReset: false,
 }
 
 io.on('connection', (socket) => {
