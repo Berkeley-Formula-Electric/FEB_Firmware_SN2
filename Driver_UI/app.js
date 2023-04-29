@@ -2,13 +2,13 @@
 
 // dependencies
 const express = require("express")
-const http = require("http");
+const http = require("http")
 const { Server } = require("socket.io")
-const path = require("path");
+const path = require("path")
 const fs = require("fs")
 const { SerialPort } = require("serialport")
 const xbee = require("xbee");
-const spi = require('spi-device');
+// const spi = require("spi-device")
 
 // initalize web server
 const app = express();
@@ -31,7 +31,7 @@ const data = {
     speed: 54,
     timerStart: true,
     timerStop: false,
-    timerReset: false,
+    timerReset: true,
 }
 
 // timer
@@ -65,25 +65,24 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
     }, 100);
 });
 
-
-const mcp3008 = spi.open(0, 0, err => {
-    // An SPI message is an array of one or more read+write transfers
-    const message = [{
-      receiveBuffer: Buffer.alloc(1),              // Raw data read from channel 5
-      byteLength: 3,
-      speedHz: 20000 // Use a low bus speed to get a good reading from the TMP36
-    }];
+// const mcp3008 = spi.open(0, 0, err => {
+//     // An SPI message is an array of one or more read+write transfers
+//     const message = [{
+//       receiveBuffer: Buffer.alloc(1),              // Raw data read from channel 5
+//       byteLength: 3,
+//       speedHz: 20000 // Use a low bus speed to get a good reading from the TMP36
+//     }];
   
-    if (err) throw err;
+//     if (err) throw err;
   
-    mcp3008.transfer(message, (err, message) => {
-      if (err) throw err;
+//     mcp3008.transfer(message, (err, message) => {
+//       if (err) throw err;
   
-      // Convert raw value from sensor to celcius and log to console
-      const rawValue = message[0].receiveBuffer[0]
-      console.log(rawValue);
-    });
-});
+//       // Convert raw value from sensor to celcius and log to console
+//       const rawValue = message[0].receiveBuffer[0]
+//       console.log(rawValue);
+//     });
+// });
 
 // const serial_xbee = new SerialPort({
 //     path: "/dev/cu.usbserial-D309NYWG",
@@ -96,8 +95,8 @@ const mcp3008 = spi.open(0, 0, err => {
 //     // console.log('xbee data received:', data.type);    
 // });
 
+// socket connection
 io.on('connection', (socket) => {
-    // socket.emit("data", data)
     setInterval(() => {
         data.temperature += (Math.random() - 0.5) * 0.1
         data.voltage += (Math.random() - 0.5) * 0.1
@@ -106,6 +105,7 @@ io.on('connection', (socket) => {
     }, 100)
 });
 
+// activate server
 server.listen(PORT, () => {
 	console.log(`Listening on port ${PORT}: http://localhost:${PORT}`);
 });

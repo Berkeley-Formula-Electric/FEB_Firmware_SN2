@@ -1,12 +1,6 @@
 "use strict"
 
-// Global variables
-const socket = io();
-
-/*
-Speed - Temperature - Voltage - Ready To Drive - Battery percentage - Timer/Lap
-
-*/
+// Speed - Temperature - Voltage - Ready To Drive - Battery percentage - Timer/Lap
 const carData = {
     temperature: 0, voltage: 0, speed: 0, rtd: true, time : 0
 }
@@ -18,7 +12,7 @@ const carTimer = {
 }
 
 // Socket connection
-
+const socket = io();
 socket.on("connect", (socket) => {
     console.log("connected!")
 })
@@ -112,7 +106,6 @@ function draw() {
         carTimer.startTime = 0;
         carData.time = 0;
         carTimer.reset = false;
-        return;
     }
     if (carTimer.start && !carTimer.isRunning) {
         carTimer.startTime = Date.now() - carTimer.timePaused;
@@ -125,9 +118,8 @@ function draw() {
         carTimer.stop = false;
     }
     if (carTimer.isRunning) {
-          carData.time = Date.now() - carTimer.startTime;
-     }
-    
+        carData.time = Date.now() - carTimer.startTime;
+    }
 
     fill(0)
     textSize(120)
@@ -140,7 +132,7 @@ function draw() {
     rect(width / 2, 0, width / 2, height / 2)
     
     let percent = calculateBattery(carData.voltage)
-    let batteryColor = 'green'
+    let batteryColor = "green"
     if (percent < 30) {
         batteryColor = "red"
     } else if (percent < 60) {
