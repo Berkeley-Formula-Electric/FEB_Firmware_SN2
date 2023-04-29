@@ -81,7 +81,7 @@ function calculateBattery(voltage) {
 // Canvas interface
 
 function setup() {
-	createCanvas(1200, 600)
+	createCanvas(1100, 620)
 }
 
 function draw() {
