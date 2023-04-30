@@ -20,6 +20,11 @@ void FEB_BMS_Shutdown_Initiate(void) {
 	sprintf(str, "Shutdown!\n");
 	HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), 100);
 
+	// Stop Discharge
+	if (FEB_LTC6811_Balance_Cells_State == 1) {
+		FEB_LTC6811_Clear_Balance_Cells();
+	}
+
 	// Do nothing
 	while (1) {}
 }

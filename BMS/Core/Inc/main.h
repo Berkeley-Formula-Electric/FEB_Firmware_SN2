@@ -40,6 +40,7 @@ extern "C" {
 #include "FEB_CAN_IVT.h"
 #include "FEB_CAN_Charger.h"
 #include "FEB_CAN.h"
+#include "FEB_BMS_State.h"
 
 /* USER CODE END Includes */
 

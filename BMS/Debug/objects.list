@@ -1,5 +1,6 @@
 "./Core/Src/FEB_BMS_Precharge.o"
 "./Core/Src/FEB_BMS_Shutdown.o"
+"./Core/Src/FEB_BMS_State.o"
 "./Core/Src/FEB_CAN.o"
 "./Core/Src/FEB_CAN_Charger.o"
 "./Core/Src/FEB_CAN_IVT.o"

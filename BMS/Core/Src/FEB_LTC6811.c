@@ -7,10 +7,13 @@ extern UART_HandleTypeDef huart2;
 // ********************************** LTC6811 Configuration **********************************
 
 // Cell configuration
-uint8_t FEB_LTC6811_Cell_Idx_Map[17] = {9, 8, 7, 6, 4, 3, 2, 1, 0, 9, 8, 7, 6, 3, 2, 1, 0};
+static uint8_t FEB_LTC6811_Cell_Idx_Map[17] = {9, 8, 7, 6, 4, 3, 2, 1, 0, 9, 8, 7, 6, 3, 2, 1, 0};
 
 // Discharge configuration
-uint8_t FEB_LTC6811_Cell_Discharge[NUM_IC][CELLS_PER_DAUGHTER_BOARD];
+static uint8_t FEB_LTC6811_Cell_Discharge[NUM_IC][CELLS_PER_DAUGHTER_BOARD];
+static uint8_t FEB_LTC6811_Target_Voltage_Set = 0;	// 0 (not set), 1 (set)
+static uint8_t FEB_LTC6811_Cells_Balanced = 0;		// 0 (not balanced), 1 (balanced)
+static float FEB_LTC6811_Target_Voltage;
 
 // Set configuration bits
 static bool REFON = 1; 												//!< Reference Powered Up Bit
@@ -43,7 +46,6 @@ void FEB_LTC6811_Config_Cell_Discharge(void) {
 			FEB_LTC6811_Cell_Discharge[i][j] = 0;
 		}
 	}
-
 }
 
 // ******************** Read Voltage ********************
@@ -113,8 +115,44 @@ uint8_t FEB_LTC6811_Cell_Idx(uint8_t cell) {
 	return FEB_LTC6811_Cell_Idx_Map[cell];
 }
 
-void FEB_LTC6811_Balance_Cells(void) {
+void FEB_LTC6811_Set_Discharge_Target_Voltage(void) {
 	// Find lowest voltage
+	float lowest_voltage = MAX_VOLTAGE;
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			if (accumulator.banks[bank_idx].cells[cell_idx].voltage < lowest_voltage) {
+				lowest_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
+			}
+		}
+	}
+
+	// Set target voltage
+	FEB_LTC6811_Target_Voltage = lowest_voltage;
+	FEB_LTC6811_Target_Voltage_Set = 1;
+}
+
+void FEB_LTC6811_Balance_Cells(void) {
+	if (FEB_LTC6811_Balance_Cells_State == 0 || FEB_LTC6811_Cells_Balanced == 1) {
+		return;
+	} else if (FEB_LTC6811_Target_Voltage_Set == 0) {
+		FEB_LTC6811_Set_Discharge_Target_Voltage();
+	}
+
+	uint8_t cells_balanced = 1;
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			if (accumulator.banks[bank_idx].cells[cell_idx].voltage > FEB_LTC6811_Target_Voltage + FEB_LTC6811_Voltage_Resolution) {
+				cells_balanced = 0;
+				FEB_LTC6811_Balance_Cell(bank_idx, cell_idx);
+			}
+		}
+	}
+
+	if (cells_balanced == 1) {
+		FEB_LTC6811_Cells_Balanced = 1;
+		FEB_LTC6811_Clear_Balance_Cells();
+	}
+
 }
 
 void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell) {
@@ -122,7 +160,12 @@ void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell) {
 }
 
 void FEB_LTC6811_Clear_Balance_Cells(void) {
-
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			FEB_LTC6811_Clear_Balance_Cell(bank_idx, cell_idx);
+		}
+	}
+	FEB_LTC6811_Poll_Temperature();	// Clear cell balancing
 }
 
 void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell) {
@@ -133,7 +176,6 @@ void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic) {
 	for (uint8_t i = 0; i < CELLS_PER_DAUGHTER_BOARD; i++) {
 		DCCBITS_A[i] = FEB_LTC6811_Cell_Discharge[ic][i];
 	}
-
 }
 
 // ******************** Voltage Interface ********************
@@ -297,7 +339,13 @@ void FEB_LTC6811_Validate_Temperature(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
 			float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
-			if (temperature < MIN_OPERATION_TEMPERATURE || temperature > MAX_OPERATION_TEMPERATURE) {
+			float min_temperature = MIN_OPERATION_TEMPERATURE;
+			float max_temperature = MAX_OPERATION_TEMPERATURE;
+			if (FEB_CAN_CHARGER_START_CHARGE == 1) {
+				min_temperature = MIN_CHARGING_TEMPERATURE;
+				max_temperature = MAX_CHARGING_TEMPERATURE;
+			}
+			if (temperature < min_temperature || temperature > max_temperature) {
 				FEB_BMS_Shutdown_Initiate();
 			}
 		}

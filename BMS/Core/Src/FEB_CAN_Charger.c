@@ -122,7 +122,6 @@ void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {
 
 	if (FEB_CAN_Charger_Rx_Flag == 1) {
 		FEB_CAN_Charger_Rx_Flag = 0;
-//		float operating_voltage = (float) FEB_CAN_Charger_Charger_Message.operating_voltage * 0.1;
 		float operating_current = (float) FEB_CAN_Charger_Charger_Message.operating_current * 0.1;
 		if (operating_current > MAX_CHARGING_CURRENT) {
 			FEB_CAN_Charger_Stop_Charge(hcan);

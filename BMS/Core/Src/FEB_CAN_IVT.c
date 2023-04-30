@@ -69,6 +69,9 @@ void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
 // ******************** IVT Process Data  ********************
 
 void FEB_CAN_IVT_Process(void) {
+	if (FEB_CAN_CHARGER_START_CHARGE == 1 || FEB_LTC6811_Balance_Cells_State == 1) {
+		return;
+	}
 	if (FEB_CAN_IVT_FLAG.IVT_Current == 1) {
 		FEB_CAN_IVT_FLAG.IVT_Current = 0;
 		float Ivt_Current_A = (float) FEB_CAN_IVT_MESSAGE.IVT_Voltage3 * 0.001;

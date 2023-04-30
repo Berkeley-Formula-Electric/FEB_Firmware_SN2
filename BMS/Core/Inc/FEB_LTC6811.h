@@ -11,6 +11,7 @@
 #include "LTC6811.h"
 #include "FEB_BMS_Shutdown.h"
 #include "FEB_LTC6811_Temp_LUT.h"
+#include "FEB_CAN_Charger.h"
 
 // ********************************** Accumulator Configuration **********************************
 
@@ -34,6 +35,12 @@
 // current thresholds
 #define MAX_CHARGING_CURRENT 0.1
 #define MAX_OPERATING_CURRENT 55
+
+// ********************************** Cell Balance Configuration **********************************
+
+#define FEB_LTC6811_Balance_Cells_State 0	// 0 (no cell balancing), 1 (active cell balancing)
+#define FEB_LTC6811_Voltage_Resolution 0.05
+
 
 // ********************************** Connectivity Configuration **********************************
 
@@ -100,19 +107,22 @@ void FEB_LTC6811_Read_Cell_Voltage_Registers(void);
 void FEB_LTC6811_Store_Voltage(void);
 float FEB_LTC6811_Convert_Voltage(uint16_t value);
 
+// Voltage balance cells
+uint8_t FEB_LTC6811_Get_IC(uint8_t bank, uint8_t cell);
+uint8_t FEB_LTC6811_Cell_Idx(uint8_t cell);
+void FEB_LTC6811_Set_Discharge_Target_Voltage(void);
+void FEB_LTC6811_Balance_Cells(void);
+void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell);
+void FEB_LTC6811_Clear_Balance_Cells(void);
+void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell);
+void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic);
+
 // Voltage interface
 void FEB_LTC6811_Validate_Voltage(void);
 void FEB_LTC6811_UART_Transmit_Voltage(void);
 float FEB_LTC6811_Total_Bank_Voltage(void);
 uint8_t FEB_LTC6811_Cells_Charged(void);
 void FEB_LTC6811_Clear_Voltage(void);
-
-// Voltage balance cells
-void FEB_LTC6811_Balance_Cells(void);
-void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell);
-void FEB_LTC6811_Clear_Balance_Cells(void);
-void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell);
-void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic);
 
 // Read temperature
 void FEB_LTC6811_Poll_Temperature(void);

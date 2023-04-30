@@ -100,6 +100,7 @@ int main(void)
   MX_CAN2_Init();
   /* USER CODE BEGIN 2 */
 
+  FEB_BMS_State_Validate();
   FEB_LTC6811_Setup();
   FEB_BMS_Shutdown_Startup();
   FEB_BMS_Precharge_Open();
@@ -120,25 +121,28 @@ int main(void)
 
 	// *********************** Cell Voltage ***********************
 	FEB_LTC6811_Poll_Voltage();
-//  	FEB_LTC6811_Validate_Voltage();
+  	FEB_LTC6811_Validate_Voltage();
 	FEB_LTC6811_UART_Transmit_Voltage();
 
 	// *********************** Cell Temperature ***********************
 	FEB_LTC6811_Poll_Temperature();
-//  	FEB_LTC6811_Validate_Temperature();
+  	FEB_LTC6811_Validate_Temperature();
 	FEB_LTC6811_UART_Transmit_Temperature();
 
 	// *********************** IVT ***********************
-//	FEB_CAN_IVT_Process();
+	FEB_CAN_IVT_Process();
+
+	// *********************** Cell Balance ***********************
+	FEB_LTC6811_Balance_Cells();
 
 	// *********************** Charger ***********************
-//	FEB_CAN_Charger_Process(&hcan1);
+	FEB_CAN_Charger_Process(&hcan1);
 
 
 	if (FEB_CAN_CHARGER_START_CHARGE == 1) {
 		HAL_Delay(1000);	// 1Hz
 	} else {
-		HAL_Delay(200);		// 10Hz
+		HAL_Delay(200);		// 5Hz
 	}
   }
   /* USER CODE END 3 */
