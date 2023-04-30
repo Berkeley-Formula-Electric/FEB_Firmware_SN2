@@ -6,6 +6,12 @@ extern UART_HandleTypeDef huart2;
 
 // ********************************** LTC6811 Configuration **********************************
 
+// Cell configuration
+uint8_t FEB_LTC6811_Cell_Idx_Map[17] = {9, 8, 7, 6, 4, 3, 2, 1, 0, 9, 8, 7, 6, 3, 2, 1, 0};
+
+// Discharge configuration
+uint8_t FEB_LTC6811_Cell_Discharge[NUM_IC][CELLS_PER_DAUGHTER_BOARD];
+
 // Set configuration bits
 static bool REFON = 1; 												//!< Reference Powered Up Bit
 static bool ADCOPT = 0; 											//!< ADC Mode option bit
@@ -21,17 +27,23 @@ static Accumulator accumulator;
 // ********************************** Functions **********************************
 
 void FEB_LTC6811_Setup(void) {
-	for (int i = 0; i < CELLS_PER_DAUGHTER_BOARD; i++) {
-		DCCBITS_A[i] = 0;
-	}
+	FEB_LTC6811_Config_Cell_Discharge();
 
-	// Setup Board
 	LTC6811_init_cfg(NUM_IC, accumulator.IC_config);
 	for (uint8_t current_ic = 0; current_ic < NUM_IC; current_ic++) {
 		LTC6811_set_cfgr(current_ic, accumulator.IC_config, REFON, ADCOPT, GPIOBITS_A, DCCBITS_A, DCTOBITS, UV, OV);
 	}
 	LTC6811_reset_crc_count(NUM_IC, accumulator.IC_config);
 	LTC6811_init_reg_limits(NUM_IC, accumulator.IC_config);
+}
+
+void FEB_LTC6811_Config_Cell_Discharge(void) {
+	for (uint8_t i = 0; i < NUM_IC; i++) {
+		for (uint8_t j = 0; j < CELLS_PER_DAUGHTER_BOARD; j++) {
+			FEB_LTC6811_Cell_Discharge[i][j] = 0;
+		}
+	}
+
 }
 
 // ******************** Read Voltage ********************
@@ -88,25 +100,44 @@ float FEB_LTC6811_Convert_Voltage(uint16_t value) {
 }
 
 // ******************** Voltage Cell Balance ********************
+
+uint8_t FEB_LTC6811_Get_IC(uint8_t bank, uint8_t cell) {
+	if (cell < 9) {
+		return bank * 2 + 1;
+	} else {
+		return bank * 2;
+	}
+}
+
+uint8_t FEB_LTC6811_Cell_Idx(uint8_t cell) {
+	return FEB_LTC6811_Cell_Idx_Map[cell];
+}
+
 void FEB_LTC6811_Balance_Cells(void) {
-    for (uint8_t s_pin_read; s_pin_read < CELLS_PER_DAUGHTER_BOARD; s_pin_read++) {
-    	wakeup_sleep(NUM_IC);
-    	LTC6811_set_discharge(s_pin_read, NUM_IC, accumulator.IC_config);
-    	LTC6811_wrcfg(NUM_IC, accumulator.IC_config);
-    	wakeup_idle(NUM_IC);
-    	LTC6811_rdcfg(NUM_IC, accumulator.IC_config);
-    }
+	// Find lowest voltage
+}
+
+void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell) {
+	FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank, cell)][FEB_LTC6811_Cell_Idx(cell)] = 1;
 }
 
 void FEB_LTC6811_Clear_Balance_Cells(void) {
-    wakeup_sleep(NUM_IC);
-    LTC6811_clear_discharge(NUM_IC, accumulator.IC_config);
-    LTC6811_wrcfg(NUM_IC, accumulator.IC_config);
-    wakeup_idle(NUM_IC);
-    LTC6811_rdcfg(NUM_IC, accumulator.IC_config);
+
+}
+
+void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell) {
+	FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank, cell)][FEB_LTC6811_Cell_Idx(cell)] = 0;
+}
+
+void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic) {
+	for (uint8_t i = 0; i < CELLS_PER_DAUGHTER_BOARD; i++) {
+		DCCBITS_A[i] = FEB_LTC6811_Cell_Discharge[ic][i];
+	}
+
 }
 
 // ******************** Voltage Interface ********************
+
 void FEB_LTC6811_Validate_Voltage(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
@@ -195,8 +226,9 @@ void FEB_LTC6811_Update_GPIO(uint8_t channel) {
 	GPIOBITS_A[4] = (channel >> 2) & 0b1;	// MUX Select
 
     wakeup_sleep(NUM_IC);
-    for (uint8_t current_ic = 0; current_ic < NUM_IC;current_ic++) {
-      LTC6811_set_cfgr(current_ic, accumulator.IC_config, REFON, ADCOPT, GPIOBITS_A, DCCBITS_A, DCTOBITS, UV, OV);
+    for (uint8_t current_ic = 0; current_ic < NUM_IC; current_ic++) {
+    	FEB_LTC6811_Configure_DCCBITS_A(current_ic);
+		LTC6811_set_cfgr(current_ic, accumulator.IC_config, REFON, ADCOPT, GPIOBITS_A, DCCBITS_A, DCTOBITS, UV, OV);
     }
     wakeup_idle(NUM_IC);
     LTC6811_wrcfg(NUM_IC, accumulator.IC_config);

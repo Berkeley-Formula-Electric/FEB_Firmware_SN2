@@ -84,7 +84,7 @@ void FEB_CAN_Charger_Transmit(CAN_HandleTypeDef* hcan) {
 }
 
 void FEB_CAN_Charger_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
-	switch(pHeader->StdId) {
+	switch(pHeader->ExtId) {
 	    	case FEB_CAN_CHARGER_CHARGER_ID:
 	    		FEB_CAN_Charger_Charger_Message.operating_voltage = (RxData[0] << 8) + RxData[1];
 	    		FEB_CAN_Charger_Charger_Message.operating_current = (RxData[2] << 8) + RxData[3];

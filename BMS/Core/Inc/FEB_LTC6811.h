@@ -91,6 +91,7 @@ typedef struct {
 // ********************************** Function Declarations **********************************
 
 void FEB_LTC6811_Setup(void);
+void FEB_LTC6811_Config_Cell_Discharge(void);
 
 // Read voltage
 void FEB_LTC6811_Poll_Voltage(void);
@@ -108,7 +109,10 @@ void FEB_LTC6811_Clear_Voltage(void);
 
 // Voltage balance cells
 void FEB_LTC6811_Balance_Cells(void);
+void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell);
 void FEB_LTC6811_Clear_Balance_Cells(void);
+void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell);
+void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic);
 
 // Read temperature
 void FEB_LTC6811_Poll_Temperature(void);
