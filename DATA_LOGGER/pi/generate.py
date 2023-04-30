@@ -88,18 +88,34 @@ class HeaderFile:
         file_contents += C.include("stdio.h")
         file_contents += "\n"
         file_contents += C.include("string.h")
+        file_contents += "\n"
+        file_contents += C.include("stdint.h")
+        file_contents += "\n"
+        file_contents += C.include("fstream")
         file_contents += "\n" * 2
 
-        # ------FOR DATA_LOGGER------
-        file_contents += C.comment("data logger")
+        # ------SPI_MESSAGE------
+        file_contents += "struct SPI_RxHeader{\n"
+        file_contents += "      union {\n"
+        file_contents += "          uint32_t StdId;\n"
+        file_contents += "          uint32_t ExtId;\n"
+        file_contents += "      };\n"
+        file_contents += "      uint8_t DLC;\n"
+        file_contents += "      uint8_t IDE;\n"
+        file_contents += "};\n"
         file_contents += "\n"
-        file_contents += "extern SPI_HandleTypeDef hspi2;"
+        file_contents += "typedef union {\n"
+        file_contents += "      struct{\n"
+        file_contents += "          struct SPI_RxHeader RxHeader;\n"
+        file_contents += "          uint8_t RxData[8];\n"
+        file_contents += "          uint8_t RESERVED;\n"
+        file_contents += "} message;\n"
         file_contents += "\n"
-        file_contents += "extern UART_HandleTypeDef huart2;"
+        file_contents += "      uint8_t bits[8];\n"
+        file_contents += "      } SPI_MESSAGE_TYPE;\n"
         file_contents += "\n"
-        file_contents += "uint16_t msg_count = 0;"
+        file_contents += "SPI_MESSAGE_TYPE SPI_MESSAGE = {.message.RESERVED = 10};\n"
         file_contents += "\n"
-        file_contents += "\n" * 2
 
         # ------settings------
         settings = []
@@ -178,13 +194,13 @@ class HeaderFile:
 
         # ------store messages------
         store_msg_str_arr = []
-        store_msg_str_arr.append("void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {")
+        store_msg_str_arr.append("void store_msg(SPI_RxHeader *pHeader, uint8_t *RxData, fstream log_file) {")
         store_msg_str_arr.append("    switch(pHeader->StdId >> BITS_PER_MESSAGE_TYPE) {")
         
         for board in boards:
             if self.board_data[board.name]["message_type"]:
                 store_msg_str_arr.append(f"        case {board.name}_ID:")
-                store_msg_str_arr.append(f"            Store_{board.name}_Msg(pHeader->StdId, RxData, pHeader->DLC);")
+                store_msg_str_arr.append(f"            Store_{board.name}_Msg(pHeader->StdId, RxData, pHeader->DLC, log_file);")
                 store_msg_str_arr.append("            break;")
         
         store_msg_str_arr.append("    }")
@@ -283,7 +299,7 @@ class Board:
             
             # board_str_lst.append("    }")
             # board_str_lst.append("}")
-            board_str_lst.append(f"void Store_{self.name}_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {'{'}")
+            board_str_lst.append(f"void Store_{self.name}_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length, fstream log_file) {'{'}")
             board_str_lst.append("    char buf[128];")
             board_str_lst.append("    int buf_len;")
             board_str_lst.append("    switch (RxId){")
@@ -299,12 +315,10 @@ class Board:
                 # board_str_lst.append(f"            buf_len = sprintf(buf, \"%.3f    %d    {self.name}    {message['name']}    {data_format}\\n\", HAL_GetTick()/1000.0, msg_count++, {self.name}_MESSAGE.{message['name'].lower()});")
                 board_str_lst.append(f"            buf_len = sprintf(buf, \"%.3f,{self.name},{message['name']},{data_format}\\n\", HAL_GetTick()/1000.0, {self.name}_MESSAGE.{message['name'].lower()});")
 
-
                 board_str_lst.append("            break;")
-            
             board_str_lst.append("    }")
-            board_str_lst.append("    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);")
-            board_str_lst.append("    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);")
+
+            board_str_lst.append("    log_file << buf;")
             board_str_lst.append("}")
 
         string += "\n".join(board_str_lst)
