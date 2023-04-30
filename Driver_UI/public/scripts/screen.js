@@ -1,8 +1,17 @@
 "use strict"
 
-// Speed - Temperature - Voltage - Ready To Drive - Battery percentage - Timer/Lap
+// Global variables
+const socket = io();
+
+/*
+Speed - Temperature - Voltage - Ready To Drive - Battery percentage - Timer/Lap
+
+*/
 const carData = {
     temperature: 0, voltage: 0, speed: 0, rtd: true, time : 0
+}
+const carTemperature = {
+    lowTemp: 30, highTemp: 40
 }
 const carBattery = {
     lowerBound: 200, upperBound: 700
@@ -12,7 +21,7 @@ const carTimer = {
 }
 
 // Socket connection
-const socket = io();
+
 socket.on("connect", (socket) => {
     console.log("connected!")
 })
@@ -44,7 +53,7 @@ function roundPrecision(value, degree) {
 }
 
 function formatTemperature(value) {
-    return `${roundPrecision(value, 2).toFixed(2)}°C`
+    return `${roundPrecision(value, 1).toFixed(1)}`
 }
 
 function formatVoltage(value) {
@@ -52,11 +61,11 @@ function formatVoltage(value) {
 }
 
 function formatSpeed(value) {
-    return `${roundPrecision(value, 2).toFixed(2)} kph`
+    return `${roundPrecision(value, 1).toFixed(1)}`
 }
 
 function formatBattery(value) {
-    return `${roundPrecision(value, 2).toFixed(2)} %`
+    return `${roundPrecision(value, 1).toFixed(1)}%`
 }
 
 function formatTime(value) {
@@ -93,33 +102,46 @@ function draw() {
     rect(0, 0, width/2, height/2)
 
     fill(0)
-    textSize(120)
+    textSize(170)
     textAlign(CENTER, CENTER);
     text(formatSpeed(carData.speed), width / 4, height / 4);
+    
+    fill(0)
+    textSize(50)
+    textAlign(CENTER, CENTER);
+    text("mph", width / 4, height / 4 + height / 6);
 
     // timer
     fill(255)
     rect(0, height/2, width/2, height/2)
 
     if (carTimer.reset) {
-        carTimer.timePaused = 0;
-        carTimer.startTime = 0;
-        carData.time = 0;
+        console.log("reset")
+        carTimer.timePaused = 0;m
+        carTimer.startTime = Date.now();
+        carData.time = Date.now() - carTimer.startTime;
         carTimer.reset = false;
+        return;
     }
     if (carTimer.start && !carTimer.isRunning) {
+        console.log("start")
         carTimer.startTime = Date.now() - carTimer.timePaused;
         carTimer.isRunning = true;
         carTimer.start = false;
     }
     if (carTimer.stop && carTimer.isRunning) {
+        console.log("stop")
         carTimer.timePaused = Date.now() - carTimer.startTime;
+        carTimer.start = false;
         carTimer.isRunning = false;
+        carTimer.stop = false;
+    } else {
         carTimer.stop = false;
     }
     if (carTimer.isRunning) {
-        carData.time = Date.now() - carTimer.startTime;
-    }
+          carData.time = Date.now() - carTimer.startTime;
+     }
+    
 
     fill(0)
     textSize(120)
@@ -132,7 +154,7 @@ function draw() {
     rect(width / 2, 0, width / 2, height / 2)
     
     let percent = calculateBattery(carData.voltage)
-    let batteryColor = "green"
+    let batteryColor = 'green'
     if (percent < 30) {
         batteryColor = "red"
     } else if (percent < 60) {
@@ -142,7 +164,7 @@ function draw() {
     }
     
     fill(batteryColor)
-    textSize(120)
+    textSize(150)
     textAlign(CENTER, CENTER);
     text(formatBattery(percent), width / 4 * 3, height / 4);
 
@@ -150,14 +172,30 @@ function draw() {
     fill(255)
     rect(width / 2, height / 2, width / 4, height / 2)
 
-    let tempRed = Math.round(Math.min(255, (255 / 50) * (50 - carData.temperature)));
-    let tempBlue = Math.round(Math.min(255, (255 / 50) * (50 - carData.temperature)));
+    let tempRed, tempBlue;
+    if (carData.temperature >= carTemperature.highTemp) {
+      tempRed = 255;
+      tempBlue = 0;
+    } else if (carData.temperature <= carTemperature.lowTemp) {
+      tempRed = 0;
+      tempBlue = 255;
+    } else {
+      tempRed = Math.round(Math.min(255, (255 / 50) * (50 - carData.temperature + 20)));
+      tempBlue = Math.round(Math.min(255, (255 / 50) * (50 - carData.temperature)));
+    }
+    
     let tempColor = `rgb(${tempRed}, 0, ${tempBlue})`;
+    fill(tempColor);
 
     fill(tempColor);
-    textSize(64)
+    textSize(110)
     textAlign(CENTER, CENTER);
     text(formatTemperature(carData.temperature), width / 8 * 5, height / 4 * 3);
+    
+    fill(0);
+    textSize(50)
+    textAlign(CENTER, CENTER);
+    text("°C", width / 8 * 5, height / 4 * 3 + height/6);
 
     // ready to drive
     if (carData.rtd) {
