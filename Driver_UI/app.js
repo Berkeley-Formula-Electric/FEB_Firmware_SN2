@@ -8,7 +8,7 @@ const path = require("path")
 const fs = require("fs")
 const { SerialPort } = require("serialport")
 const xbee = require("xbee");
-// const spi = require("spi-device")
+const spi = require("spi-device")
 
 // initalize web server
 const app = express();
