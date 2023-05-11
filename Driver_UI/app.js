@@ -65,24 +65,51 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
     }, 100);
 });
 
+// const mcp3008 = spi.open(0, 0, err => {
+//     // An SPI message is an array of one or more read+write transfers
+//     const message = [{
+//       receiveBuffer: Buffer.alloc(1),              // Raw data read from channel 5
+//       byteLength: 3,
+//       speedHz: 20000 // Use a low bus speed to get a good reading from the TMP36
+//     }];
+  
+//     if (err) throw err;
+  
+//     mcp3008.transfer(message, (err, message) => {
+//       if (err) throw err;
+  
+//       // Convert raw value from sensor to celcius and log to console
+//       const rawValue = message[0].receiveBuffer[0]
+//       console.log(rawValue);
+//     });
+// });
+
 const mcp3008 = spi.open(0, 0, err => {
+    if (err) throw err;
+  
     // An SPI message is an array of one or more read+write transfers
     const message = [{
-      receiveBuffer: Buffer.alloc(1),              // Raw data read from channel 5
+      sendBuffer: Buffer.from([0x01, 0x80, 0x00]), // The message to send (channel 5)
+      receiveBuffer: Buffer.alloc(3),              // Raw data read from channel 5
       byteLength: 3,
       speedHz: 20000 // Use a low bus speed to get a good reading from the TMP36
     }];
-  
-    if (err) throw err;
   
     mcp3008.transfer(message, (err, message) => {
       if (err) throw err;
   
       // Convert raw value from sensor to celcius and log to console
-      const rawValue = message[0].receiveBuffer[0]
-      console.log(rawValue);
+      const rawValue = message[0].receiveBuffer[2] & 0x03;
+      const convertedValue = (rawValue * 3.3) / 1023; // Assuming 3.3V reference voltage
+      console.log(convertedValue);
+      
+      mcp3008.close((err) => {
+        if (err) throw err;
+        console.log('SPI connection closed.');
+      });
     });
-});
+  });
+  
 
 // const serial_xbee = new SerialPort({
 //     path: "/dev/cu.usbserial-D309NYWG",
