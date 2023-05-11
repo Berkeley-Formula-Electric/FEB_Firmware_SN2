@@ -18,7 +18,7 @@ MIN_VOLTAGE = 3.0
 MAX_VOLTAGE = 3.8
 
 # serial settings
-PORT = '/dev/cu.usbmodem2103'
+PORT = '/dev/cu.usbmodem143203'
 BAUD_RATE = 115200
 BYTESIZE = serial.SEVENBITS
 PARITY = serial.PARITY_EVEN
@@ -38,6 +38,10 @@ MESSAGES = {VOLTAGE_ID: "V", TEMPERATURE_ID: "T"}
 # masks
 BANK_ID_MASK 		= 0b1110
 MESSAGE_MASK		= 0b0001
+
+# cell balancing
+DISPLAY_BALANCING = 1
+VOLTAGE_RESOLUTION = 0.001
 
 class Table:
 	def __init__(self, root: tk.Tk, width: int, height: int):
@@ -72,7 +76,7 @@ class Table:
 				self.cells[(row - 2, col - 1, "V")] = volt_label
 				self.cells[(row - 2, col - 1, "T")] = temp_label
 	
-	def update(self, bank: int, segment: int, type: str, value: float) -> None:
+	def update(self, bank: int, segment: int, type: str, value: float, lowest: float) -> None:
 		# update text
 		self.cells[(segment, bank, type.upper())].configure(text = str(value))
 		
@@ -84,6 +88,11 @@ class Table:
 		elif type.upper() == MESSAGES[VOLTAGE_ID]:
 			if value < MIN_VOLTAGE or value > MAX_VOLTAGE:
 				cell_color = "#fc5c47"
+			if DISPLAY_BALANCING:
+				if value > lowest + VOLTAGE_RESOLUTION:
+					cell_color = "#89CFF0"
+				if value == lowest:
+					cell_color = "#AFE1AF"
 		self.cells[(segment, bank, type.upper())].configure(bg = cell_color)
 
 def serial_connection_init(port: str, baudrate: int, bytesize: int, parity: str, stopbits: int) -> serial.Serial:
@@ -138,10 +147,18 @@ def serial_monitor(tk_table: Table, serial_connection: serial.Serial) -> None:
 			message_id = MESSAGES[int(message[0]) & MESSAGE_MASK]
 			data = []
 
+			lowest = float('inf')
 			for i in range(CELLS_PER_BANK):
 				cell_data = round(float(message[i + 1]), RESOLUTION)
 				data.append(cell_data)
-				tk_table.update(bank_id, i, message_id, cell_data)
+				if message_id.upper() == MESSAGES[VOLTAGE_ID]:
+					if cell_data < lowest:
+						lowest = cell_data
+
+			for i in range(CELLS_PER_BANK):
+				cell_data = round(float(message[i + 1]), RESOLUTION)
+				# data.append(cell_data)
+				tk_table.update(bank_id, i, message_id, cell_data, lowest)
 
 			if LOG_DATA_TO_CSV:
 				log_data(bank_id + 1, message_id, data)
