@@ -4,7 +4,11 @@
 #include <unistd.h> // for sleep
 
 #include <wiringPiSPI.h>
-#include<FEB_CAN_NODE.h>
+#include<FEB_CAN_NODE.h> 
+
+//Libraries for https communication with node js server
+#include <json/json.h>
+#include <curl/curl.h>
 
 /**********************
  *         pi  stm32
@@ -23,7 +27,10 @@ using namespace std;
 
 
 int main() {
-	
+	//set up JSON string 
+	Json::Value root; 
+	Json::Reader reader; 
+
 	// setting up the file
 	bool isUSB = 0;
 	fstream meta_file;
@@ -103,18 +110,37 @@ int main() {
    usleep(10000); //wait for 10ms
 	
 	
-	while(1) {
+	while(1) { 
 		log_file.open(log_file_path, ios::out | ios::app);
 		read(fd, (unsigned char *)SPI_MESSAGE.bits, sizeof(SPI_MESSAGE));
 		
 		if (SPI_MESSAGE.bits[0] != 10) {
 			store_msg(&(SPI_MESSAGE.message.RxHeader), SPI_MESSAGE.message.RxData);
 		}
-		  
+		string jsonString = "{\"somedata\":" + to_string(SPI_MESSAGE.bits)+"}"; 
+		bool parsed = reader.parse(jsonString,root);  
+		updateData(root);
 		log_file.close();
 		usleep(1000); //wait for 1ms
 	}
 	
 	return 0;
+} 
+
+void updateData(Json::Value jsonData) {
+   CURL *curl;
+   CURLcode res;
+   struct curl_slist *headers = NULL;
+   string jsonString = jsonData.toStyledString();
+
+   headers = curl_slist_append(headers, "Content-Type: application/json");
+   curl = curl_easy_init();
+   if (curl) {
+      curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/updateData");
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonString.c_str());
+      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+      res = curl_easy_perform(curl);
+      curl_easy_cleanup(curl);
+   }
 }
 
