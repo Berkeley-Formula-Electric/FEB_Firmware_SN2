@@ -116,21 +116,18 @@ function draw() {
     rect(0, height/2, width/2, height/2)
 
     if (carTimer.reset) {
-        console.log("reset")
-        carTimer.timePaused = 0;m
+        carTimer.timePaused = 0;
         carTimer.startTime = Date.now();
         carData.time = Date.now() - carTimer.startTime;
         carTimer.reset = false;
         return;
     }
     if (carTimer.start && !carTimer.isRunning) {
-        console.log("start")
         carTimer.startTime = Date.now() - carTimer.timePaused;
         carTimer.isRunning = true;
         carTimer.start = false;
     }
     if (carTimer.stop && carTimer.isRunning) {
-        console.log("stop")
         carTimer.timePaused = Date.now() - carTimer.startTime;
         carTimer.start = false;
         carTimer.isRunning = false;
