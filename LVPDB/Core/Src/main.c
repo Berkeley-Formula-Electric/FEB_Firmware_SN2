@@ -48,16 +48,27 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+// hotswap addresses
 static const uint8_t LV_ADDR = 0x40 << 1;
 static const uint8_t CP_ADDR = 0x44 << 1;
 static const uint8_t AF_ADDR = 0x45 << 1;
 static const uint8_t EX_ADDR = 0x41 << 1;
-static const uint8_t ENABLE_REG = 0x06 << 1;
-static const uint8_t LIMIT_REG = 0x07 << 1;
 
+// configuration register value
+uint8_t CONFIG[2] = {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1}; // default settings
+
+// calibration register value
+uint8_t CAL[2] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};// setting Current_LSB to 1 for both
+
+// alert types
 uint8_t UNDERV[2] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t OVERP[2] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t TWENTYTWO[2] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0};
+uint8_t OVERPWR[2] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+// limits
+uint8_t LV_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0}; // = 22
+uint8_t CP_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0}; // = 336, 14 * 24
+uint8_t AF_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0}; // = 192, 8 * 24
+uint8_t EX_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0}; // = 144, 6 * 24
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,37 +129,14 @@ int main(void)
 
 	/* Node_2 */
 	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t cmd_1 = 0;
 
-	/* Node_3 */
-//	FEB_CAN_Init(&hcan1, APPS_ID);
-//	float acc_1 = 0.0;
-//	float acc_2 = 0.0;
-//	float brake = 0.0;
-//	float torque = 0.0;
-
-	/* Node_4 */
-//	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t emergency = 0;
-
-	// write to lv hotswap that i want to alert undervoltage for bus
-	HAL_I2C_Mem_Write(&hi2c1, LV_ADDR, ENABLE_REG, sizeof(ENABLE_REG), UNDERV, sizeof(UNDERV), HAL_MAX_DELAY);
-	// set limit to 22V
-	HAL_I2C_Mem_Write(&hi2c1, LV_ADDR, LIMIT_REG, sizeof(LIMIT_REG), TWENTY_TWO, sizeof(TWENTY_TWO), HAL_MAX_DELAY);
-
-	// for each of these hotswaps, want to alert for overpower
 	
-	// set CP to alert for overpower
-	HAL_I2C_Mem_Write(&hi2c1, CP_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
-	// set limit to 14 * 24
 	
-	// set AF to alert for overpower
-	HAL_I2C_Mem_Write(&hi2c1, AF_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
-	// set limit to 8 * 24
-	
-	// set EX to alert for overpower
-	HAL_I2C_Mem_Write(&hi2c1, EX_ADDR, ENABLE_REG, sizeof(ENABLE_REG), OVERP, sizeof(OVERP), HAL_MAX_DELAY);
-	// set limit to ...?
+	FEB_TPS2482_SETUP(&hi2c1, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
+	FEB_TPS2482_SETUP(&hi2c1, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
+	FEB_TPS2482_SETUP(&hi2c1, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
+	FEB_TPS2482_SETUP(&hi2c1, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
+
 
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to EN coolant pump
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to EN accumulator fans
@@ -171,7 +159,7 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
 	  }
 
-	  // for lv hotswap
+	  // lv hotswap
 	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
 	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7) == GPIO_PIN_RESET) || (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)) {
 		  // pull all ENs low
@@ -182,38 +170,16 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
 	  }
 
-	  // for coolant pump hotswap
-	  // if receives overpower alert (PA15 pulled low), pull EN low
-	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) == GPIO_PIN_RESET) {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
-	  }
-	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG (PC10) switches to low while EN is on, pull EN low
-	  if ((HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11) == GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10) == GPIO_PIN_RESET)) {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
-	  }
+	  // coolant pump hotswap
+	  FEB_TPS2482_shutdownIfError(hi2c1, CP_ADDR, GPIOC, GPIO_PIN_11, GPIOA, GPIO_PIN_15, GPIOC, GPIO_PIN_10, 22.5, 25.5, 15, 10, 340, 300);
 
-	  // for accumulator fans hotswap
-	  // if receives overpower alert (PC12 pulled low), pull EN low
-	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_12) == GPIO_PIN_RESET) {
-		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-	  }
-	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG (PB4) switches to low while EN is on, pull EN low
-	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET)) {
-		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-	  }
+	  // accumulator fans hotswap
+	  FEB_TPS2482_shutdownIfError(hi2c1, AF_ADDR, GPIOB, GPIO_PIN_5, GPIOC, GPIO_PIN_12, GPIOB, GPIO_PIN_4, 22.5, 25.5, 9, 6, 200, 160);
 
-	  // for extra hotswap
-	  // if receives overpower alert (PC1 pulled low), pull EN low
-	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_RESET) {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
-	  }
-	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG (PC2) switches to low while EN is on, pull EN low
-	  if ((HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_3) == GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET)) {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
-	  }
+	  // extra hotswap
+	  FEB_TPS2482_shutdownIfError(hi2c1, EX_ADDR, GPIOC, GPIO_PIN_3, GPIOC, GPIO_PIN_1, GPIOC, GPIO_PIN_2, 22.5, 25.5, 7, 4, 150, 120);
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
