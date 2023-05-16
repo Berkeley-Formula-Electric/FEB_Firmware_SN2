@@ -7,7 +7,7 @@
 #include<FEB_CAN_NODE.h> 
 
 //Libraries for https communication with node js server
-#include <json/json.h>
+//#include <json/json.h> //May be necessary later but for now we can use strings
 #include <curl/curl.h>
 
 /**********************
@@ -25,11 +25,28 @@ using namespace std;
 #define SPI_CHANNEL 1
 #define SPI_CLK_SPEED 1000000 //can be 500kHz to 32MHz
 
+//Forward declarations 
+void updateData(string updateString, CURL* curl);
 
 int main() {
-	//set up JSON string 
-	Json::Value root; 
-	Json::Reader reader; 
+	//set up JSON string May be used in the future if JSON package is added
+	//Json::Value root; 
+	//Json::Reader reader; 
+	
+	//INITIALIZE CURL PARAMETERS
+	CURL *curl;
+	struct cur_slist *headers = NULL; 
+	curl_global_init(CURL_GLOBAL_ALL); 
+	curl = curl_easy_init();
+	if(curl){
+		//set URL and request type 
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/api/postdata");
+		curl_easy_setopt(curl, CURLOPT_POST,1L);
+
+		//set request headers
+		headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	}
 
 	// setting up the file
 	bool isUSB = 0;
@@ -117,30 +134,31 @@ int main() {
 		if (SPI_MESSAGE.bits[0] != 10) {
 			store_msg(&(SPI_MESSAGE.message.RxHeader), SPI_MESSAGE.message.RxData);
 		}
-		string jsonString = "{\"somedata\":" + to_string(SPI_MESSAGE.bits)+"}"; 
-		bool parsed = reader.parse(jsonString,root);  
-		updateData(root);
+
+		//Sending POST Request to Node Js server
+		//TODO: Not sure how the SPI_MESSAGE works so the following will need some edits
+		string data = "param1" + to_string(SPI_MESSAGE.bits); 
+		updateData(data, curl);
+
 		log_file.close();
 		usleep(1000); //wait for 1ms
 	}
+
+	//Free all curl related objects
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	curl_global_cleanup();
 	
 	return 0;
 } 
 
-void updateData(Json::Value jsonData) {
-   CURL *curl;
-   CURLcode res;
-   struct curl_slist *headers = NULL;
-   string jsonString = jsonData.toStyledString();
+void updateData(string updateString,CURL* curl) {
+	CURLcode res;
+	curl_easy_setopt(curl,CURLOPT_POSTFIELDS,updateString.c_str());
+	res = curl_easy_perform(curl);
+	if(res != CURLE_OK){
+		cerr << "Error" << endl;
+	}
 
-   headers = curl_slist_append(headers, "Content-Type: application/json");
-   curl = curl_easy_init();
-   if (curl) {
-      curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/updateData");
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonString.c_str());
-      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-      res = curl_easy_perform(curl);
-      curl_easy_cleanup(curl);
-   }
 }
 
