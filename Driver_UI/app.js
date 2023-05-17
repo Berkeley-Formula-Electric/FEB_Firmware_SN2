@@ -16,13 +16,21 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = 3000
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); 
+//Middleware required to read request body
+app.use(express.urlencoded({extended:true}));
 app.set("view engine", "ejs");
 
 // routes
 app.get("/", (req, res) => {
     res.render("screen.ejs")
-})
+});
+
+app.post('/api/postdata',(req,res)=>{
+  //TODO: Still need to figure out how to properly parse information from POST for other purposes
+  console.log(req.body.param1);
+  res.sendStatus(200);
+});
 
 // TEST DATA
 const data = {
