@@ -137,13 +137,12 @@ int main(void)
 	FEB_TPS2482_SETUP(&hi2c1, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
 	FEB_TPS2482_SETUP(&hi2c1, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
 
-
+	// uncomment if we need to pull ENs high to start
+	/*
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to EN coolant pump
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to EN accumulator fans
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to EN extra
-
-	// set 3 different buffers to hold messages from each of the hotswaps
-	// recieve from each of the hotswaps and put data in buffer
+	*/
 
 
   /* USER CODE END 2 */
@@ -153,7 +152,7 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  if (APPS_MESSAGE_TYPE.brake_pedal > 0) {// if value > 0 :
+	  if (APPS_MESSAGE_TYPE.brake_pedal == 1) {// if value == 1 :
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low

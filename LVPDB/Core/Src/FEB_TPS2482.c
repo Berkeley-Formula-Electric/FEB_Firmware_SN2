@@ -41,11 +41,11 @@ void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, 
 	buf[0] = REG;
 	ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, HAL_MAX_DELAY);
 	if (ret != HAL_OK) {
-		// error?
+		HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET); // pull EN low
 	} else {
 		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2, HAL_MAX_DELAY);
 		if (ret != HAL_OK) {
-			// error
+			HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET); // pull EN low
 		} else {
 			val = ((int16_t)buf[0] << 4) | (buf[1] >> 4); // combine the 2 bytes
 			val = val - 1;
