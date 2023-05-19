@@ -1,4 +1,4 @@
-../Core/Src/FEB_CAN_Charger.c:23:6:FEB_CAN_Charger_Init	16	static
+../Core/Src/FEB_CAN_Charger.c:23:6:FEB_CAN_Charger_Init	4	static
 ../Core/Src/FEB_CAN_Charger.c:38:9:FEB_CAN_Charger_Filter_Config	56	static
 ../Core/Src/FEB_CAN_Charger.c:59:6:FEB_CAN_Charger_Transmit	16	static
 ../Core/Src/FEB_CAN_Charger.c:86:6:FEB_CAN_Charger_Store_Msg	16	static

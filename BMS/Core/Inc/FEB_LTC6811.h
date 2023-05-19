@@ -30,7 +30,7 @@
 // voltage thresholds
 #define MIN_VOLTAGE	3.0
 #define MAX_VOLTAGE	4.0
-#define CHARGED_PERCENTAGE 0.98
+#define CHARGED_PERCENTAGE 1
 
 // current thresholds
 #define MAX_CHARGING_CURRENT 0.1

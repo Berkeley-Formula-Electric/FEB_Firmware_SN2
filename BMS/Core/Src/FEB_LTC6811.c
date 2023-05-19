@@ -233,12 +233,12 @@ uint8_t FEB_LTC6811_Cells_Charged(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
 			float cell_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
-			if (cell_voltage < cell_voltage_threshold) {
-				return 0;
+			if (cell_voltage > cell_voltage_threshold) {
+				return 1;
 			}
 		}
 	}
-	return 1;
+	return 0;
 }
 
 void FEB_LTC6811_Clear_Voltage(void) {

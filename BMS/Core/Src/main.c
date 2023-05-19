@@ -105,6 +105,7 @@ int main(void)
   FEB_BMS_Shutdown_Startup();
   FEB_BMS_Precharge_Open();
   FEB_CAN_Init();
+  FEB_CAN_Charger_Init();
 
   /* USER CODE END 2 */
 

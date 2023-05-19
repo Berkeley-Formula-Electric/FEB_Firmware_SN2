@@ -39,7 +39,7 @@ typedef struct FEB_CAN_CHAERGER_CHARGER_MESSAGE_TYPE {
 // ********************************** Functions **********************************
 
 // Initialize
-void FEB_CAN_Charger_Init(CAN_HandleTypeDef* hcan);
+void FEB_CAN_Charger_Init();
 
 // CAN
 uint8_t FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignment, uint8_t bank);

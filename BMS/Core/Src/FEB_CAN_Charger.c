@@ -20,7 +20,7 @@ static uint8_t FEB_CAN_Charger_State_Bool = 0;		// 0 (actively charging), 1 (fin
 
 // ******************** Startup ********************
 
-void FEB_CAN_Charger_Init(CAN_HandleTypeDef* hcan) {
+void FEB_CAN_Charger_Init() {
 	if (FEB_CAN_CHARGER_START_CHARGE == 0) {
 		return;
 	}
