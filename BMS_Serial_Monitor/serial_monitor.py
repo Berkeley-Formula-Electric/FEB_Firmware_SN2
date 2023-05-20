@@ -6,11 +6,11 @@ def main():
     tb = table.Table(win)
     
     t1 = threading.Thread(target=update_stats, args=[tb])
-    t2 = threading.Trhead(target=sc.monitor_data, args=[tb])
+    t2 = threading.Thread(target=sc.monitor_data, args=[tb])
     t1.start()
     t2.start()
 
-    gui.root.mainloop()
+    win.root.mainloop()
 
 def update_stats(tb):
     while True:

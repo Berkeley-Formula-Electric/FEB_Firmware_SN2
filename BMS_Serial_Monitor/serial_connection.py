@@ -16,7 +16,7 @@ class Serial_Connection:
             except serial.SerialException as error:
                 pass
         
-    def __process_message(message, message_id, bank, table):
+    def __process_message(self, message, message_id, bank, table):
         match message_id:
             case constants.VOLTAGE_ID:
                 for i in range(constants.NUM_CELLS_PER_BANK):

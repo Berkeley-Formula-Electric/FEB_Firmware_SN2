@@ -2,7 +2,7 @@ import serial
 
 # accumulator configuration
 NUM_BANKS = 8
-NUM_ACTIVE_BANKS = 8
+NUM_ACTIVE_BANKS = 2
 NUM_CELLS_PER_BANK = 17
 
 MIN_VOLTAGE = 3.0
@@ -11,11 +11,17 @@ MIN_TEMPERATURE = 0
 MAX_TEMPERATURE = 60
 
 # serial configuration
-PORT = '/dev/cu.usbmodem143203'
+PORT = '/dev/cu.usbmodem142303'
 BAUDRATE = 115200
-BYTESIZE = serial.SEVENBITS
-PARITY = serial.PARITY_EVEN
-STOPBITS = serial.STOPBITS_ONE
+# BYTESIZE = serial.SEVENBITS
+BYTESIZE = 7
+
+#PARITY = serial.PARITY_EVEN
+PARITY = 'E'
+
+#STOPBITS = serial.STOPBITS_ONE
+STOPBITS = 1
+
 
 # messages
 BITS_PER_MESSAGE_ID = 3
