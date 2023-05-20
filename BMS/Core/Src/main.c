@@ -135,6 +135,7 @@ int main(void)
 
 	// *********************** Cell Balance ***********************
 	FEB_LTC6811_Balance_Cells();
+	FEB_LTC6811_UART_Transmit_Discharge();
 
 	// *********************** Charger ***********************
 	FEB_CAN_Charger_Process(&hcan1);

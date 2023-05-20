@@ -44,9 +44,10 @@
 
 // ********************************** Connectivity Configuration **********************************
 
-#define UART_BITS_PER_MESSAGE 1
-#define UART_VOLTAGE_ID 0b0
-#define UART_TEMPERATURE_ID 0b1
+#define UART_BITS_PER_MESSAGE 3
+#define UART_VOLTAGE_ID 0b000
+#define UART_TEMPERATURE_ID 0b001
+#define UART_DISCHARGE_ID 0b010
 
 // ********************************** Structs **********************************
 
@@ -116,6 +117,7 @@ void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell);
 void FEB_LTC6811_Clear_Balance_Cells(void);
 void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell);
 void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic);
+void FEB_LTC6811_UART_Transmit_Discharge(void);
 
 // Voltage interface
 void FEB_LTC6811_Validate_Voltage(void);

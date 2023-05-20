@@ -178,6 +178,30 @@ void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic) {
 	}
 }
 
+void FEB_LTC6811_UART_Transmit_Discharge(void) {
+	char UART_str[1024];
+	char temp_str[256];
+
+	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+		// Add bank_idx, cell_idx to {@code UART_Str}
+		sprintf(UART_str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_DISCHARGE_ID);
+
+
+		// Add values to {@code UART_Str}
+		for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+			uint8_t state = FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank_idx, cell_idx)][FEB_LTC6811_Cell_Idx(cell_idx)];
+			sprintf(temp_str, " %d", state);
+			strncat(UART_str, temp_str, strlen(temp_str));
+		}
+
+		// Add '\n' to {@code UART_Str}
+		sprintf(temp_str, "\n");
+		strncat(UART_str, temp_str, strlen(temp_str));
+
+		HAL_UART_Transmit(&huart2, (uint8_t*) UART_str, strlen(UART_str), 100);
+	}
+}
+
 // ******************** Voltage Interface ********************
 
 void FEB_LTC6811_Validate_Voltage(void) {
