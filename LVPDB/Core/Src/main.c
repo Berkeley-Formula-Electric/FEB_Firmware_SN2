@@ -49,26 +49,26 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // hotswap addresses
-static const uint8_t LV_ADDR = 0x40 << 1;
-static const uint8_t CP_ADDR = 0x44 << 1;
-static const uint8_t AF_ADDR = 0x45 << 1;
-static const uint8_t EX_ADDR = 0x41 << 1;
+const uint8_t LV_ADDR = 0x40 << 1;
+const uint8_t CP_ADDR = 0x44 << 1;
+const uint8_t AF_ADDR = 0x45 << 1;
+const uint8_t EX_ADDR = 0x41 << 1;
 
 // configuration register value
-uint8_t CONFIG[2] = {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1}; // default settings
+uint8_t CONFIG[16] = {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1}; // default settings
 
 // calibration register value
-uint8_t CAL[2] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};// setting Current_LSB to 1 for both
+uint8_t CAL[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};// setting Current_LSB to 1 for both
 
 // alert types
-uint8_t UNDERV[2] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t OVERPWR[2] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t UNDERV[16] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t OVERPWR[16] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // limits
-uint8_t LV_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0}; // = 22
-uint8_t CP_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0}; // = 336, 14 * 24
-uint8_t AF_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0}; // = 192, 8 * 24
-uint8_t EX_LIMIT[2] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0}; // = 144, 6 * 24
+uint8_t LV_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0}; // = 22
+uint8_t CP_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0}; // = 336, 14 * 24
+uint8_t AF_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0}; // = 192, 8 * 24
+uint8_t EX_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0}; // = 144, 6 * 24
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,7 +118,7 @@ int main(void)
   MX_CAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-//  uint8_t sleep_time = 10;
+  uint8_t sleep_time = 10;
 //  char buf[128];
 //  uint8_t buf_len;
 
@@ -132,10 +132,10 @@ int main(void)
 
 	
 	
-	FEB_TPS2482_SETUP(&hi2c1, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
-	FEB_TPS2482_SETUP(&hi2c1, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
-	FEB_TPS2482_SETUP(&hi2c1, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
-	FEB_TPS2482_SETUP(&hi2c1, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
 
 	// uncomment if we need to pull ENs high to start
 	/*
@@ -152,7 +152,7 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  if (APPS_MESSAGE_TYPE.brake_pedal == 1) {// if value == 1 :
+	  if (APPS_MESSAGE_TYPE.brake_pedal == 1) {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low

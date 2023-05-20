@@ -1,14 +1,10 @@
 #include "FEB_TPS2482.h"
 
 void FEB_TPS2482_SETUP(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, uint8_t CONFIG[], uint8_t CAL_REG[], uint8_t ALERT[], uint8_t LIMIT[]) {
-	// configure
-	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x00 << 1, 1, CONFIG, sizeof(CONFIG), HAL_MAX_DELAY);
-	// calibrate
-	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x05 << 1, 1, CAL_REG, sizeof(CAL_REG), HAL_MAX_DELAY);
-	// set alert
-	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x06 << 1, 1, ALERT, sizeof(ALERT), HAL_MAX_DELAY);
-	// set limit
-	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x07 << 1, 1, LIMIT, sizeof(LIMIT), HAL_MAX_DELAY);
+	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x00 << 1, 1, CONFIG, 16, HAL_MAX_DELAY); // configure
+	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x05 << 1, 1, CAL_REG, 16, HAL_MAX_DELAY); // calibrate
+	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x06 << 1, 1, ALERT, 16, HAL_MAX_DELAY); // set alert
+	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x07 << 1, 1, LIMIT, 16, HAL_MAX_DELAY); // set limit
 }
 
 void FEB_TPS2482_shutdownIfError(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, GPIO_TypeDef EN, uint16_t EN_NUM, GPIO_TypeDef AL, uint16_t AL_NUM,
@@ -39,11 +35,11 @@ void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, 
 		uint8_t REG) {
 	uint8_t buf[12];
 	buf[0] = REG;
-	ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, HAL_MAX_DELAY);
+	ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
 	if (ret != HAL_OK) {
 		HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET); // pull EN low
 	} else {
-		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2, HAL_MAX_DELAY);
+		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2, 100);
 		if (ret != HAL_OK) {
 			HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET); // pull EN low
 		} else {

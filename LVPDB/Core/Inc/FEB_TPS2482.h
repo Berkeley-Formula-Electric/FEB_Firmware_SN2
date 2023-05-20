@@ -8,8 +8,11 @@
 #ifndef INC_FEB_TPS2482_H_
 #define INC_FEB_TPS2482_H_
 
+#include "stm32f4xx_hal.h"
 #include "FEB_CAN.h"
 #include "stdio.h"
+#include "stdint.h"
+
 
 void FEB_TPS2482_SETUP(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, uint8_t CONFIG[], uint8_t CAL_REG[], uint8_t ALERT[], uint8_t LIMIT[]);
 
