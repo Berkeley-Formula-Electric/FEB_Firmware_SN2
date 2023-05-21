@@ -1,0 +1,16 @@
+../Core/Inc/FEB_CAN_NODE.h:29:6:Store_EMERGENCY_Msg	24	static
+../Core/Inc/FEB_CAN_NODE.h:55:6:Store_BMS_Msg	24	static
+../Core/Inc/FEB_CAN_NODE.h:78:6:Store_SM_Msg	24	static
+../Core/Inc/FEB_CAN_NODE.h:107:6:Store_APPS_Msg	24	static
+../Core/Inc/FEB_CAN_NODE.h:141:22:assign_filter_array	16	static
+../Core/Inc/FEB_CAN_NODE.h:159:19:assign_filter_array_legnth	16	static
+../Core/Inc/FEB_CAN_NODE.h:177:6:store_msg	16	static
+../Core/Inc/FEB_CAN.h:13:6:FEB_CAN_Filter_Config	72	static
+../Core/Inc/FEB_CAN.h:35:6:FEB_CAN_Init	32	static
+../Core/Inc/FEB_CAN.h:69:6:FEB_CAN_Receive	16	static
+../Core/Inc/FEB_CAN.h:76:6:FEB_CAN_Transmit	24	static
+../Core/Inc/FEB_CAN.h:94:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static
+../Core/Inc/FEB_CAN.h:99:6:HAL_CAN_RxFifo1MsgPendingCallback	16	static
+../Core/Src/FEB_TPS2482.c:3:6:FEB_TPS2482_SETUP	24	static
+../Core/Src/FEB_TPS2482.c:10:6:FEB_TPS2482_shutdownIfError	56	static
+../Core/Src/FEB_TPS2482.c:34:6:FEB_TPS2482_pullLowIfOutOfBounds	64	static

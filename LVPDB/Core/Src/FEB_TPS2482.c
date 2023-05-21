@@ -7,8 +7,8 @@ void FEB_TPS2482_SETUP(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, uint8_t CONFIG[
 	HAL_I2C_Mem_Write(&hi2c, DEV_ADDR, 0x07 << 1, 1, LIMIT, 16, HAL_MAX_DELAY); // set limit
 }
 
-void FEB_TPS2482_shutdownIfError(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, GPIO_TypeDef EN, uint16_t EN_NUM, GPIO_TypeDef AL, uint16_t AL_NUM,
-		GPIO_TypeDef PG, uint16_t PG_NUM, float VMAX, float VMIN, float IMAX, float IMIN, float PMAX, float PMIN) {
+void FEB_TPS2482_shutdownIfError(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR, GPIO_TypeDef * EN, uint16_t EN_NUM, GPIO_TypeDef * AL, uint16_t AL_NUM,
+		GPIO_TypeDef * PG, uint16_t PG_NUM, float VMAX, float VMIN, float IMAX, float IMIN, float PMAX, float PMIN) {
 
 	// pull EN low if
 		// 1. alert pin pulled low
@@ -31,11 +31,11 @@ void FEB_TPS2482_shutdownIfError(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, GPIO_
 
 }
 
-void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, GPIO_TypeDef EN, uint16_t EN_NUM, float MAX, float MIN,
+void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR, GPIO_TypeDef * EN, uint16_t EN_NUM, float MAX, float MIN,
 		uint8_t REG) {
 	uint8_t buf[12];
 	buf[0] = REG;
-	ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
+	HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
 	if (ret != HAL_OK) {
 		HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET); // pull EN low
 	} else {
@@ -43,10 +43,10 @@ void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef hi2c, uint8_t DEV_ADDR, 
 		if (ret != HAL_OK) {
 			HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET); // pull EN low
 		} else {
-			val = ((int16_t)buf[0] << 4) | (buf[1] >> 4); // combine the 2 bytes
+			int val = ((int16_t)buf[0] << 4) | (buf[1] >> 4); // combine the 2 bytes
 			val = val - 1;
 			val |= 0xF000; // subtract 1 and take complement
-			parsed = val * 0.0000025;// convert to decimal and multiply by 2.5uV
+			float parsed = val * 0.0000025;// convert to decimal and multiply by 2.5uV
 			if (parsed > MAX || parsed < MIN) {
 				HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET);
 			}
