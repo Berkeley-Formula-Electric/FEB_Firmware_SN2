@@ -119,14 +119,6 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   uint8_t sleep_time = 10;
-//  char buf[128];
-//  uint8_t buf_len;
-
-	/* Node_1 */
-//	FEB_CAN_Init(&hcan1, BMS_ID);
-//	float temp = 0.0;
-//	float volt = 0.0;
-
 	/* Node_2 */
 	FEB_CAN_Init(&hcan1, SM_ID);
 
@@ -139,9 +131,9 @@ int main(void)
 
 	// uncomment if we need to pull ENs high to start
 	/*
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to EN coolant pump
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to EN accumulator fans
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to EN extra
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
 	*/
 
 
@@ -152,11 +144,11 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  /*if (APPS_MESSAGE_TYPE.brake_pedal == 1) {
+	  if (APPS_MESSAGE_TYPE.brake_pedal == 1) {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
-	  }*/
+	  }
 
 	  // lv hotswap
 	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
@@ -416,8 +408,7 @@ static void MX_GPIO_Init(void)
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-void Error_Handler(void)
-{
+void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
