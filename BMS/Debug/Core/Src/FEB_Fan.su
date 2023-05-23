@@ -3,3 +3,8 @@
 ../Core/Src/FEB_Fan.c:34:6:FEB_Fan_2_Speed_Set	16	static
 ../Core/Src/FEB_Fan.c:39:6:FEB_Fan_3_Speed_Set	16	static
 ../Core/Src/FEB_Fan.c:44:6:FEB_Fan_4_Speed_Set	16	static
+../Core/Src/FEB_Fan.c:51:6:FEB_Fan_Serial_High	8	static
+../Core/Src/FEB_Fan.c:55:6:FEB_Fan_Serial_Low	8	static
+../Core/Src/FEB_Fan.c:59:6:FEB_Fan_Clock_High	8	static
+../Core/Src/FEB_Fan.c:63:6:FEB_Fan_Clock_Low	8	static
+../Core/Src/FEB_Fan.c:67:6:FEB_Fan_Set_Tachometer	24	static
