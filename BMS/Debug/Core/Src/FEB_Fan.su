@@ -1,0 +1,5 @@
+../Core/Src/FEB_Fan.c:17:6:FEB_Fan_Init	8	static
+../Core/Src/FEB_Fan.c:29:6:FEB_Fan_1_Speed_Set	16	static
+../Core/Src/FEB_Fan.c:34:6:FEB_Fan_2_Speed_Set	16	static
+../Core/Src/FEB_Fan.c:39:6:FEB_Fan_3_Speed_Set	16	static
+../Core/Src/FEB_Fan.c:44:6:FEB_Fan_4_Speed_Set	16	static

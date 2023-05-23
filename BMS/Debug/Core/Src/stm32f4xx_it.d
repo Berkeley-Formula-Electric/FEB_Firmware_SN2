@@ -26,13 +26,15 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/FEB_LTC6811.h ../Core/Inc/LTC6811.h ../Core/Inc/LTC681x.h \
  ../Core/Inc/FEB_BMS_Shutdown.h ../Core/Inc/FEB_LTC6811_Temp_LUT.h \
  ../Core/Inc/FEB_CAN_Charger.h ../Core/Inc/FEB_CAN.h \
  ../Core/Inc/FEB_CAN_IVT.h ../Core/Inc/main.h \
  ../Core/Inc/FEB_BMS_Precharge.h ../Core/Inc/FEB_BMS_State.h \
- ../Core/Inc/stm32f4xx_it.h
+ ../Core/Inc/FEB_Fan.h ../Core/Inc/stm32f4xx_it.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -61,6 +63,8 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 ../Core/Inc/FEB_LTC6811.h:
 ../Core/Inc/LTC6811.h:
@@ -73,4 +77,5 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Core/Inc/main.h:
 ../Core/Inc/FEB_BMS_Precharge.h:
 ../Core/Inc/FEB_BMS_State.h:
+../Core/Inc/FEB_Fan.h:
 ../Core/Inc/stm32f4xx_it.h:
