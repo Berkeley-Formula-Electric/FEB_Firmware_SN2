@@ -9,7 +9,6 @@
 #define INC_FEB_TPS2482_H_
 
 #include "stm32f4xx_hal.h"
-#include "FEB_CAN.h"
 #include "stdio.h"
 #include "stdint.h"
 
