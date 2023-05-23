@@ -49,12 +49,12 @@ extern SPI_HandleTypeDef hspi1;
 
 void cs_low(uint8_t pin)
 {
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
 }
 
 void cs_high(uint8_t pin)
 {
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);
 }
 
 void delay_u(uint16_t micro)

@@ -12,14 +12,24 @@ static uint8_t FEB_Fan_2_Speed = 0;		// 0-255
 static uint8_t FEB_Fan_3_Speed = 0;		// 0-255
 static uint8_t FEB_Fan_4_Speed = 0;		// 0-255
 
-// ********************************** PWM **********************************
+// ********************************** Initialize **********************************
 
 void FEB_Fan_Init(void) {
+	FEB_Fan_PWM_Start();
+	FEB_Fan_Init_Speed_Set();
+	FEB_Fan_Reset_Shift_Register();
+}
+
+// ********************************** PWM **********************************
+
+void FEB_Fan_PWM_Start(void) {
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+}
 
+void FEB_Fan_Init_Speed_Set(void) {
 	FEB_Fan_1_Speed_Set(255);
 	FEB_Fan_2_Speed_Set(255);
 	FEB_Fan_3_Speed_Set(255);
@@ -48,6 +58,12 @@ void FEB_Fan_4_Speed_Set(uint8_t speed) {
 
 // ********************************** Tachometer **********************************
 
+void FEB_Fan_Reset_Shift_Register(void) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+	FEB_Timer_Delay_Micro(1);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+}
+
 void FEB_Fan_Serial_High(void) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
 }
@@ -64,16 +80,23 @@ void FEB_Fan_Clock_Low(void) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 }
 
+void FEB_Fan_Clock_Pulse(void) {
+	FEB_Fan_Clock_High();
+	FEB_Timer_Delay_Micro(1);
+	FEB_Fan_Clock_Low();
+	FEB_Timer_Delay_Micro(1);
+}
+
 void FEB_Fan_Set_Tachometer(uint8_t value) {
 	for (uint8_t i = 0; i < 8; i++) {
-		if ((value << i) & 0b1 == 1) {
+		// Set multiplex
+		if (((value << i) & 0b1) == 1) {
 			FEB_Fan_Serial_High();
 		} else {
 			FEB_Fan_Serial_Low();
 		}
-		FEB_Fan_Clock_High();
-		// Todo: Add delay
-		FEB_Fan_Clock_Low();
-		// Todo: Add delay
+		FEB_Fan_Clock_Pulse();
+
+		// Todo: read ADC pin voltage - pb0 (multiplex 1), pb1 (multiplex 2)
 	}
 }

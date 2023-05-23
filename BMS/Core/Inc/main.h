@@ -42,6 +42,7 @@ extern "C" {
 #include "FEB_CAN.h"
 #include "FEB_BMS_State.h"
 #include "FEB_Fan.h"
+#include "FEB_Timer.h"
 
 /* USER CODE END Includes */
 
