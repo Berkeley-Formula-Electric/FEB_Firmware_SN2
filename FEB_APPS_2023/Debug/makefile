@@ -60,8 +60,8 @@ all: main-build
 main-build: FinalAPPSCode_2023.elf secondary-outputs
 
 # Tool invocations
-FinalAPPSCode_2023.elf FinalAPPSCode_2023.map: $(OBJS) $(USER_OBJS) /Users/alexlu/Desktop/FEBFolder/stm32f446re_can_bus/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FinalAPPSCode_2023.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/alexlu/Desktop/FEBFolder/stm32f446re_can_bus/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FinalAPPSCode_2023.map" -Wl,--gc-sections -static -u_printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+FinalAPPSCode_2023.elf FinalAPPSCode_2023.map: $(OBJS) $(USER_OBJS) /Users/imasmm/Academic/feb/FEB_Firmware_2023/FEB_APPS_2023/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "FinalAPPSCode_2023.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/imasmm/Academic/feb/FEB_Firmware_2023/FEB_APPS_2023/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FinalAPPSCode_2023.map" -Wl,--gc-sections -static -u_printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

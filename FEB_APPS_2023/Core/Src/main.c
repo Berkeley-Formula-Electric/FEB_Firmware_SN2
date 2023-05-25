@@ -98,8 +98,8 @@ float FEB_Normalized_Acc_Pedals(){
 	return final_normalized;
 
 }
-void FEB_LVPDB_sendBrake(){
-	FEB_CAN_Transmit(&hcan1,LVPDB_ID,normalized_brake,sizeof(float));
+void FEB_APPS_sendBrake(){
+	FEB_CAN_Transmit(&hcan1,APPS_ID,&normalized_brake,sizeof(float));
 }
 
 void FEB_RMS_updateTorque() {
@@ -202,8 +202,8 @@ int main(void)
 //	uint8_t cmd_1 = 0;
 
 	/* Node_3 */
-	//FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
-	//FEB_RMS_Init();
+	FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
+	FEB_RMS_Init();
 //	float acc_1 = 0.0;
 //	float acc_2 = 0.0;
 //	float brake = 0.0;
@@ -261,18 +261,25 @@ int main(void)
 	  pedal3 = getPedal(buffer[4]);
 	  pedal4 = getPedal(buffer[5]);
 
-	  normalized_acc = pedal1/3.3;
+	  //ready to drive,
+	  if (SW_MESSAGE.command_1 == 1) {
+		  normalized_acc = pedal1/3.3;
+	  } else {
+		  normalized_acc = 0;
+	  }
+
 	  normalized_brake = pedal3/3.3;
 
-	  buf_len = sprintf(buf, "Pedal Value: %.6f \n", normalized_acc);
-	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len,10);
 	  uint16_t torque = normalized_acc * 50;
 
 
 	  //Transmit CAN messages to other boards
 
-	  //FEB_RMS_setTorque(torque);
-	  //FEB_LVPDB_sendBrake();
+	  FEB_RMS_setTorque(torque);
+	  FEB_APPS_sendBrake();
+
+	  buf_len = sprintf(buf, "acc: %.3f brake: %.3f\n", normalized_acc, normalized_brake);
+	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 	  HAL_Delay(100);
   }
