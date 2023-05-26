@@ -53,13 +53,13 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // hotswap addresses
-const uint8_t LV_ADDR = 0x40 << 1;
-const uint8_t CP_ADDR = 0x44 << 1;
-const uint8_t AF_ADDR = 0x45 << 1;
-const uint8_t EX_ADDR = 0x41 << 1;
+const uint8_t LV_ADDR = 0b1000000 << 1;
+const uint8_t CP_ADDR = 0b1000100 << 1;
+const uint8_t AF_ADDR = 0b1000101 << 1;
+const uint8_t EX_ADDR = 0b1000001 << 1;
 
 // configuration register value
-uint8_t CONFIG[16] = {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1}; // default settings
+uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
 
 // calibration register value
 uint8_t CAL[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};// setting Current_LSB to 1 for both
@@ -129,10 +129,10 @@ int main(void)
 
 	hi2c1p = &hi2c1;
 
-	FEB_TPS2482_SETUP(hi2c1, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
+//	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
+//	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
+//	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
+//	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
 
 	// uncomment if we need to pull ENs high to start
 	/*
@@ -140,6 +140,9 @@ int main(void)
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
 	*/
+
+	char buf[128];
+	int buf_len;
 
 
   /* USER CODE END 2 */
@@ -170,6 +173,7 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
 	  }
 
+/***
 	  // lv hotswap
 	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
 	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7) == GPIO_PIN_RESET) || (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)) {
@@ -189,8 +193,11 @@ int main(void)
 
 	  // extra hotswap
 	  FEB_TPS2482_shutdownIfError(hi2c1p, EX_ADDR, GPIOC, GPIO_PIN_3, GPIOC, GPIO_PIN_1, GPIOC, GPIO_PIN_2, 22.5, 25.5, 7, 4, 150, 120);
+***/
 
 
+	  buf_len = sprintf((char*)buf, "ready: %d\r\n", SW_MESSAGE.command_1);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
