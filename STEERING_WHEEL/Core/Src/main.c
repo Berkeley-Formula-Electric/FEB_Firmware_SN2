@@ -77,7 +77,6 @@ static const uint8_t IOEXP2_ADDR = 0b0100001 << 1;
 static const uint8_t VOLUME = 2; // volume of the buzzer (10%)
 static bool Button_Checking = false;
 static bool Button_Timer_Flag = false;
-static bool Init_Blocking = false;
 
 /* USER CODE END 0 */
 
@@ -118,6 +117,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   bool ready_to_drive = false;
+  bool last_button_state = false;
+  bool lock = false;
 
   char buf[128];
   int buf_len;
@@ -126,7 +127,7 @@ int main(void)
   HAL_StatusTypeDef ret;
 
   HAL_TIM_Base_Start_IT(&htim13);
-    HAL_TIM_Base_Stop_IT(&htim13);
+  HAL_TIM_Base_Stop_IT(&htim13);
   HAL_TIM_Base_Start_IT(&htim14);
   HAL_TIM_Base_Stop_IT(&htim14);
   Button_Checking = false;
@@ -137,6 +138,7 @@ int main(void)
 
 
   FEB_CAN_Init(&hcan1, SW_ID);
+
 
 
   /* USER CODE END 2 */
@@ -194,7 +196,7 @@ int main(void)
 //		  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 		  // if the system is not checking a button, start the timer to check the timer
-		  if (!Button_Checking && !Init_Blocking) {
+		  if (!Button_Checking && (last_button_state == false) && !lock) {
 			  // Start timer to count 1 sec hold time
 			  HAL_TIM_Base_Start_IT(&htim13);
 			  Button_Checking = true;
@@ -206,7 +208,10 @@ int main(void)
 		  // turn on buzzer and send CAN msg, reset states
 		  if (Button_Timer_Flag) {
 			  ready_to_drive = !ready_to_drive;
-			  Init_Blocking = true;
+
+			  // when the ready_to_drive state is just changed, lock from changing again
+			  lock = true;
+
 			  // start timer for buzzer
 			  HAL_TIM_Base_Start_IT(&htim14);
 			  // turn on buzzer at VOLUME
@@ -220,8 +225,17 @@ int main(void)
 //			  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 		  }
 
+		  //record button state
+		  last_button_state = true;
+
 	  } else {
 		  Button_Timer_Flag = false;
+
+		  // allow ready_to_drive to change when button is released.
+		  if (last_button_state) {
+			  last_button_state = false;
+			  lock = false;
+		  }
 	  }
 //	  buf_len = sprintf((char*)buf, "check:%d flag:%d\r\n", Button_Checking, Button_Timer_Flag);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
@@ -566,8 +580,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	// timer for buzzer
 	if (htim == &htim14)
 	{
-	  // turn off initialize blocking
-	  Init_Blocking = false;
 	  // turn off buzzer
 	  htim2.Instance->CCR2 = 0;
 	  // Stop timer
