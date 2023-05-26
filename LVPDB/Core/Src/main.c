@@ -37,6 +37,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define SLEEP_TIME 10
+#define BRAKE_THRE 0.2
 
 /* USER CODE END PM */
 
@@ -118,9 +120,8 @@ int main(void)
   MX_CAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t sleep_time = 10;
-	/* Node_2 */
-	FEB_CAN_Init(&hcan1, SM_ID);
+
+	FEB_CAN_Init(&hcan1, LVPDB_ID);
 
 	hi2c1p = &hi2c1;
 
@@ -144,7 +145,7 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  if (APPS_MESSAGE.brake_pedal == 1) {
+	  if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
@@ -174,7 +175,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(sleep_time);
+	  HAL_Delay(SLEEP_TIME);
   }
   /* USER CODE END 3 */
 }
