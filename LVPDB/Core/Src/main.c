@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "FEB_CAN.h"
 #include "stdio.h"
+#include "stdbool.h"
 
 /* USER CODE END Includes */
 
@@ -72,6 +73,9 @@ uint8_t LV_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0}; // = 22
 uint8_t CP_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0}; // = 336, 14 * 24
 uint8_t AF_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0}; // = 192, 8 * 24
 uint8_t EX_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0}; // = 144, 6 * 24
+
+static bool isDriving = false;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -149,6 +153,21 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
+	  }
+
+	  // activate peripheral devices if ready to drive
+	  if (SW_MESSAGE.command_1 == 1 && !isDriving) {
+		  isDriving = true;
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
+
+	  // de-activate if not ready to drive
+	  } else if (SW_MESSAGE.command_1 == 0 && isDriving) {
+		  isDriving = false;
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
 	  }
 
 	  // lv hotswap
