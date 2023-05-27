@@ -35,20 +35,20 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ACC_PEDAL_1_START 2700
-#define ACC_PEDAL_1_END 2930
+#define ACC_PEDAL_1_START 2700.0
+#define ACC_PEDAL_1_END 2930.0
 
-#define ACC_PEDAL_2_START 1390
-#define ACC_PEDAL_2_END 1160
+#define ACC_PEDAL_2_START 1390.0
+#define ACC_PEDAL_2_END 1160.0
 
-#define BRAKE_PEDAL_1_START 2700
-#define BRAKE_PEDAL_1_END 2930
+#define BRAKE_PEDAL_1_START 1350.0
+#define BRAKE_PEDAL_1_END 910.0
 
-#define BRAKE_PEDAL_2_START 1390
-#define BRAKE_PEDAL_2_END 1160
+#define BRAKE_PEDAL_2_START 1390.0
+#define BRAKE_PEDAL_2_END 1160.0
 
-const uint16_t Sensor_Min = 4095/5*0.5;
-const uint16_t Sensor_Max = 4095/5*4.5;
+const uint16_t Sensor_Min = 4095.0/5.0*0.5;
+const uint16_t Sensor_Max = 4095.0/5.0*4.5;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -114,6 +114,11 @@ float FEB_Normalized_Acc_Pedals(){
 		return 0.0;
 	}
 
+	// Implausiblity check if both pedals are stepped
+	if (normalized_brake > 0.1 && normalized_acc > 0.25) {
+		isImpl = true;
+	}
+
 	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
 
 	// recover from implausibility if acc pedal is not 5% less
@@ -134,7 +139,6 @@ float FEB_Normalized_Brake_Pedals(){
 	uint16_t brake_pedal_1 = buffer[4];
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
-	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
 
 	return final_normalized;
 }
@@ -303,7 +307,7 @@ int main(void)
 //	  pedal3 = getPedal(buffer[4]);
 //	  pedal4 = getPedal(buffer[5]);
 
-	  //ready to drive,
+	  //ready to drive
 	  if (SW_MESSAGE.command_1 == 1) {
 		  normalized_acc = FEB_Normalized_Acc_Pedals();
 	  } else {
