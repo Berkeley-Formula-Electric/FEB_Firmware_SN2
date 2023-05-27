@@ -2089,37 +2089,37 @@ float FEB_Normalized_Acc_Pedals(){
  80014ac:	e060      	b.n	8001570 <FEB_Normalized_Acc_Pedals+0x1b0>
 	}
 
+	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
+ 80014ae:	ed97 7a02 	vldr	s14, [r7, #8]
+ 80014b2:	edd7 7a01 	vldr	s15, [r7, #4]
+ 80014b6:	ee77 7a27 	vadd.f32	s15, s14, s15
+ 80014ba:	eeb6 7a00 	vmov.f32	s14, #96	; 0x3f000000  0.5
+ 80014be:	ee67 7a87 	vmul.f32	s15, s15, s14
+ 80014c2:	edc7 7a00 	vstr	s15, [r7]
+
 	// Implausiblity check if both pedals are stepped
 	if (normalized_brake > 0.1 && normalized_acc > 0.25) {
- 80014ae:	4b41      	ldr	r3, [pc, #260]	; (80015b4 <FEB_Normalized_Acc_Pedals+0x1f4>)
- 80014b0:	681b      	ldr	r3, [r3, #0]
- 80014b2:	4618      	mov	r0, r3
- 80014b4:	f7ff f868 	bl	8000588 <__aeabi_f2d>
- 80014b8:	a337      	add	r3, pc, #220	; (adr r3, 8001598 <FEB_Normalized_Acc_Pedals+0x1d8>)
- 80014ba:	e9d3 2300 	ldrd	r2, r3, [r3]
- 80014be:	f7ff fb4b 	bl	8000b58 <__aeabi_dcmpgt>
- 80014c2:	4603      	mov	r3, r0
- 80014c4:	2b00      	cmp	r3, #0
- 80014c6:	d00c      	beq.n	80014e2 <FEB_Normalized_Acc_Pedals+0x122>
- 80014c8:	4b3b      	ldr	r3, [pc, #236]	; (80015b8 <FEB_Normalized_Acc_Pedals+0x1f8>)
- 80014ca:	edd3 7a00 	vldr	s15, [r3]
- 80014ce:	eeb5 7a00 	vmov.f32	s14, #80	; 0x3e800000  0.250
- 80014d2:	eef4 7ac7 	vcmpe.f32	s15, s14
- 80014d6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 80014da:	dd02      	ble.n	80014e2 <FEB_Normalized_Acc_Pedals+0x122>
+ 80014c6:	4b3b      	ldr	r3, [pc, #236]	; (80015b4 <FEB_Normalized_Acc_Pedals+0x1f4>)
+ 80014c8:	681b      	ldr	r3, [r3, #0]
+ 80014ca:	4618      	mov	r0, r3
+ 80014cc:	f7ff f85c 	bl	8000588 <__aeabi_f2d>
+ 80014d0:	a331      	add	r3, pc, #196	; (adr r3, 8001598 <FEB_Normalized_Acc_Pedals+0x1d8>)
+ 80014d2:	e9d3 2300 	ldrd	r2, r3, [r3]
+ 80014d6:	f7ff fb3f 	bl	8000b58 <__aeabi_dcmpgt>
+ 80014da:	4603      	mov	r3, r0
+ 80014dc:	2b00      	cmp	r3, #0
+ 80014de:	d00c      	beq.n	80014fa <FEB_Normalized_Acc_Pedals+0x13a>
+ 80014e0:	4b35      	ldr	r3, [pc, #212]	; (80015b8 <FEB_Normalized_Acc_Pedals+0x1f8>)
+ 80014e2:	edd3 7a00 	vldr	s15, [r3]
+ 80014e6:	eeb5 7a00 	vmov.f32	s14, #80	; 0x3e800000  0.250
+ 80014ea:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80014ee:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80014f2:	dd02      	ble.n	80014fa <FEB_Normalized_Acc_Pedals+0x13a>
 		isImpl = true;
- 80014dc:	4b33      	ldr	r3, [pc, #204]	; (80015ac <FEB_Normalized_Acc_Pedals+0x1ec>)
- 80014de:	2201      	movs	r2, #1
- 80014e0:	701a      	strb	r2, [r3, #0]
+ 80014f4:	4b2d      	ldr	r3, [pc, #180]	; (80015ac <FEB_Normalized_Acc_Pedals+0x1ec>)
+ 80014f6:	2201      	movs	r2, #1
+ 80014f8:	701a      	strb	r2, [r3, #0]
 	}
-
-	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
- 80014e2:	ed97 7a02 	vldr	s14, [r7, #8]
- 80014e6:	edd7 7a01 	vldr	s15, [r7, #4]
- 80014ea:	ee77 7a27 	vadd.f32	s15, s14, s15
- 80014ee:	eeb6 7a00 	vmov.f32	s14, #96	; 0x3f000000  0.5
- 80014f2:	ee67 7a87 	vmul.f32	s15, s15, s14
- 80014f6:	edc7 7a00 	vstr	s15, [r7]
 
 	// recover from implausibility if acc pedal is not 5% less
 	if (final_normalized < 0.05 && isImpl) {

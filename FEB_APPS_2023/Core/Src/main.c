@@ -114,12 +114,12 @@ float FEB_Normalized_Acc_Pedals(){
 		return 0.0;
 	}
 
+	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
+
 	// Implausiblity check if both pedals are stepped
 	if (normalized_brake > 0.1 && normalized_acc > 0.25) {
 		isImpl = true;
 	}
-
-	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
 
 	// recover from implausibility if acc pedal is not 5% less
 	if (final_normalized < 0.05 && isImpl) {
