@@ -24,6 +24,7 @@
 #include "FEB_CAN.h"
 #include "stdio.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 /* USER CODE END Includes */
 
@@ -34,11 +35,20 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ACC_PEDAL_1_RESET 0.0
-#define ACC_PEDAL_1_FULL 3.3
+#define ACC_PEDAL_1_START 2700
+#define ACC_PEDAL_1_END 2930
 
-#define ACC_PEDAL_2_RESET 0.0
-#define ACC_PEDAL_2_FULL 3.3
+#define ACC_PEDAL_2_START 1390
+#define ACC_PEDAL_2_END 1160
+
+#define BRAKE_PEDAL_1_START 2700
+#define BRAKE_PEDAL_1_END 2930
+
+#define BRAKE_PEDAL_2_START 1390
+#define BRAKE_PEDAL_2_END 1160
+
+const uint16_t Sensor_Min = 4095/5*0.5;
+const uint16_t Sensor_Max = 4095/5*4.5;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,7 +66,7 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 uint32_t buffer[6]; //Storing two values in the buffer
-uint8_t flag=0;
+bool isImpl = false;
 
 struct {
   uint16_t torque;
@@ -66,38 +76,70 @@ struct {
 float normalized_acc;
 float normalized_brake;
 
-float pedal1;
-float pedal2;
-float pedal3;
-float pedal4;
+//float pedal1;
+//float pedal2;
+//float pedal3;
+//float pedal4;
 /*  VALUES FOR DEBUGGING THE BUFFER
 float pedal5;
 float pedal6;
 */
 
-float getPedal(uint32_t variable){
-	return (float)variable*3.3/4096;
-}
+//float getPedal(uint32_t variable){
+//	return (float)variable*3.3/4096;
+//}
 
 float FEB_Normalized_Acc_Pedals(){
-	float acc_pedal_1 = getPedal(buffer[2]);
-	float acc_pedal_2 = getPedal(buffer[3]);
+	// raw ADC readings of the two acc pedal sensors
+	uint16_t acc_pedal_1 = buffer[2];
+	uint16_t acc_pedal_2 = buffer[3];
 
-	float ped1_normalized = (acc_pedal_1 - ACC_PEDAL_1_RESET)/ (ACC_PEDAL_1_FULL - ACC_PEDAL_1_RESET);
-	float ped2_normalized = (acc_pedal_2 - ACC_PEDAL_2_RESET) / (ACC_PEDAL_2_FULL - ACC_PEDAL_2_RESET);
+	// check implausibility for shorting
+	if (acc_pedal_1 < Sensor_Min || acc_pedal_1 > Sensor_Max
+			|| acc_pedal_2 < Sensor_Min || acc_pedal_2 > Sensor_Max
+			|| abs(acc_pedal_1 - acc_pedal_2) < 100) {
+		isImpl = true;
+		return 0.0;
+	}
 
+	//convert to % travel
+	// sensor 1 has positive slope
+	float ped1_normalized = (acc_pedal_1 - ACC_PEDAL_1_START)/ (ACC_PEDAL_1_END - ACC_PEDAL_1_START);
+	// sensor 2 has negative slope
+	float ped2_normalized = (acc_pedal_2 - ACC_PEDAL_2_START) / (ACC_PEDAL_2_END - ACC_PEDAL_2_START);
+
+	// sensor measurements mismatch by more than 10%
 	if(abs(ped1_normalized - ped2_normalized) > 0.1 ){
-		flag = 1;
+		isImpl = true;
+		return 0.0;
 	}
 
 	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
 
+	// recover from implausibility if acc pedal is not 5% less
+	if (final_normalized < 0.05 && isImpl) {
+		isImpl = false;
+	}
+
+	if (!isImpl) {
+		final_normalized = final_normalized > 1 ? 1 : final_normalized;
+		final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
+		return final_normalized;
+	} else {
+		return 0.0;
+	}
+}
+
+float FEB_Normalized_Brake_Pedals(){
+	uint16_t brake_pedal_1 = buffer[4];
+	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
 	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
 
 	return final_normalized;
-
 }
+
+
 void FEB_APPS_sendBrake(){
 	FEB_CAN_Transmit(&hcan1,APPS_ID,&normalized_brake,sizeof(float));
 }
@@ -255,20 +297,20 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  pedal1 = getPedal(buffer[2]);
-	  pedal2 = getPedal(buffer[3]);
-
-	  pedal3 = getPedal(buffer[4]);
-	  pedal4 = getPedal(buffer[5]);
+//	  pedal1 = getPedal(buffer[2]);
+//	  pedal2 = getPedal(buffer[3]);
+//
+//	  pedal3 = getPedal(buffer[4]);
+//	  pedal4 = getPedal(buffer[5]);
 
 	  //ready to drive,
 	  if (SW_MESSAGE.command_1 == 1) {
-		  normalized_acc = pedal1/3.3;
+		  normalized_acc = FEB_Normalized_Acc_Pedals();
 	  } else {
-		  normalized_acc = 0;
+		  normalized_acc = 0.0;
 	  }
 
-	  normalized_brake = pedal3/3.3;
+	  normalized_brake = FEB_Normalized_Brake_Pedals();
 
 	  uint16_t torque = normalized_acc * 50;
 
