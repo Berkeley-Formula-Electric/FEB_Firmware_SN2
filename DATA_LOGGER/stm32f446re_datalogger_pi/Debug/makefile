@@ -60,8 +60,8 @@ all: main-build
 main-build: stm32f446re_datalogger_pi.elf secondary-outputs
 
 # Tool invocations
-stm32f446re_datalogger_pi.elf stm32f446re_datalogger_pi.map: $(OBJS) $(USER_OBJS) /Users/imasmm/Academic/STM32CubeIDE/workspace_1.8.0/stm32f446re_datalogger_pi/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32f446re_datalogger_pi.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/imasmm/Academic/STM32CubeIDE/workspace_1.8.0/stm32f446re_datalogger_pi/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32f446re_datalogger_pi.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+stm32f446re_datalogger_pi.elf stm32f446re_datalogger_pi.map: $(OBJS) $(USER_OBJS) /Users/imasmm/Academic/feb/FEB_Firmware_2023/DATA_LOGGER/stm32f446re_datalogger_pi/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "stm32f446re_datalogger_pi.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/imasmm/Academic/feb/FEB_Firmware_2023/DATA_LOGGER/stm32f446re_datalogger_pi/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32f446re_datalogger_pi.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
