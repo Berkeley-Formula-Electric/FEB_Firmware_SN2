@@ -152,7 +152,8 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
+	  //if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
+	  if (1) {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
