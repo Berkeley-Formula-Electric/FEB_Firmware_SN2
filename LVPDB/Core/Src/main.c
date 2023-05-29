@@ -62,17 +62,17 @@ const uint8_t EX_ADDR = 0b1000001 << 1;
 uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
 
 // calibration register value
-uint8_t CAL[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};// setting Current_LSB to 1 for both
+uint8_t CAL[2] = {0b00000000, 0b00000011};// setting Current_LSB to 1 for both
 
 // alert types
-uint8_t UNDERV[16] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t OVERPWR[16] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t UNDERV[2] = {0b00010000, 0b00000000};
+uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
 
 // limits
-uint8_t LV_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0}; // = 22
-uint8_t CP_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0}; // = 336, 14 * 24
-uint8_t AF_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0}; // = 192, 8 * 24
-uint8_t EX_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0}; // = 144, 6 * 24
+uint8_t LV_LIMIT[2] = {0b00000000, 0b00010110}; // = 22
+uint8_t CP_LIMIT[2] = {0b00000001, 0b01010000}; // = 336, 14 * 24
+uint8_t AF_LIMIT[2] = {0b00000000, 0b11000000}; // = 192, 8 * 24
+uint8_t EX_LIMIT[2] = {0b00000000, 0b10010000}; // = 144, 6 * 24
 
 static bool isDriving = false;
 
@@ -129,8 +129,8 @@ int main(void)
 
 	hi2c1p = &hi2c1;
 
-//	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
-//	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
 //	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
 //	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
 
@@ -152,8 +152,7 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  //if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
-	  if (1) {
+	  if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low

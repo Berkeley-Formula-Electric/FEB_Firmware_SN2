@@ -2,20 +2,28 @@
 
 void FEB_TPS2482_SETUP(I2C_HandleTypeDef *hi2cp, uint8_t DEV_ADDR, uint8_t CONFIG[], uint8_t CAL_REG[], uint8_t ALERT[], uint8_t LIMIT[]) {
 	HAL_StatusTypeDef ret;
-	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x00 << 1, 2, CONFIG, 2, HAL_MAX_DELAY); // configure
+	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x00, 1, CONFIG, 2, HAL_MAX_DELAY); // configure
 	if (ret != HAL_OK) {
+			// error handler
+		__disable_irq();
 		while(1);
 	}
-	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x05 << 1, 1, CAL_REG, 16, HAL_MAX_DELAY); // calibrate
+	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x05, 1, CAL_REG, 2, HAL_MAX_DELAY); // calibrate
 	if (ret != HAL_OK) {
+			// error handler
+		__disable_irq();
 		while(1);
 	}
-	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x06 << 1, 1, ALERT, 16, HAL_MAX_DELAY); // set alert
+	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x06, 1, ALERT, 2, HAL_MAX_DELAY); // set alert
 	if (ret != HAL_OK) {
+			// error handler
+		__disable_irq();
 		while(1);
 	}
-	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x07 << 1, 1, LIMIT, 16, HAL_MAX_DELAY); // set limit
+	ret = HAL_I2C_Mem_Write(hi2cp, DEV_ADDR, 0x07, 1, LIMIT, 2, HAL_MAX_DELAY); // set limit
 	if (ret != HAL_OK) {
+		// error handler
+		__disable_irq();
 		while(1);
 	}
 }
