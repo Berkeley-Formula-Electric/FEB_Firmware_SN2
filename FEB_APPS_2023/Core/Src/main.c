@@ -142,7 +142,7 @@ float FEB_Normalized_Acc_Pedals(){
 }
 
 float FEB_Normalized_Brake_Pedals(){
-	uint16_t brake_pedal_1 = buffer[0];
+	uint16_t brake_pedal_1 = buffer[1];
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
 

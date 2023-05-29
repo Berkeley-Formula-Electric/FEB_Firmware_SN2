@@ -2208,9 +2208,9 @@ float FEB_Normalized_Brake_Pedals(){
  80015c0:	b580      	push	{r7, lr}
  80015c2:	b082      	sub	sp, #8
  80015c4:	af00      	add	r7, sp, #0
-	uint16_t brake_pedal_1 = buffer[0];
+	uint16_t brake_pedal_1 = buffer[1];
  80015c6:	4b1c      	ldr	r3, [pc, #112]	; (8001638 <FEB_Normalized_Brake_Pedals+0x78>)
- 80015c8:	681b      	ldr	r3, [r3, #0]
+ 80015c8:	685b      	ldr	r3, [r3, #4]
  80015ca:	80fb      	strh	r3, [r7, #6]
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
  80015cc:	88fb      	ldrh	r3, [r7, #6]
