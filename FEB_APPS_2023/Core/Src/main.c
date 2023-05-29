@@ -41,11 +41,17 @@
 #define ACC_PEDAL_2_START 1390.0
 #define ACC_PEDAL_2_END 1160.0
 
-#define BRAKE_PEDAL_1_START 1350.0
-#define BRAKE_PEDAL_1_END 910.0
+//#define BRAKE_PEDAL_1_START 1350.0
+//#define BRAKE_PEDAL_1_END 910.0
+
+#define BRAKE_PEDAL_1_START 385.0
+#define BRAKE_PEDAL_1_END 410.0
 
 #define BRAKE_PEDAL_2_START 1390.0
 #define BRAKE_PEDAL_2_END 1160.0
+
+#define PRESURE_START 385.0
+#define PRESURE_END 420.0
 
 const uint16_t Sensor_Min = 4095.0/5.0*0.5;
 const uint16_t Sensor_Max = 4095.0/5.0*4.5;
@@ -136,7 +142,7 @@ float FEB_Normalized_Acc_Pedals(){
 }
 
 float FEB_Normalized_Brake_Pedals(){
-	uint16_t brake_pedal_1 = buffer[4];
+	uint16_t brake_pedal_1 = buffer[0];
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
 
