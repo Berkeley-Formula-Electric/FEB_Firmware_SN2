@@ -196,7 +196,7 @@ int main(void)
 ***/
 
 
-	  buf_len = sprintf((char*)buf, "ready: %d\r\n", SW_MESSAGE.command_1);
+	  buf_len = sprintf((char*)buf, "brake: %f\r\n", APPS_MESSAGE.brake_pedal);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
