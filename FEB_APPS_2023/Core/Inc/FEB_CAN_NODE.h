@@ -65,20 +65,38 @@ void Store_BMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 
 /*** SW IDs ***/
 #define SW_ID 0b0000010
-#define SW_COMMAND_1 0b00000100000
+#define SW_READY_TO_DRIVE 0b00000100000
+#define SW_COOLANT_PUMP 0b00000100001
+#define SW_ACUMULATOR_FANS 0b00000100010
+#define SW_EXTRA 0b00000100011
 
 /*** SW MESSSAGE BUFFER ***/
-#define SW_COMMAND_1_TYPE uint8_t
+#define SW_READY_TO_DRIVE_TYPE uint8_t
+#define SW_COOLANT_PUMP_TYPE uint8_t
+#define SW_ACUMULATOR_FANS_TYPE uint8_t
+#define SW_EXTRA_TYPE uint8_t
 
 typedef struct SW_MESSAGE_TYPE {
-    SW_COMMAND_1_TYPE command_1;
+    SW_READY_TO_DRIVE_TYPE ready_to_drive;
+    SW_COOLANT_PUMP_TYPE coolant_pump;
+    SW_ACUMULATOR_FANS_TYPE acumulator_fans;
+    SW_EXTRA_TYPE extra;
 } SW_MESSAGE_TYPE;
 SW_MESSAGE_TYPE SW_MESSAGE;
 
 void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     switch (RxId){
-        case SW_COMMAND_1:
-            memcpy(&(SW_MESSAGE.command_1), RxData, data_length);
+        case SW_READY_TO_DRIVE:
+            memcpy(&(SW_MESSAGE.ready_to_drive), RxData, data_length);
+            break;
+        case SW_COOLANT_PUMP:
+            memcpy(&(SW_MESSAGE.coolant_pump), RxData, data_length);
+            break;
+        case SW_ACUMULATOR_FANS:
+            memcpy(&(SW_MESSAGE.acumulator_fans), RxData, data_length);
+            break;
+        case SW_EXTRA:
+            memcpy(&(SW_MESSAGE.extra), RxData, data_length);
             break;
     }
 }
@@ -125,32 +143,36 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 #define RMS_ID 0b0000100
 
 
+/*** IVPDB IDs ***/
+#define IVPDB_ID 0b0000101
+
+
 /*** RX Arrays ***/
 const AddressIdType BMS_RX_ID[] = {SW_ID};
 const FilterArrayLength BMS_RX_NUM = 1;
 
-const AddressIdType SW_RX_ID[] = {BMS_ID, APPS_ID};
-const FilterArrayLength SW_RX_NUM = 2;
+const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID};
+const FilterArrayLength APPS_RX_NUM = 2;
 
-const AddressIdType APPS_RX_ID[] = {SW_ID};
-const FilterArrayLength APPS_RX_NUM = 1;
-
-const AddressIdType RMS_RX_ID[] = {SW_ID};
+const AddressIdType RMS_RX_ID[] = {APPS_ID};
 const FilterArrayLength RMS_RX_NUM = 1;
+
+const AddressIdType IVPDB_RX_ID[] = {SW_ID};
+const FilterArrayLength IVPDB_RX_NUM = 1;
 
 const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
     switch(NODE_ID) {
         case BMS_ID:
             return BMS_RX_ID;
             break;
-        case SW_ID:
-            return SW_RX_ID;
-            break;
         case APPS_ID:
             return APPS_RX_ID;
             break;
         case RMS_ID:
             return RMS_RX_ID;
+            break;
+        case IVPDB_ID:
+            return IVPDB_RX_ID;
             break;
     }
     return 0;
@@ -161,14 +183,14 @@ FilterArrayLength assign_filter_array_legnth(AddressIdType NODE_ID) {
         case BMS_ID:
             return BMS_RX_NUM;
             break;
-        case SW_ID:
-            return SW_RX_NUM;
-            break;
         case APPS_ID:
             return APPS_RX_NUM;
             break;
         case RMS_ID:
             return RMS_RX_NUM;
+            break;
+        case IVPDB_ID:
+            return IVPDB_RX_NUM;
             break;
     }
     return 0;

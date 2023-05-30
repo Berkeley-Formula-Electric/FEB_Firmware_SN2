@@ -260,7 +260,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  //ready to drive
-	  if (SW_MESSAGE.command_1 == 1) {
+	  if (SW_MESSAGE.ready_to_drive == 1) {
 		  normalized_acc = FEB_Normalized_Acc_Pedals();
 	  } else {
 		  normalized_acc = 0.0;
