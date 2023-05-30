@@ -35,6 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SLEEP_TIME 10
+
 #define ACC_PEDAL_1_START 2700.0
 #define ACC_PEDAL_1_END 2930.0
 
@@ -45,7 +47,7 @@
 //#define BRAKE_PEDAL_1_END 910.0
 
 #define BRAKE_PEDAL_1_START 385.0
-#define BRAKE_PEDAL_1_END 410.0
+#define BRAKE_PEDAL_1_END 415.0
 
 #define BRAKE_PEDAL_2_START 1390.0
 #define BRAKE_PEDAL_2_END 1160.0
@@ -145,13 +147,14 @@ float FEB_Normalized_Brake_Pedals(){
 	uint16_t brake_pedal_1 = buffer[1];
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
+	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
 
 	return final_normalized;
 }
 
 
 void FEB_APPS_sendBrake(){
-	FEB_CAN_Transmit(&hcan1,APPS_ID,&normalized_brake,sizeof(float));
+	FEB_CAN_Transmit(&hcan1,APPS_BRAKE_PEDAL,&normalized_brake,sizeof(float));
 }
 
 void FEB_RMS_updateTorque() {
@@ -240,30 +243,11 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1,buffer,6);
 
 
-//  uint8_t sleep_time = 10;
   char buf[128];
   uint8_t buf_len;
 
-	/* Node_1 */
-//	FEB_CAN_Init(&hcan1, BMS_ID);
-//	float temp = 0.0;
-//	float volt = 0.0;
-
-	/* Node_2 */
-//	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t cmd_1 = 0;
-
-	/* Node_3 */
-	FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
-	FEB_RMS_Init();
-//	float acc_1 = 0.0;
-//	float acc_2 = 0.0;
-//	float brake = 0.0;
-//	float torque = 0.0;
-
-	/* Node_4 */
-//	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t emergency = 0;
+  FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
+  FEB_RMS_Init();
 
   /* USER CODE END 2 */
 
@@ -271,47 +255,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while(1)
   {
-	  /* Node_1 */
-//	  temp = temp + 1;
-//	  FEB_CAN_Transmit(&hcan1, BMS_TEMPERATURE, &temp, sizeof(BMS_TEMPERATURE_TYPE));
-//	  volt = volt + 2;
-//	  FEB_CAN_Transmit(&hcan1, BMS_VOLTAGE, &volt, sizeof(BMS_VOLTAGE_TYPE));
-//	  buf_len = sprintf(buf, "BMS node. Receiving \nSM_CMD1: %d \nEmergency: %d \n\n", SM_MESSAGE.command_1, EMERGENCY_MESSAGE.sm_emergency);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
-
-	  /* Node_2 */
-//	  cmd_1 += 1;
-//	  FEB_CAN_Transmit(&hcan1, SM_COMMAND_1, &cmd_1, sizeof(SM_COMMAND_1_TYPE));
-//	  buf_len = sprintf(buf, "SM node. Receiving \nBMS_temp:%d BMS_volt:%d \n\n", BMS_MESSAGE.temperature, BMS_MESSAGE.voltage);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
-
-	  /* Node_3 */
-//	  acc_1 = acc_1 + 0.1;
-//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR1_PEDAL, &acc_1, sizeof(APPS_ACCELERATOR1_PEDAL_TYPE));
-//	  acc_2 = acc_2 + 0.2;
-//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR2_PEDAL, &acc_2, sizeof(APPS_ACCELERATOR2_PEDAL_TYPE));
-//	  brake = acc_2 + 0.3;
-//	  FEB_CAN_Transmit(&hcan1, APPS_BRAKE_PEDAL, &brake, sizeof(APPS_BRAKE_PEDAL_TYPE));
-//	  torque = torque + 0.4;
-//	  FEB_CAN_Transmit(&hcan1, APPS_TORQUE, &torque, sizeof(APPS_TORQUE_TYPE));
-//	  buf_len = sprintf(buf, "APPS node. Receiving \nSM_CMD1: %d \n\n", SM_MESSAGE.command_1);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
-
-	  /* Node_4 */
-//	  emergency += 1;
-//	  FEB_CAN_Transmit(&hcan1, EMERGENCY_SM_EMERGENCY, &emergency, sizeof(EMERGENCY_SM_EMERGENCY_TYPE));
-
-	  //void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData, uint8_t size) {
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  pedal1 = getPedal(buffer[2]);
-//	  pedal2 = getPedal(buffer[3]);
-//
-//	  pedal3 = getPedal(buffer[4]);
-//	  pedal4 = getPedal(buffer[5]);
 
 	  //ready to drive
 	  if (SW_MESSAGE.command_1 == 1) {
@@ -333,7 +279,7 @@ int main(void)
 	  buf_len = sprintf(buf, "acc: %.3f brake: %.3f\n", normalized_acc, normalized_brake);
 	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
-	  HAL_Delay(100);
+	  HAL_Delay(SLEEP_TIME);
   }
   /* USER CODE END 3 */
 }

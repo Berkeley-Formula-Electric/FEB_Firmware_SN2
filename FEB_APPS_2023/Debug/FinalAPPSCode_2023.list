@@ -2264,10 +2264,10 @@ float FEB_Normalized_Brake_Pedals(){
 void FEB_APPS_sendBrake(){
  8001640:	b580      	push	{r7, lr}
  8001642:	af00      	add	r7, sp, #0
-	FEB_CAN_Transmit(&hcan1,APPS_ID,&normalized_brake,sizeof(float));
+	FEB_CAN_Transmit(&hcan1,APPS_BRAKE_PEDAL,&normalized_brake,sizeof(float));
  8001644:	2304      	movs	r3, #4
  8001646:	4a03      	ldr	r2, [pc, #12]	; (8001654 <FEB_APPS_sendBrake+0x14>)
- 8001648:	2103      	movs	r1, #3
+ 8001648:	2132      	movs	r1, #50	; 0x32
  800164a:	4803      	ldr	r0, [pc, #12]	; (8001658 <FEB_APPS_sendBrake+0x18>)
  800164c:	f7ff fe62 	bl	8001314 <FEB_CAN_Transmit>
 }
