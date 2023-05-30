@@ -8,7 +8,6 @@ const path = require("path")
 const fs = require("fs")
 const { SerialPort } = require("serialport")
 const xbee = require("xbee");
-//const spi = require("spi-device")
 
 // initalize web server
 const app = express();
@@ -26,11 +25,36 @@ app.get("/", (req, res) => {
     res.render("screen.ejs")
 });
 
+
+/* POST REQUEST BODY FORMAT 
+{
+  'sender': <sender string>,
+  'type': <message type string>,
+  'data': <data value (float, int, etc.)>
+}
+*/
 app.post('/api/postdata',(req,res)=>{
-  //TODO: Still need to figure out how to properly parse information from POST for other purposes
-  console.log(req.body.param1);
+  let sender = req.body.sender; 
+  let message_type = req.body.type;
+  if (sender == 'BMS'){
+    if (message_type == 'Temperature'){
+      actual_data.temperature = req.body.data;
+    }else if (message_type == 'Voltage'){
+      actual_data.voltage = req.body.data;
+    }
+  }else if (sender == 'RMS'){
+    actual_data.speed = req.body.data;
+  }
   res.sendStatus(200);
 });
+
+//Used to receive from POST request. Change to 'data' once testing is done
+//Fields initialized to 0 on startup
+const actual_data = {
+  temperature: 0,
+  voltage: 0,
+  speed:0
+}
 
 // TEST DATA
 const data = {
@@ -72,34 +96,6 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
         counter++
     }, 100);
 });
-
-/*
-const mcp3008 = spi.open(0, 0, err => {
-    if (err) throw err;
-  
-    // An SPI message is an array of one or more read+write transfers
-    const message = [{
-      sendBuffer: Buffer.from([0x01, 0x80, 0x00]), // The message to send (channel 5)
-      receiveBuffer: Buffer.alloc(3),              // Raw data read from channel 5
-      byteLength: 3,
-      speedHz: 20000 // Use a low bus speed to get a good reading from the TMP36
-    }];
-  
-    mcp3008.transfer(message, (err, message) => {
-      if (err) throw err;
-  
-      // Convert raw value from sensor to celcius and log to console
-      const rawValue = message[0].receiveBuffer[2] & 0x03;
-      const convertedValue = (rawValue * 3.3) / 1023; // Assuming 3.3V reference voltage
-      console.log(convertedValue);
-      
-      mcp3008.close((err) => {
-        if (err) throw err;
-        console.log('SPI connection closed.');
-      });
-    });
-  });
- */ 
 
 // const serial_xbee = new SerialPort({
 //     path: "/dev/cu.usbserial-D309NYWG",
