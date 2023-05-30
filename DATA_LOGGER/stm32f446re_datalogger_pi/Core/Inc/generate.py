@@ -405,9 +405,9 @@ def extract_csv_ids(csv_data: list) -> list:
 
 def main():
     # read set IDs
-    # xlsx_to_csv(XLSX_FILE_PATH, CSV_FILE_PATH, 'identifiers')
-    # csv_data = read_csv(CSV_FILE_PATH)
-    # extract_csv_ids(csv_data)
+    xlsx_to_csv(XLSX_FILE_PATH, CSV_FILE_PATH, 'identifiers')
+    csv_data = read_csv(CSV_FILE_PATH)
+    extract_csv_ids(csv_data)
 
     # read main data
     xlsx_to_csv(XLSX_FILE_PATH, CSV_FILE_PATH, 'main')

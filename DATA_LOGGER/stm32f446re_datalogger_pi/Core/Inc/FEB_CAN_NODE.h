@@ -21,15 +21,15 @@ typedef uint8_t FilterArrayLength;
 /*** EMERGENCY IDs ***/
 #define EMERGENCY_ID 0b0000000
 #define EMERGENCY_APPS_EMERGENCY 0b00000000000
-#define EMERGENCY_SM_EMERGENCY 0b00000000001
+#define EMERGENCY_SW_EMERGENCY 0b00000000001
 
 /*** EMERGENCY MESSSAGE BUFFER ***/
 #define EMERGENCY_APPS_EMERGENCY_TYPE uint8_t
-#define EMERGENCY_SM_EMERGENCY_TYPE uint8_t
+#define EMERGENCY_SW_EMERGENCY_TYPE uint8_t
 
 typedef struct EMERGENCY_MESSAGE_TYPE {
     EMERGENCY_APPS_EMERGENCY_TYPE apps_emergency;
-    EMERGENCY_SM_EMERGENCY_TYPE sm_emergency;
+    EMERGENCY_SW_EMERGENCY_TYPE sw_emergency;
 } EMERGENCY_MESSAGE_TYPE;
 EMERGENCY_MESSAGE_TYPE EMERGENCY_MESSAGE;
 
@@ -41,9 +41,9 @@ void Store_EMERGENCY_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_leng
             memcpy(&(EMERGENCY_MESSAGE.apps_emergency), RxData, data_length);
             buf_len = sprintf(buf, "%.3f,EMERGENCY,APPS_EMERGENCY,%d\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.apps_emergency);
             break;
-        case EMERGENCY_SM_EMERGENCY:
-            memcpy(&(EMERGENCY_MESSAGE.sm_emergency), RxData, data_length);
-            buf_len = sprintf(buf, "%.3f,EMERGENCY,SM_EMERGENCY,%d\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.sm_emergency);
+        case EMERGENCY_SW_EMERGENCY:
+            memcpy(&(EMERGENCY_MESSAGE.sw_emergency), RxData, data_length);
+            buf_len = sprintf(buf, "%.3f,EMERGENCY,SW_EMERGENCY,%d\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.sw_emergency);
             break;
     }
     HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
@@ -82,25 +82,46 @@ void Store_BMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 }
 
-/*** SM IDs ***/
-#define SM_ID 0b0000010
-#define SM_COMMAND_1 0b00000100000
+/*** SW IDs ***/
+#define SW_ID 0b0000010
+#define SW_READY_TO_DRIVE 0b00000100000
+#define SW_COOLANT_PUMP 0b00000100001
+#define SW_ACUMULATOR_FANS 0b00000100010
+#define SW_EXTRA 0b00000100011
 
-/*** SM MESSSAGE BUFFER ***/
-#define SM_COMMAND_1_TYPE uint8_t
+/*** SW MESSSAGE BUFFER ***/
+#define SW_READY_TO_DRIVE_TYPE uint8_t
+#define SW_COOLANT_PUMP_TYPE uint8_t
+#define SW_ACUMULATOR_FANS_TYPE uint8_t
+#define SW_EXTRA_TYPE uint8_t
 
-typedef struct SM_MESSAGE_TYPE {
-    SM_COMMAND_1_TYPE command_1;
-} SM_MESSAGE_TYPE;
-SM_MESSAGE_TYPE SM_MESSAGE;
+typedef struct SW_MESSAGE_TYPE {
+    SW_READY_TO_DRIVE_TYPE ready_to_drive;
+    SW_COOLANT_PUMP_TYPE coolant_pump;
+    SW_ACUMULATOR_FANS_TYPE acumulator_fans;
+    SW_EXTRA_TYPE extra;
+} SW_MESSAGE_TYPE;
+SW_MESSAGE_TYPE SW_MESSAGE;
 
-void Store_SM_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
+void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     char buf[128];
     int buf_len;
     switch (RxId){
-        case SM_COMMAND_1:
-            memcpy(&(SM_MESSAGE.command_1), RxData, data_length);
-            buf_len = sprintf(buf, "%.3f,SM,COMMAND_1,%d\n", HAL_GetTick()/1000.0, SM_MESSAGE.command_1);
+        case SW_READY_TO_DRIVE:
+            memcpy(&(SW_MESSAGE.ready_to_drive), RxData, data_length);
+            buf_len = sprintf(buf, "%.3f,SW,READY_TO_DRIVE,%d\n", HAL_GetTick()/1000.0, SW_MESSAGE.ready_to_drive);
+            break;
+        case SW_COOLANT_PUMP:
+            memcpy(&(SW_MESSAGE.coolant_pump), RxData, data_length);
+            buf_len = sprintf(buf, "%.3f,SW,COOLANT_PUMP,%d\n", HAL_GetTick()/1000.0, SW_MESSAGE.coolant_pump);
+            break;
+        case SW_ACUMULATOR_FANS:
+            memcpy(&(SW_MESSAGE.acumulator_fans), RxData, data_length);
+            buf_len = sprintf(buf, "%.3f,SW,ACUMULATOR_FANS,%d\n", HAL_GetTick()/1000.0, SW_MESSAGE.acumulator_fans);
+            break;
+        case SW_EXTRA:
+            memcpy(&(SW_MESSAGE.extra), RxData, data_length);
+            buf_len = sprintf(buf, "%.3f,SW,EXTRA,%d\n", HAL_GetTick()/1000.0, SW_MESSAGE.extra);
             break;
     }
     HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
@@ -157,61 +178,27 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 #define RMS_ID 0b0000100
 
 
-/*** SW IDs ***/
-#define SW_ID 0b0000101
-#define SW_DRIVER_INPUT 0b00001010000
-
-/*** SW MESSSAGE BUFFER ***/
-#define SW_DRIVER_INPUT_TYPE uint8_t
-
-typedef struct SW_MESSAGE_TYPE {
-    SW_DRIVER_INPUT_TYPE driver_input;
-} SW_MESSAGE_TYPE;
-SW_MESSAGE_TYPE SW_MESSAGE;
-
-void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
-    char buf[128];
-    int buf_len;
-    switch (RxId){
-        case SW_DRIVER_INPUT:
-            memcpy(&(SW_MESSAGE.driver_input), RxData, data_length);
-            buf_len = sprintf(buf, "%.3f,SW,DRIVER_INPUT,%d\n", HAL_GetTick()/1000.0, SW_MESSAGE.driver_input);
-            break;
-    }
-    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
-}
-
-/*** DL IDs ***/
-#define DL_ID 0b0000110
+/*** IVPDB IDs ***/
+#define IVPDB_ID 0b0000101
 
 
 /*** RX Arrays ***/
-const AddressIdType BMS_RX_ID[] = {SM_ID};
+const AddressIdType BMS_RX_ID[] = {SW_ID};
 const FilterArrayLength BMS_RX_NUM = 1;
 
-const AddressIdType SM_RX_ID[] = {BMS_ID, APPS_ID};
-const FilterArrayLength SM_RX_NUM = 2;
+const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID};
+const FilterArrayLength APPS_RX_NUM = 2;
 
-const AddressIdType APPS_RX_ID[] = {SM_ID};
-const FilterArrayLength APPS_RX_NUM = 1;
-
-const AddressIdType RMS_RX_ID[] = {SM_ID};
+const AddressIdType RMS_RX_ID[] = {APPS_ID};
 const FilterArrayLength RMS_RX_NUM = 1;
 
-const AddressIdType SW_RX_ID[] = {SM_ID};
-const FilterArrayLength SW_RX_NUM = 1;
-
-const AddressIdType DL_RX_ID[] = {BMS_ID, SM_ID, APPS_ID, RMS_ID, SW_ID};
-const FilterArrayLength DL_RX_NUM = 5;
+const AddressIdType IVPDB_RX_ID[] = {SW_ID};
+const FilterArrayLength IVPDB_RX_NUM = 1;
 
 const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
     switch(NODE_ID) {
         case BMS_ID:
             return BMS_RX_ID;
-            break;
-        case SM_ID:
-            return SM_RX_ID;
             break;
         case APPS_ID:
             return APPS_RX_ID;
@@ -219,11 +206,8 @@ const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
         case RMS_ID:
             return RMS_RX_ID;
             break;
-        case SW_ID:
-            return SW_RX_ID;
-            break;
-        case DL_ID:
-            return DL_RX_ID;
+        case IVPDB_ID:
+            return IVPDB_RX_ID;
             break;
     }
     return 0;
@@ -234,20 +218,14 @@ FilterArrayLength assign_filter_array_legnth(AddressIdType NODE_ID) {
         case BMS_ID:
             return BMS_RX_NUM;
             break;
-        case SM_ID:
-            return SM_RX_NUM;
-            break;
         case APPS_ID:
             return APPS_RX_NUM;
             break;
         case RMS_ID:
             return RMS_RX_NUM;
             break;
-        case SW_ID:
-            return SW_RX_NUM;
-            break;
-        case DL_ID:
-            return DL_RX_NUM;
+        case IVPDB_ID:
+            return IVPDB_RX_NUM;
             break;
     }
     return 0;
@@ -261,15 +239,25 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
         case BMS_ID:
             Store_BMS_Msg(pHeader->StdId, RxData, pHeader->DLC);
             break;
-        case SM_ID:
-            Store_SM_Msg(pHeader->StdId, RxData, pHeader->DLC);
+        case SW_ID:
+            Store_SW_Msg(pHeader->StdId, RxData, pHeader->DLC);
             break;
         case APPS_ID:
             Store_APPS_Msg(pHeader->StdId, RxData, pHeader->DLC);
             break;
-        case SW_ID:
-            Store_SW_Msg(pHeader->StdId, RxData, pHeader->DLC);
-            break;
+        default:
+        	char buf[128];
+			int buf_len;
+			switch(pHeader->StdId) {
+				case 0x0C0: //inverter command
+					float torque = 0.0;
+					memcpy(&(torque), RxData, 2);
+					buf_len = sprintf(buf, "%.3f,IVT,TORQUE,%.3f\n", HAL_GetTick()/1000.0, torque);
+				default:
+					return;
+			}
+			HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
+			HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
     }
 }
 
