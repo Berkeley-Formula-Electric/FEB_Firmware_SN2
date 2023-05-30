@@ -120,6 +120,16 @@ int main(void)
   bool last_button_state = false;
   bool lock = false;
 
+  bool lastButton_4 = 0; // coolant pump
+  bool lastButton_5 = 0; // acumulator fans
+  bool lastButton_6 = 0; // extra
+  bool lock_4 = 0;
+  bool lock_5 = 0;
+  bool lock_6 = 0;
+  bool coolant_pump = 0;
+  bool accumulator_fans = 0;
+  bool extra = 0;
+
   char buf[128];
   int buf_len;
   //uint8_t data1;
@@ -147,7 +157,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_Delay(50);
+	  HAL_Delay(10);
 
 	  // read both IOexpanders
 //	  ret = HAL_I2C_Master_Receive(&hi2c1, IOEXP1_ADDR, &data1, 1, HAL_MAX_DELAY);
@@ -159,39 +169,70 @@ int main(void)
 		  buf_len = sprintf((char*)buf, "IO_2 Error\r\n");
 	  }
 
-	  /***
 	  // check the read values
-	  if (data1 == 0xFF && data2 == 0xFF) {
-		  buf_len = sprintf((char*)buf, "NO BUT\r\n");
-	  }
-	  if (!(data1 & (1<<1))) { // BUT_0 -> IO1 P1
-		  buf_len = sprintf((char*)buf, "BUT_0\r\n");
-	  }
-	  if (!(data1 & (1<<0))) { // BUT_1 -> IO1 P0
-		  buf_len = sprintf((char*)buf, "BUT_1\r\n");
-	  }
-	  if (!(data2 & (1<<7))) { // BUT_2 -> IO2 P7
-		  buf_len = sprintf((char*)buf, "BUT_2\r\n");
-	  }
-	  if (!(data2 & (1<<0))) { // BUT_3 -> IO2 P0
-		  buf_len = sprintf((char*)buf, "BUT_3\r\n");
-		  // Start timer
-		  HAL_TIM_Base_Start_IT(&htim14);
-		  // turn on buzzer with 30% PWM cycle
-		  htim2.Instance->CCR2 = VOLUME;
-	  }
-	  if (!(data2 & (1<<1))) { // BUT_4 -> IO2 P1
-		  buf_len = sprintf((char*)buf, "BUT_4\r\n");
-	  }
-	  if (!(data2 & (1<<2))) { // BUT_5 -> IO2 P2
-		  buf_len = sprintf((char*)buf, "BUT_5\r\n");
-	  }
-	  if (!(data2 & (1<<3))) { // BUT_6 -> IO2 P3
-		  buf_len = sprintf((char*)buf, "BUT_6\r\n");
-	  }
-	  ***/
+//	  if (data1 == 0xFF && data2 == 0xFF) {
+//		  buf_len = sprintf((char*)buf, "NO BUT\r\n");
+//	  }
+//	  if (!(data1 & (1<<1))) { // BUT_0 -> IO1 P1
+//		  buf_len = sprintf((char*)buf, "BUT_0\r\n");
+//	  }
+//	  if (!(data1 & (1<<0))) { // BUT_1 -> IO1 P0
+//		  buf_len = sprintf((char*)buf, "BUT_1\r\n");
+//	  }
+//	  if (!(data2 & (1<<7))) { // BUT_2 -> IO2 P7
+//		  buf_len = sprintf((char*)buf, "BUT_2\r\n");
+//	  }
+//	  if (!(data2 & (1<<0))) { // BUT_3 -> IO2 P0
+//		  buf_len = sprintf((char*)buf, "BUT_3\r\n");
+//		  // Start timer
+//		  HAL_TIM_Base_Start_IT(&htim14);
+//		  // turn on buzzer with 30% PWM cycle
+//		  htim2.Instance->CCR2 = VOLUME;
+//	  }
 
-	  if (!(data2 & (1<<0))) { // BUT_3 -> IO2 P0
+	  if (!(data2 & (1<<1))) { // BUT_4 -> IO2 P1, coolant pump
+		  if(!lastButton_4) { // if it is not pressed last time, record time of change
+			  last_debounce_time_4 = HAL_GetTick();
+			  lastButton_4 = true;
+		  }
+		  if((HAL_GetTick() - last_debounce_time_4 > debouce_delay) && lastButton_4) {
+			  coolant_pump = !coolant_pump;
+			  FEB_CAN_Transmit(&hcan1, SW_COOLANT_PUMP, (uint8_t *) &coolant_pump, 1);
+		  }
+	  } else {
+		  lastButton_4 = false;
+	  }
+
+	  if (!(data2 & (1<<2))) { // BUT_5 -> IO2 P2, accumulator fans
+		  if(!lastButton_5) { // if it is not pressed last time, record time of change
+			  last_debounce_time_5 = HAL_GetTick();
+			  lastButton_5 = true;
+		  }
+		  if((HAL_GetTick() - last_debounce_time_5 > debouce_delay) && lastButton_5) {
+			  accumulator_fans = !accumulator_fans;
+			  FEB_CAN_Transmit(&hcan1, SW_ACUMULATOR_FANS, (uint8_t *) &accumulator_fans, 1);
+		  }
+	  } else {
+		  lastButton_5 = false;
+	  }
+
+	  if (!(data2 & (1<<3))) { // BUT_6 -> IO2 P3, extra
+		  buf_len = sprintf((char*)buf, "BUT_2\r\n");
+		  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+		  if (!lastButton_6) {
+			  lock_6 = true;
+			  extra = !extra;
+			  FEB_CAN_Transmit(&hcan1, SW_EXTRA, (uint8_t *) &extra, 1);
+		  }
+		  lastButton_6 = true;
+	  } else {
+		  if (lastButton_6) {
+			  lock_6 = false;
+		  }
+		  lastButton_6 = false;
+	  }
+
+	  if (!(data2 & (1<<0))) { // BUT_3 -> IO2 P0, ready to drive
 //		  buf_len = sprintf((char*)buf, "BUT_3\r\n");
 //		  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
@@ -217,7 +258,7 @@ int main(void)
 			  // turn on buzzer at VOLUME
 			  htim2.Instance->CCR2 = VOLUME;
 
-			  FEB_CAN_Transmit(&hcan1, SW_COMMAND_1, (uint8_t *) &ready_to_drive, 1);
+			  FEB_CAN_Transmit(&hcan1, SW_READY_TO_DRIVE, (uint8_t *) &ready_to_drive, 1);
 
 			  Button_Timer_Flag = false;
 
@@ -239,8 +280,8 @@ int main(void)
 	  }
 //	  buf_len = sprintf((char*)buf, "check:%d flag:%d\r\n", Button_Checking, Button_Timer_Flag);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
-	  buf_len = sprintf((char*)buf, "ready: %d\r\n", ready_to_drive);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+//	  buf_len = sprintf((char*)buf, "ready: %d coolant: %d accumulator: %d extra: %d\r\n", ready_to_drive, coolant_pump, accumulator_fans, extra);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 
 
@@ -443,7 +484,7 @@ static void MX_TIM13_Init(void)
 
   /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
-  htim13.Init.Prescaler = 16000-1;
+  htim13.Init.Prescaler = 8000-1;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim13.Init.Period = 10000-1;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -474,9 +515,9 @@ static void MX_TIM14_Init(void)
 
   /* USER CODE END TIM14_Init 1 */
   htim14.Instance = TIM14;
-  htim14.Init.Prescaler = 16000-1;
+  htim14.Init.Prescaler = 8000-1;
   htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim14.Init.Period = 20000-1;
+  htim14.Init.Period = 15000-1;
   htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
