@@ -28,22 +28,26 @@ app.get("/", (req, res) => {
 
 /* POST REQUEST BODY FORMAT 
 {
-  'sender': <sender string>,
-  'type': <message type string>,
-  'data': <data value (float, int, etc.)>
+  'data': <String of all data to be parsed here>
 }
 */
 app.post('/api/postdata',(req,res)=>{
-  let sender = req.body.sender; 
-  let message_type = req.body.type;
+  //String processing code since data is of format "time_stamp, node, msg_type, data"
+  let received_string = String(req.body.data).replace(/\s+/g, ''); //ensures the received data is of a string datatype
+  let comma_sep_data = received_string.split(',');
+  let sender = comma_sep_data[1];
+  let message_type = comma_sep_data[2];
+  let received_data = comma_sep_data[3];
+
+  //Parse data into proper field
   if (sender == 'BMS'){
-    if (message_type == 'Temperature'){
-      actual_data.temperature = req.body.data;
-    }else if (message_type == 'Voltage'){
-      actual_data.voltage = req.body.data;
+    if (message_type == 'TEMPERATURE'){
+      actual_data.temperature = received_data;
+    }else if (message_type == 'VOLTAGE'){
+      actual_data.voltage = received_data;
     }
   }else if (sender == 'RMS'){
-    actual_data.speed = req.body.data;
+    actual_data.speed = received_data;
   }
   res.sendStatus(200);
 });
