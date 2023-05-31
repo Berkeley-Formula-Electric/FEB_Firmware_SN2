@@ -4,7 +4,7 @@
 #include <unistd.h> // for sleep
 
 #include <wiringPiSPI.h>
-#include <unistd.h>
+#include<FEB_CAN_NODE.h>
 
 /**********************
  *         pi  stm32
@@ -105,18 +105,10 @@ int main() {
 	
 	while(1) {
 		log_file.open(log_file_path, ios::out | ios::app);
-		read(fd, buffer, 128);
+		read(fd, (unsigned char *)SPI_MESSAGE.bits, sizeof(SPI_MESSAGE));
 		
-		if (buffer[0] != 10) {
-			for(int i = 0; i < 128; i++) {
-				if(buffer[i] == 10){
-				   log_file << endl;
-				   cout << endl;
-				   break;
-				}
-				log_file << buffer[i];
-				cout << buffer[i];
-			}
+		if (SPI_MESSAGE.bits[0] != 10) {
+			store_msg(&(SPI_MESSAGE.message.RxHeader), SPI_MESSAGE.message.RxData);
 		}
 		  
 		log_file.close();
