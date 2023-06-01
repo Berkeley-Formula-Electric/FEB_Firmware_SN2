@@ -159,14 +159,14 @@ int main(void)
 	  }
 
 	  // activate peripheral devices if ready to drive
-	  if (SW_MESSAGE.command_1 == 1 && !isDriving) {
+	  if (SW_MESSAGE.ready_to_drive == 1 && !isDriving) {
 		  isDriving = true;
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
 		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
 
 	  // de-activate if not ready to drive
-	  } else if (SW_MESSAGE.command_1 == 0 && isDriving) {
+	  } else if (SW_MESSAGE.ready_to_drive == 0 && isDriving) {
 		  isDriving = false;
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
@@ -196,7 +196,7 @@ int main(void)
 ***/
 
 
-	  buf_len = sprintf((char*)buf, "ready: %d, brake: %f\r\n", SW_MESSAGE.command_1, APPS_MESSAGE.brake_pedal);
+	  buf_len = sprintf((char*)buf, "ready: %d, coolant: %d, accumulator: %d, extra: %d\r\n", SW_MESSAGE.ready_to_drive, SW_MESSAGE.coolant_pump, SW_MESSAGE.acumulator_fans, SW_MESSAGE.extra);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
