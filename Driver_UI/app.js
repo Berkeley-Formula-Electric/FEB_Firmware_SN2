@@ -35,9 +35,14 @@ app.post('/api/postdata',(req,res)=>{
   //String processing code since data is of format "time_stamp, node, msg_type, data"
   let received_string = String(req.body.data).replace(/\s+/g, ''); //ensures the received data is of a string datatype
   let comma_sep_data = received_string.split(',');
-  let sender = comma_sep_data[1];
-  let message_type = comma_sep_data[2];
-  let received_data = comma_sep_data[3];
+  if(comma_sep_data.length != 5){
+    res.sendStatus(100);
+    console.log('Incorrect length of data / # of arguments. Data may have been truncated.')
+    return;
+  }
+  let sender = comma_sep_data[2];
+  let message_type = comma_sep_data[3];
+  let received_data = comma_sep_data[4];
 
   //Parse data into proper field
   if (sender == 'BMS'){
