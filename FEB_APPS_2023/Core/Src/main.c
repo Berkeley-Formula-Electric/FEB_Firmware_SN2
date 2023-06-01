@@ -178,15 +178,34 @@ void FEB_RMS_disable() {
 }
 
 void FEB_RMS_Init(){
+	// Clear fault in case inverter is powered up before disable command is sent
+	uint8_t fault_clear_addr = 20;
+	uint8_t fault_clear_data = 0;
+	// param msg format (little-endian):
+	// 0,1: param addr
+	// 2: r/w cmd
+	// 3: NA
+	// 4,5: data
+	// 6,7: NA
+	uint8_t param_msg[8] = {fault_clear_addr, 0, 1, 0, fault_clear_data, 0, 0, 0};
+	FEB_CAN_Transmit(&hcan1, 0x0C1, param_msg, 8);
+
+	// send disable command to remove lockout
 	uint8_t message_data[8] = {0,0,0,0,0,0,0};
 	normalized_acc = 0;
 	normalized_brake = 0;
-
 	for (int i=0; i<100; i+=1) {
 		FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
 	    HAL_Delay(100);
 	}
 	FEB_RMS_enable();
+
+	// Select CAN msg to broadcast
+	uint8_t param_addr = 148;
+	uint8_t CAN_active_msg = 0b00100000; //only motor position is broadcasted by the inverter
+	param_msg[0] = param_addr;
+	param_msg[4] = CAN_active_msg;
+	FEB_CAN_Transmit(&hcan1, 0x0C1, param_msg, 8);
 }
 /* USER CODE END PV */
 
