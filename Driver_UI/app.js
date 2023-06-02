@@ -35,9 +35,10 @@ app.post('/api/postdata',(req,res)=>{
   //String processing code since data is of format "time_stamp, node, msg_type, data"
   let received_string = String(req.body.data).replace(/\s+/g, ''); //ensures the received data is of a string datatype
   let comma_sep_data = received_string.split(',');
-  if(comma_sep_data.length != 5){
+  if(comma_sep_data.length != 6){
     res.sendStatus(100);
     console.log('Incorrect length of data / # of arguments. Data may have been truncated.')
+    console.log(received_string)
     return;
   }
   let sender = comma_sep_data[2];
@@ -87,24 +88,24 @@ function roundPrecision(value, degree) {
     return Math.round(value * Math.pow(10, degree)) / Math.pow(10, degree)
 }
 
-//~ let version = 0;
-//~ fs.readFile('data.txt', 'utf8', (err, data) => {
-    //~ if (err) throw err;
-    //~ version = parseInt(data);
-    //~ console.log(version)
+let version = 0;
+fs.readFile('data.txt', 'utf8', (err, data) => {
+    if (err) throw err;
+    version = parseInt(data);
+    console.log(version)
 
-    //~ fs.open(`data/data${parseInt(data)}.csv`, 'w', (err) => {})
-    //~ fs.writeFile('data.txt', `${parseInt(data) + 1}`, (err) => {
-        //~ if (err) throw err;
-        //~ console.log('The file has been saved!');
-      //~ }); 
+    fs.open(`data/data${parseInt(data)}.csv`, 'w', (err) => {})
+    fs.writeFile('data.txt', `${parseInt(data) + 1}`, (err) => {
+        if (err) throw err;
+        console.log('The file has been saved!');
+      }); 
 
-    //~ fs.appendFile(`data/data${version}.csv`, `\n`, (err) => {});
-    //~ setInterval(() => {
-        //~ fs.appendFile(`data/data${version}.csv`, `${roundPrecision(time, 1)}, ${counter}\n`, (err) => {});    
-        //~ counter++
-    //~ }, 100);
-//~ });
+    fs.appendFile(`data/data${version}.csv`, `\n`, (err) => {});
+    setInterval(() => {
+        fs.appendFile(`data/data${version}.csv`, `${roundPrecision(time, 1)}, ${counter}\n`, (err) => {});    
+        counter++
+    }, 100);
+});
 
 // const serial_xbee = new SerialPort({
 //     path: "/dev/cu.usbserial-D309NYWG",

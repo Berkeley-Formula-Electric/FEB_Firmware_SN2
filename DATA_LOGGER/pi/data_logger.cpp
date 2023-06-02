@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream> // for file
 #include <cstdio> // for sprintf
+#include <cstring> // for memset
 #include <unistd.h> // for sleep
 
 #include <wiringPiSPI.h>
@@ -13,14 +14,14 @@
  * mosi    19   PC1
  * miso    21   pc2
  * sclk    23   pb10
- * ce1     11   pb12
+ * ce0     24   pb12
  *********************/
  //compile with    g++ data_logger.cpp -l wiringPi -lcurl -o data_logger
 
 using namespace std;
 
-// SPI chip select 1 on pi, and clock speed
-#define SPI_CHANNEL 1
+// SPI chip select 0 on pi, and clock speed
+#define SPI_CHANNEL 0
 #define SPI_CLK_SPEED 1000000 //can be 500kHz to 32MHz
 
 //Forward declarations 
@@ -108,7 +109,7 @@ int main() {
 	
 	// setting up spi
 	int fd;
-	char buffer[128];
+	char data_buffer[128];
 
 	cout << "Initializing" << endl ;
 
@@ -120,36 +121,69 @@ int main() {
 
    cout << "Init result: " << fd << endl;
    usleep(10000); //wait for 10ms
-	
+   log_file.open(log_file_path, ios::out | ios::app);
 	
 	while(1) {
+		/***
 		// read the SPI buffer
-		read(fd, buffer, 128);
+		read(fd, spi_buffer, 128*sizeof(char));
 		
 		// if the stm32 has not send anything, the SPI buffer will keep the latest byte
 		// in this case, should be the endline character of the last received string
-		if (buffer[0] != 10) {
-			log_file.open(log_file_path, ios::out | ios::app);
+		if (spi_buffer[0] != 10 && spi_buffer[0] != 0) {
+			
 			for(int i = 0; i < 128; i++) {
-				if(buffer[i] == 10) {
-					log_file << endl;
-					cout << endl;
+				if(spi_buffer[i] == 10) {
 					break;
 				}
-				log_file << buffer[i];
-				cout << buffer[i];
+				data_buffer[i] = spi_buffer[i];
 			}
-			log_file.close();
+			//~ log_file.open(log_file_path, ios::out | ios::app);
+			//~ log_file << data_buffer << endl;
+			//~ log_file.close();
+			cout << data_buffer << endl;
 			
 			//Sending POST Request to Node Js server
-			//string buffer_str = buffer;
-			//string data = "data=\"" + buffer_str + "\""; 
-			//updateData(data, curl);
+			//~ string data_buffer_str = data_buffer;
+			//~ string data = "data=\"" + data_buffer_str + "\""; 
+			//~ cout << data << endl;
+			//~ updateData(data, curl);
 			
+			memset(data_buffer, 0, 128*sizeof(char));
 		}
-
+		
 		usleep(1000); //wait for 1ms
+		***/
+		
+		char c;
+		do {
+			read(fd, &c, 1);
+		}while(c == 10 || c == 0);
+		
+		data_buffer[0] = c;
+		for (int i = 1; i < 128; i++) {
+			read(fd, &c, 1);
+			if(c == 10) {
+				break;
+			}
+			data_buffer[i] = c;
+		}
+		cout << data_buffer << endl;
+		
+		//Sending POST Request to Node Js server
+		string data_buffer_str = data_buffer;
+		string data = "data=\"" + data_buffer_str + "\""; 
+		cout << data << endl;
+		updateData(data, curl);
+		
+		
+		log_file << data_buffer << endl;
+		
+		
+		memset(data_buffer, 0, 128);
 	}
+	
+	log_file.close();
 
 		//Free all curl related objects
 	curl_easy_cleanup(curl);
@@ -164,6 +198,6 @@ void updateData(string updateString,CURL* curl) {
 	curl_easy_setopt(curl,CURLOPT_POSTFIELDS,updateString.c_str());
 	res = curl_easy_perform(curl);
 	if(res != CURLE_OK){
-		cerr << "Error" << endl;
+		cout << "Error" << endl;
 	}
 }
