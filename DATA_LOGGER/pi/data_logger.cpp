@@ -4,7 +4,6 @@
 #include <unistd.h> // for sleep
 
 #include <wiringPiSPI.h>
-#include<FEB_CAN_NODE.h>
 
 //Libraries for https communication with node js server
 #include <curl/curl.h>
@@ -109,7 +108,7 @@ int main() {
 	
 	// setting up spi
 	int fd;
-	unsigned char buffer[128];
+	char buffer[128];
 
 	cout << "Initializing" << endl ;
 
@@ -124,18 +123,31 @@ int main() {
 	
 	
 	while(1) {
-		log_file.open(log_file_path, ios::out | ios::app);
-		read(fd, (unsigned char *)SPI_MESSAGE.bits, sizeof(SPI_MESSAGE));
+		// read the SPI buffer
+		read(fd, buffer, 128);
 		
-		if (SPI_MESSAGE.bits[0] != 10) {
-			store_msg(&(SPI_MESSAGE.message.RxHeader), SPI_MESSAGE.message.RxData);
+		// if the stm32 has not send anything, the SPI buffer will keep the latest byte
+		// in this case, should be the endline character of the last received string
+		if (buffer[0] != 10) {
+			log_file.open(log_file_path, ios::out | ios::app);
+			for(int i = 0; i < 128; i++) {
+				if(buffer[i] == 10) {
+					log_file << endl;
+					cout << endl;
+					break;
+				}
+				log_file << buffer[i];
+				cout << buffer[i];
+			}
+			log_file.close();
+			
+			//Sending POST Request to Node Js server
+			string buffer_str = buffer;
+			string data = "data=\"" + buffer_str + "\""; 
+			updateData(data, curl);
+			
 		}
-		  
-		//Sending POST Request to Node Js server
-		//TODO: Not sure how the SPI_MESSAGE works so the following will need some edits
-		string data = "data=\"" + to_string(buffer) + "\""; 
-		updateData(data, curl);
-		log_file.close();
+
 		usleep(1000); //wait for 1ms
 	}
 
