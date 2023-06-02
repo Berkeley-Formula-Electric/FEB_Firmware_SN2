@@ -142,9 +142,9 @@ int main() {
 			log_file.close();
 			
 			//Sending POST Request to Node Js server
-			string buffer_str = buffer;
-			string data = "data=\"" + buffer_str + "\""; 
-			updateData(data, curl);
+			//string buffer_str = buffer;
+			//string data = "data=\"" + buffer_str + "\""; 
+			//updateData(data, curl);
 			
 		}
 
