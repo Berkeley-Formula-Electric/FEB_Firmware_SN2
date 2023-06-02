@@ -15,7 +15,7 @@
  * sclk    23   pb10
  * ce1     11   pb12
  *********************/
- //compile with    g++ data_logger.cpp -l wiringPi -o data_logger
+ //compile with    g++ data_logger.cpp -l wiringPi -lcurl -o data_logger
 
 using namespace std;
 
@@ -30,7 +30,7 @@ int main() {
 
 	//INITIALIZE CURL PARAMETERS
 	CURL *curl;
-	struct cur_slist *headers = NULL; 
+	struct curl_slist *headers = NULL; 
 	curl_global_init(CURL_GLOBAL_ALL); 
 	curl = curl_easy_init();
 	if(curl){
