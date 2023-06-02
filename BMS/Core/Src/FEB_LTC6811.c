@@ -69,24 +69,11 @@ void FEB_LTC6811_Read_Cell_Voltage_Registers(void) {
 
 void FEB_LTC6811_Store_Voltage(void) {
     for (uint16_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-    	accumulator.banks[bank_idx].cells[16].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[0]);
-    	accumulator.banks[bank_idx].cells[15].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[1]);
-    	accumulator.banks[bank_idx].cells[14].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[2]);
-    	accumulator.banks[bank_idx].cells[13].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[3]);
-    	accumulator.banks[bank_idx].cells[12].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[6]);
-    	accumulator.banks[bank_idx].cells[11].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[7]);
-    	accumulator.banks[bank_idx].cells[10].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[8]);
-    	accumulator.banks[bank_idx].cells[9].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2].cells.c_codes[9]);
-
-    	accumulator.banks[bank_idx].cells[8].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[0]);
-    	accumulator.banks[bank_idx].cells[7].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[1]);
-    	accumulator.banks[bank_idx].cells[6].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[2]);
-    	accumulator.banks[bank_idx].cells[5].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[3]);
-    	accumulator.banks[bank_idx].cells[4].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[4]);
-      	accumulator.banks[bank_idx].cells[3].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[6]);
-      	accumulator.banks[bank_idx].cells[2].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[7]);
-      	accumulator.banks[bank_idx].cells[1].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[8]);
-      	accumulator.banks[bank_idx].cells[0].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[bank_idx * 2 + 1].cells.c_codes[9]);
+    	for (uint8_t cell = 0; cell < CELLS_PER_BANK; cell++) {
+    		uint8_t ic = FEB_LTC6811_Get_IC(bank_idx, cell);
+    		uint8_t cell_idx = FEB_LTC6811_Cell_Idx(cell);
+    		accumulator.banks[bank_idx].cells[cell].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[ic].cells.c_codes[cell_idx]);
+    	}
     }
 }
 
