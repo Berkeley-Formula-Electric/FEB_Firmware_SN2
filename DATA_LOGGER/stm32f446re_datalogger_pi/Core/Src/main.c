@@ -99,11 +99,9 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
   uint16_t sleep_time = 100;
-  char buf[128];
-  uint8_t buf_len;
   float temp = 0.0;
   float volt = 0.0;
-  FEB_CAN_Init(&hcan1, DL_ID);
+  FEB_CAN_Init(&hcan1);
 
   /* USER CODE END 2 */
 
