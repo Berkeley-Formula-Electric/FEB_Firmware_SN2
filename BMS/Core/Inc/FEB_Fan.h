@@ -5,27 +5,11 @@
 
 #include "stm32f4xx_hal.h"
 #include "FEB_Timer.h"
+#include "FEB_BMS_Shutdown.h"
 
-// ********************************** Multiplex Select Configuration **********************************
+// ********************************** Constants **********************************
 
-#define FEB_Fan_Multiplex_2_Shift_R 3
-
-// Multiplex 1
-#define FEB_Fan_TACH01 0
-#define FEB_Fan_TACH02 1
-#define FEB_Fan_TACH03 2
-#define FEB_Fan_TACH04 3
-#define FEB_Fan_TACH05 4
-#define FEB_Fan_TACH06 5
-
-// Multiplex 2
-#define FEB_Fan_TACH07 0 << FEB_Fan_Multiplex_2_Shift_R
-#define FEB_Fan_TACH08 1 << FEB_Fan_Multiplex_2_Shift_R
-#define FEB_Fan_TACH09 2 << FEB_Fan_Multiplex_2_Shift_R
-#define FEB_Fan_TACH10 3 << FEB_Fan_Multiplex_2_Shift_R
-#define FEB_Fan_TACH11 4 << FEB_Fan_Multiplex_2_Shift_R
-#define FEB_Fan_TACH12 5 << FEB_Fan_Multiplex_2_Shift_R
-
+#define FEB_Fan_ADC_Value_Limit 100		// 0 - 4095
 
 // ********************************** Functions **********************************
 
@@ -39,13 +23,18 @@ void FEB_Fan_2_Speed_Set(uint8_t speed);
 void FEB_Fan_3_Speed_Set(uint8_t speed);
 void FEB_Fan_4_Speed_Set(uint8_t speed);
 
-// Tachometer
+// Shift Register Control
 void FEB_Fan_Reset_Shift_Register(void);
 void FEB_Fan_Serial_High(void);
 void FEB_Fan_Serial_Low(void);
 void FEB_Fan_Clock_High(void);
 void FEB_Fan_Clock_Low(void);
 void FEB_Fan_Clock_Pulse(void);
+
+// Tachometer
+void FEB_Fan_Process(void);
 void FEB_Fan_Set_Tachometer(uint8_t value);
+uint32_t FEB_Fan_Read_Tachometer(uint8_t multiplex);
+void FEB_Fan_Validate_Speed(uint32_t adc_value, uint8_t fan_bank);
 
 #endif /* INC_FEB_FAN_H_ */
