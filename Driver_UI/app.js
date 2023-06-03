@@ -33,44 +33,39 @@ app.get("/", (req, res) => {
 */
 app.post('/api/postdata',(req,res)=>{
   //String processing code since data is of format "time_stamp, node, msg_type, data"
+  console.time("split");
   let received_string = String(req.body.data).replace(/\s+/g, ''); //ensures the received data is of a string datatype
   let comma_sep_data = received_string.split(',');
-  if(comma_sep_data.length != 6){
-    res.sendStatus(100);
-    console.log('Incorrect length of data / # of arguments. Data may have been truncated.')
-    console.log(received_string)
+  console.timeEnd("split");
+  if(comma_sep_data.length != 4){
+    res.sendStatus(200);
     return;
   }
-  let sender = comma_sep_data[2];
-  let message_type = comma_sep_data[3];
-  let received_data = comma_sep_data[4];
+  let sender = comma_sep_data[1];
+  let message_type = comma_sep_data[2];
+  let received_data = comma_sep_data[3];
 
   //Parse data into proper field
+  console.time("store");
   if (sender == 'BMS'){
     if (message_type == 'TEMPERATURE'){
-      actual_data.temperature = received_data;
+      data.temperature = received_data;
     }else if (message_type == 'VOLTAGE'){
-      actual_data.voltage = received_data;
+      data.voltage = received_data;
     }
-  }else if (sender == 'RMS'){
-    actual_data.speed = received_data;
+  }else if (sender == 'RMS_INFO'){
+    data.speed = received_data;
   }
+  console.timeEnd("store");
+  console.time("res");
   res.sendStatus(200);
+  console.timeEnd("res");
 });
 
-//Used to receive from POST request. Change to 'data' once testing is done
-//Fields initialized to 0 on startup
-const actual_data = {
-  temperature: 0,
-  voltage: 0,
-  speed:0
-}
-
-// TEST DATA
 const data = {
-    temperature: 26,
-    voltage: 632,
-    speed: 54,
+    temperature: 0,
+    voltage: 0,
+    speed: 0,
     timerStart: true,
     timerStop: false,
     timerReset: false,
@@ -121,9 +116,6 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
 // socket connection
 io.on('connection', (socket) => {
     setInterval(() => {
-        data.temperature += (Math.random() - 0.5) * 0.1
-        data.voltage += (Math.random() - 0.5) * 0.1
-        data.speed += (Math.random() - 0.5) * 0.1
         socket.emit("data", data)
     }, 100)
 });
