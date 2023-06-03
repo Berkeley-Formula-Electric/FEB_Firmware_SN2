@@ -34,10 +34,18 @@ void FEB_Fan_PWM_Start(void) {
 }
 
 void FEB_Fan_Init_Speed_Set(void) {
-	FEB_Fan_1_Speed_Set(255);
-	FEB_Fan_2_Speed_Set(255);
-	FEB_Fan_3_Speed_Set(255);
-	FEB_Fan_4_Speed_Set(255);
+	if (FEB_CAN_CHARGER_START_CHARGE == 0) {
+		FEB_Fan_1_Speed_Set(255);
+		FEB_Fan_2_Speed_Set(255);
+		FEB_Fan_3_Speed_Set(255);
+		FEB_Fan_4_Speed_Set(255);
+	} else {
+		FEB_Fan_1_Speed_Set(127);
+		FEB_Fan_2_Speed_Set(127);
+		FEB_Fan_3_Speed_Set(127);
+		FEB_Fan_4_Speed_Set(127);
+	}
+
 }
 
 void FEB_Fan_1_Speed_Set(uint8_t speed) {

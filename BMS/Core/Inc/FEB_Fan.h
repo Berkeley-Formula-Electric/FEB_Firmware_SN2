@@ -6,6 +6,7 @@
 #include "stm32f4xx_hal.h"
 #include "FEB_Timer.h"
 #include "FEB_BMS_Shutdown.h"
+#include "FEB_CAN_Charger.h"
 
 // ********************************** Constants **********************************
 

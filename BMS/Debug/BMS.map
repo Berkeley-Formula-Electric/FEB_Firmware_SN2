@@ -8031,7 +8031,7 @@ LOAD /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.id
  .debug_macro   0x0000000000028429      0x20a ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
  .debug_macro   0x0000000000028633      0x20b ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
 
-.debug_line     0x0000000000000000    0x1f92a
+.debug_line     0x0000000000000000    0x1f92b
  .debug_line    0x0000000000000000      0xa9c ./Core/Src/FEB_BMS_Precharge.o
  .debug_line    0x0000000000000a9c      0xaa6 ./Core/Src/FEB_BMS_Shutdown.o
  .debug_line    0x0000000000001542      0xa7c ./Core/Src/FEB_BMS_State.o
@@ -8039,32 +8039,32 @@ LOAD /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.id
  .debug_line    0x0000000000002a80      0xbe8 ./Core/Src/FEB_CAN_Charger.o
  .debug_line    0x0000000000003668      0xc00 ./Core/Src/FEB_CAN_IVT.o
  .debug_line    0x0000000000004268      0xb76 ./Core/Src/FEB_CAN_Inverter.o
- .debug_line    0x0000000000004dde      0xcaf ./Core/Src/FEB_Fan.o
- .debug_line    0x0000000000005a8d     0x12ae ./Core/Src/FEB_LTC6811.o
- .debug_line    0x0000000000006d3b      0x54d ./Core/Src/FEB_LTC6811_Temp_LUT.o
- .debug_line    0x0000000000007288      0x3dd ./Core/Src/FEB_Math.o
- .debug_line    0x0000000000007665      0x785 ./Core/Src/FEB_Timer.o
- .debug_line    0x0000000000007dea      0x997 ./Core/Src/LTC6811.o
- .debug_line    0x0000000000008781     0x29fb ./Core/Src/LTC681x.o
- .debug_line    0x000000000000b17c      0x822 ./Core/Src/bms_hardware.o
- .debug_line    0x000000000000b99e      0xe80 ./Core/Src/main.o
- .debug_line    0x000000000000c81e      0xd13 ./Core/Src/stm32f4xx_hal_msp.o
- .debug_line    0x000000000000d531      0xba9 ./Core/Src/stm32f4xx_it.o
- .debug_line    0x000000000000e0da      0x82b ./Core/Src/syscalls.o
- .debug_line    0x000000000000e905      0x521 ./Core/Src/sysmem.o
- .debug_line    0x000000000000ee26      0x7de ./Core/Src/system_stm32f4xx.o
- .debug_line    0x000000000000f604       0x88 ./Core/Startup/startup_stm32f446retx.o
- .debug_line    0x000000000000f68c      0xa44 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
- .debug_line    0x00000000000100d0     0x12c0 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
- .debug_line    0x0000000000011390     0x11b0 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.o
- .debug_line    0x0000000000012540      0xcf3 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
- .debug_line    0x0000000000013233      0xba4 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
- .debug_line    0x0000000000013dd7      0xdcc ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
- .debug_line    0x0000000000014ba3     0x1457 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
- .debug_line    0x0000000000015ffa     0x1cce ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
- .debug_line    0x0000000000017cc8     0x3738 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
- .debug_line    0x000000000001b400     0x1a41 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
- .debug_line    0x000000000001ce41     0x2ae9 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+ .debug_line    0x0000000000004dde      0xcb0 ./Core/Src/FEB_Fan.o
+ .debug_line    0x0000000000005a8e     0x12ae ./Core/Src/FEB_LTC6811.o
+ .debug_line    0x0000000000006d3c      0x54d ./Core/Src/FEB_LTC6811_Temp_LUT.o
+ .debug_line    0x0000000000007289      0x3dd ./Core/Src/FEB_Math.o
+ .debug_line    0x0000000000007666      0x785 ./Core/Src/FEB_Timer.o
+ .debug_line    0x0000000000007deb      0x997 ./Core/Src/LTC6811.o
+ .debug_line    0x0000000000008782     0x29fb ./Core/Src/LTC681x.o
+ .debug_line    0x000000000000b17d      0x822 ./Core/Src/bms_hardware.o
+ .debug_line    0x000000000000b99f      0xe80 ./Core/Src/main.o
+ .debug_line    0x000000000000c81f      0xd13 ./Core/Src/stm32f4xx_hal_msp.o
+ .debug_line    0x000000000000d532      0xba9 ./Core/Src/stm32f4xx_it.o
+ .debug_line    0x000000000000e0db      0x82b ./Core/Src/syscalls.o
+ .debug_line    0x000000000000e906      0x521 ./Core/Src/sysmem.o
+ .debug_line    0x000000000000ee27      0x7de ./Core/Src/system_stm32f4xx.o
+ .debug_line    0x000000000000f605       0x88 ./Core/Startup/startup_stm32f446retx.o
+ .debug_line    0x000000000000f68d      0xa44 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_line    0x00000000000100d1     0x12c0 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
+ .debug_line    0x0000000000011391     0x11b0 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.o
+ .debug_line    0x0000000000012541      0xcf3 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_line    0x0000000000013234      0xba4 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_line    0x0000000000013dd8      0xdcc ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_line    0x0000000000014ba4     0x1457 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
+ .debug_line    0x0000000000015ffb     0x1cce ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
+ .debug_line    0x0000000000017cc9     0x3738 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
+ .debug_line    0x000000000001b401     0x1a41 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
+ .debug_line    0x000000000001ce42     0x2ae9 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
 
 .debug_str      0x0000000000000000    0xe5abf
  .debug_str     0x0000000000000000    0xdda4b ./Core/Src/FEB_BMS_Precharge.o
