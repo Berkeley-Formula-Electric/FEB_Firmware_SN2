@@ -43,6 +43,7 @@ extern "C" {
 #include "FEB_BMS_State.h"
 #include "FEB_Fan.h"
 #include "FEB_Timer.h"
+#include "FEB_CAN_Inverter.h"
 
 /* USER CODE END Includes */
 

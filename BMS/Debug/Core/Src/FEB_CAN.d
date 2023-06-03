@@ -37,7 +37,8 @@ Core/Src/FEB_CAN.o: ../Core/Src/FEB_CAN.c ../Core/Inc/FEB_CAN.h \
  ../Core/Inc/FEB_BMS_Shutdown.h ../Core/Inc/FEB_LTC6811_Temp_LUT.h \
  ../Core/Inc/FEB_CAN.h ../Core/Inc/FEB_CAN_IVT.h ../Core/Inc/main.h \
  ../Core/Inc/FEB_BMS_Precharge.h ../Core/Inc/FEB_BMS_State.h \
- ../Core/Inc/FEB_Fan.h ../Core/Inc/FEB_Timer.h
+ ../Core/Inc/FEB_Fan.h ../Core/Inc/FEB_Timer.h \
+ ../Core/Inc/FEB_CAN_Inverter.h ../Core/Inc/FEB_Math.h
 ../Core/Inc/FEB_CAN.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -85,3 +86,5 @@ Core/Src/FEB_CAN.o: ../Core/Src/FEB_CAN.c ../Core/Inc/FEB_CAN.h \
 ../Core/Inc/FEB_BMS_State.h:
 ../Core/Inc/FEB_Fan.h:
 ../Core/Inc/FEB_Timer.h:
+../Core/Inc/FEB_CAN_Inverter.h:
+../Core/Inc/FEB_Math.h:

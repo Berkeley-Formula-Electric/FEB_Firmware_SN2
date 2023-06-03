@@ -99,7 +99,3 @@ void FEB_CAN_IVT_Process(void) {
 		}
 	}
 }
-
-long unsignedToSignedLong(uint32_t value) {
-	return (value & 0x7FFFFFFF) - (value & (0b1 << 31));
-}

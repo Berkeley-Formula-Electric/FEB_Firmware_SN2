@@ -10,6 +10,7 @@
 #include "FEB_LTC6811.h"
 #include "FEB_BMS_Precharge.h"
 #include "FEB_BMS_Shutdown.h"
+#include "FEB_Math.h"
 
 // ********************************** CAN Configuration **********************************
 

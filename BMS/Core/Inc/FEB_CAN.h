@@ -8,6 +8,7 @@
 
 #include "FEB_CAN_Charger.h"
 #include "FEB_CAN_IVT.h"
+#include "FEB_CAN_Inverter.h"
 #include "FEB_BMS_Shutdown.h"
 
 // ********************************** Functions **********************************

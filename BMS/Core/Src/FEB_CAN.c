@@ -29,11 +29,13 @@ void FEB_CAN_Filter_Config() {
 	uint8_t bank = 0;
 	bank = FEB_CAN_IVT_Filter_Config(&hcan1, FEB_CAN_FIFO_Assignment, bank);
 	bank = FEB_CAN_Charger_Filter_Config(&hcan1, FEB_CAN_FIFO_Assignment, bank);
+	bank = FEB_CAN_Inverter_Filter_Config(&hcan1, FEB_CAN_FIFO_Assignment, bank);
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	if (HAL_CAN_GetRxMessage(hcan, FEB_CAN_FIFO_Assignment, &FEB_CAN_RxHeader, FEB_CAN_RxData) == HAL_OK) {
 		FEB_CAN_IVT_Store_Msg(&FEB_CAN_RxHeader, FEB_CAN_RxData);
 		FEB_CAN_Charger_Store_Msg(&FEB_CAN_RxHeader, FEB_CAN_RxData);
+		FEB_CAN_Inverter_Store_Msg(&FEB_CAN_RxHeader, FEB_CAN_RxData);
 	}
 }

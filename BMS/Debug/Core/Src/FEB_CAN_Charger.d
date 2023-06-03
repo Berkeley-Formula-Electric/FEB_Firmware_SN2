@@ -38,7 +38,8 @@ Core/Src/FEB_CAN_Charger.o: ../Core/Src/FEB_CAN_Charger.c \
  ../Core/Inc/FEB_CAN_Charger.h ../Core/Inc/FEB_CAN.h \
  ../Core/Inc/FEB_CAN_IVT.h ../Core/Inc/main.h \
  ../Core/Inc/FEB_BMS_Precharge.h ../Core/Inc/FEB_BMS_State.h \
- ../Core/Inc/FEB_Fan.h ../Core/Inc/FEB_Timer.h
+ ../Core/Inc/FEB_Fan.h ../Core/Inc/FEB_Timer.h \
+ ../Core/Inc/FEB_CAN_Inverter.h ../Core/Inc/FEB_Math.h
 ../Core/Inc/FEB_CAN_Charger.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -86,3 +87,5 @@ Core/Src/FEB_CAN_Charger.o: ../Core/Src/FEB_CAN_Charger.c \
 ../Core/Inc/FEB_BMS_State.h:
 ../Core/Inc/FEB_Fan.h:
 ../Core/Inc/FEB_Timer.h:
+../Core/Inc/FEB_CAN_Inverter.h:
+../Core/Inc/FEB_Math.h:

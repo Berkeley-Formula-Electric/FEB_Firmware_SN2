@@ -164,6 +164,9 @@ int main(void)
 	// *********************** Fan ***********************
 	FEB_Fan_Process();
 
+	// *********************** Inverter ***********************
+	FEB_CAN_Inverter_Process();
+
 	if (FEB_CAN_CHARGER_START_CHARGE == 1) {
 		HAL_Delay(1000);	// 1Hz
 	} else {
