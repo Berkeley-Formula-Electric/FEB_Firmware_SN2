@@ -10,7 +10,7 @@ extern UART_HandleTypeDef huart2;
 static uint8_t FEB_LTC6811_Cell_Idx_Map[17] = {9, 8, 7, 6, 4, 3, 2, 1, 0, 9, 8, 7, 6, 3, 2, 1, 0};
 
 // Discharge configuration
-static uint8_t FEB_LTC6811_Cell_Discharge[NUM_IC][CELLS_PER_DAUGHTER_BOARD];
+static uint8_t FEB_LTC6811_Cell_Discharge[NUM_IC][FEB_LTC6811_NUM_CELLS_PER_DAUGHTER_BOARD];
 static uint8_t FEB_LTC6811_Target_Voltage_Set = 0;	// 0 (not set), 1 (set)
 static uint8_t FEB_LTC6811_Cells_Balanced = 0;		// 0 (not balanced), 1 (balanced)
 static float FEB_LTC6811_Target_Voltage;
@@ -29,7 +29,7 @@ static Accumulator accumulator;
 
 // ********************************** Functions **********************************
 
-void FEB_LTC6811_Setup(void) {
+void FEB_LTC6811_Init(void) {
 	FEB_LTC6811_Config_Cell_Discharge();
 
 	LTC6811_init_cfg(NUM_IC, accumulator.IC_config);
@@ -42,7 +42,7 @@ void FEB_LTC6811_Setup(void) {
 
 void FEB_LTC6811_Config_Cell_Discharge(void) {
 	for (uint8_t i = 0; i < NUM_IC; i++) {
-		for (uint8_t j = 0; j < CELLS_PER_DAUGHTER_BOARD; j++) {
+		for (uint8_t j = 0; j < FEB_LTC6811_NUM_CELLS_PER_DAUGHTER_BOARD; j++) {
 			FEB_LTC6811_Cell_Discharge[i][j] = 0;
 		}
 	}
@@ -68,8 +68,8 @@ void FEB_LTC6811_Read_Cell_Voltage_Registers(void) {
 }
 
 void FEB_LTC6811_Store_Voltage(void) {
-    for (uint16_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-    	for (uint8_t cell = 0; cell < CELLS_PER_BANK; cell++) {
+    for (uint16_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+    	for (uint8_t cell = 0; cell < FEB_LTC6811_NUM_CELLS_PER_BANK; cell++) {
     		uint8_t ic = FEB_LTC6811_Get_IC(bank_idx, cell);
     		uint8_t cell_idx = FEB_LTC6811_Cell_Idx(cell);
     		accumulator.banks[bank_idx].cells[cell].voltage = FEB_LTC6811_Convert_Voltage(accumulator.IC_config[ic].cells.c_codes[cell_idx]);
@@ -104,9 +104,9 @@ uint8_t FEB_LTC6811_Cell_Idx(uint8_t cell) {
 
 void FEB_LTC6811_Set_Discharge_Target_Voltage(void) {
 	// Find lowest voltage
-	float lowest_voltage = MAX_VOLTAGE;
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	float lowest_voltage = FEB_LTC6811_CELL_MAX_VOLTAGE;
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			if (accumulator.banks[bank_idx].cells[cell_idx].voltage < lowest_voltage) {
 				lowest_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
 			}
@@ -119,16 +119,16 @@ void FEB_LTC6811_Set_Discharge_Target_Voltage(void) {
 }
 
 void FEB_LTC6811_Balance_Cells(void) {
-	if (FEB_LTC6811_Balance_Cells_State == 0 || FEB_LTC6811_Cells_Balanced == 1) {
+	if (FEB_LTC6811_BALANCE_STATE == 0 || FEB_LTC6811_Cells_Balanced == 1) {
 		return;
 	} else if (FEB_LTC6811_Target_Voltage_Set == 0) {
 		FEB_LTC6811_Set_Discharge_Target_Voltage();
 	}
 
 	uint8_t cells_balanced = 1;
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
-			if (accumulator.banks[bank_idx].cells[cell_idx].voltage > FEB_LTC6811_Target_Voltage + FEB_LTC6811_Voltage_Resolution) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
+			if (accumulator.banks[bank_idx].cells[cell_idx].voltage > FEB_LTC6811_Target_Voltage + FEB_LTC6811_BALANCE_VOLTAGE_RESOLUTION) {
 				cells_balanced = 0;
 				FEB_LTC6811_Balance_Cell(bank_idx, cell_idx);
 			}
@@ -147,8 +147,8 @@ void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell) {
 }
 
 void FEB_LTC6811_Clear_Balance_Cells(void) {
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			FEB_LTC6811_Clear_Balance_Cell(bank_idx, cell_idx);
 		}
 	}
@@ -160,7 +160,7 @@ void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell) {
 }
 
 void FEB_LTC6811_Configure_DCCBITS_A(uint8_t ic) {
-	for (uint8_t i = 0; i < CELLS_PER_DAUGHTER_BOARD; i++) {
+	for (uint8_t i = 0; i < FEB_LTC6811_NUM_CELLS_PER_DAUGHTER_BOARD; i++) {
 		DCCBITS_A[i] = FEB_LTC6811_Cell_Discharge[ic][i];
 	}
 }
@@ -169,13 +169,13 @@ void FEB_LTC6811_UART_Transmit_Discharge(void) {
 	char UART_str[1024];
 	char temp_str[256];
 
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
-		sprintf(UART_str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_DISCHARGE_ID);
+		sprintf(UART_str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_DISCHARGE_ID);
 
 
 		// Add values to {@code UART_Str}
-		for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+		for (uint16_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			uint8_t state = FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank_idx, cell_idx)][FEB_LTC6811_Cell_Idx(cell_idx)];
 			sprintf(temp_str, " %d", state);
 			strncat(UART_str, temp_str, strlen(temp_str));
@@ -192,12 +192,12 @@ void FEB_LTC6811_UART_Transmit_Discharge(void) {
 // ******************** Voltage Interface ********************
 
 void FEB_LTC6811_Validate_Voltage(void) {
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
-			if (voltage < MIN_VOLTAGE) {
+			if (voltage < FEB_LTC6811_CELL_MIN_VOLTAGE) {
 				FEB_BMS_Shutdown_Initiate("Module under voltage");
-			} else if (voltage > MAX_VOLTAGE) {
+			} else if (voltage > FEB_LTC6811_CELL_MAX_VOLTAGE) {
 				FEB_BMS_Shutdown_Initiate("Module over voltage");
 			}
 		}
@@ -208,13 +208,13 @@ void FEB_LTC6811_UART_Transmit_Voltage() {
 	char UART_str[1024];
 	char temp_str[256];
 
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
-		sprintf(UART_str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_VOLTAGE_ID);
+		sprintf(UART_str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_VOLTAGE_ID);
 
 
 		// Add values to {@code UART_Str}
-		for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+		for (uint16_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
 
 			sprintf(temp_str, " %f", voltage);
@@ -232,8 +232,8 @@ void FEB_LTC6811_UART_Transmit_Voltage() {
 float FEB_LTC6811_Total_Bank_Voltage(void) {
 	float total_voltage = 0;
 
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			total_voltage += accumulator.banks[bank_idx].cells[cell_idx].voltage;
 		}
 	}
@@ -242,9 +242,9 @@ float FEB_LTC6811_Total_Bank_Voltage(void) {
 }
 
 uint8_t FEB_LTC6811_Cells_Charged(void) {
-	const float cell_voltage_threshold = MAX_VOLTAGE * CHARGED_PERCENTAGE;
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	const float cell_voltage_threshold = FEB_LTC6811_CELL_MAX_VOLTAGE * FEB_CAN_CHARGER_CELL_CHARGED_PERCENTAGE;
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float cell_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
 			if (cell_voltage > cell_voltage_threshold) {
 				return 1;
@@ -255,8 +255,8 @@ uint8_t FEB_LTC6811_Cells_Charged(void) {
 }
 
 void FEB_LTC6811_Clear_Voltage(void) {
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			accumulator.banks[bank_idx].cells[cell_idx].voltage = 0;
 		}
 	}
@@ -301,7 +301,7 @@ void FEB_LTC6811_Read_Aux_Voltages(void) {
 }
 
 void FEB_LTC6811_Store_Temperature(uint8_t channel) {
-    for (uint16_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+    for (uint16_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
     	switch (channel) {
     		case 0:
     			accumulator.banks[bank_idx].cells[12].temperature = FEB_LTC6811_Convert_Temperature(accumulator.IC_config[bank_idx * 2].aux.a_codes[0]);
@@ -349,14 +349,14 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value) {
 // ******************** Temperature Interface ********************
 
 void FEB_LTC6811_Validate_Temperature(void) {
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
-			float min_temperature = MIN_OPERATION_TEMPERATURE;
-			float max_temperature = MAX_OPERATION_TEMPERATURE;
-			if (FEB_CAN_CHARGER_START_CHARGE == 1) {
-				min_temperature = MIN_CHARGING_TEMPERATURE;
-				max_temperature = MAX_CHARGING_TEMPERATURE;
+			float min_temperature = FEB_LTC6811_CELL_MIN_OPERATION_TEMPERATURE;
+			float max_temperature = FEB_LTC6811_CELL_MAX_OPERATION_TEMPERATURE;
+			if (FEB_CAN_CHARGER_STATE == 1) {
+				min_temperature = FEB_LTC6811_CELL_MIN_CHARGING_TEMPERATURE;
+				max_temperature = FEB_LTC6811_CELL_MAX_CHARGING_TEMPERATURE;
 			}
 			if (temperature < min_temperature) {
 				FEB_BMS_Shutdown_Initiate("Module under temperature");
@@ -371,13 +371,13 @@ void FEB_LTC6811_UART_Transmit_Temperature() {
 	char UART_Str[1024];
 	char temp_str[256];
 
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
-		sprintf(UART_Str, "%d", (bank_idx << UART_BITS_PER_MESSAGE) + UART_TEMPERATURE_ID);
+		sprintf(UART_Str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_TEMPERATURE_ID);
 
 
 		// Add values to {@code UART_Str}
-		for (uint16_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+		for (uint16_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
 
 			sprintf(temp_str, " %f", temperature);
@@ -392,8 +392,8 @@ void FEB_LTC6811_UART_Transmit_Temperature() {
 }
 
 void FEB_LTC6811_Clear_Temperature(void) {
-	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
-		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			accumulator.banks[bank_idx].cells[cell_idx].temperature = 0;
 		}
 	}

@@ -1,2 +1,2 @@
-../Core/Src/FEB_Math.c:7:6:unsignedToSignedLong	16	static
-../Core/Src/FEB_Math.c:11:9:unsignedToSigned16	16	static
+../Core/Src/FEB_Math.c:7:6:FEB_Math_Uint32_To_Signed_Long	16	static
+../Core/Src/FEB_Math.c:11:9:FEB_Math_Uint16_To_Int16	16	static

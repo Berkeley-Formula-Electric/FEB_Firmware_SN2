@@ -9,10 +9,10 @@ extern ADC_HandleTypeDef hadc2;
 
 // ********************************** Fan Configuration **********************************
 
-static uint8_t FEB_Fan_1_Speed = 0;		// 0-255
-static uint8_t FEB_Fan_2_Speed = 0;		// 0-255
-static uint8_t FEB_Fan_3_Speed = 0;		// 0-255
-static uint8_t FEB_Fan_4_Speed = 0;		// 0-255
+static uint8_t FEB_Fan_1_Speed = 0;		// [0, 255]
+static uint8_t FEB_Fan_2_Speed = 0;		// [0, 255]
+static uint8_t FEB_Fan_3_Speed = 0;		// [0, 255]
+static uint8_t FEB_Fan_4_Speed = 0;		// [0, 255]
 
 // ********************************** Initialize **********************************
 
@@ -34,12 +34,12 @@ void FEB_Fan_PWM_Start(void) {
 }
 
 void FEB_Fan_Init_Speed_Set(void) {
-	if (FEB_CAN_CHARGER_START_CHARGE == 0) {
+	if (FEB_CAN_CHARGER_STATE == 0) {
 		FEB_Fan_1_Speed_Set(255);
 		FEB_Fan_2_Speed_Set(255);
 		FEB_Fan_3_Speed_Set(255);
 		FEB_Fan_4_Speed_Set(255);
-	} else {
+	} else if (FEB_CAN_CHARGER_STATE == 1) {
 		FEB_Fan_1_Speed_Set(127);
 		FEB_Fan_2_Speed_Set(127);
 		FEB_Fan_3_Speed_Set(127);
@@ -136,7 +136,7 @@ uint32_t FEB_Fan_Read_Tachometer(uint8_t multiplex) {
 }
 
 void FEB_Fan_Validate_Speed(uint32_t adc_value, uint8_t fan_bank) {
-	if (adc_value < FEB_Fan_ADC_Value_Limit) {
+	if (adc_value < FEB_FAN_ADC_VALUE_LIMIT) {
 		switch (fan_bank) {
 			case 1:
 				FEB_Fan_1_Speed_Set(0);

@@ -120,7 +120,8 @@ int main(void)
   FEB_BMS_Precharge_Open();
   FEB_BMS_Shutdown_Startup();
   FEB_BMS_State_Validate();
-  FEB_LTC6811_Setup();
+
+  FEB_LTC6811_Init();
   FEB_CAN_Init();
   FEB_CAN_Charger_Init();
   FEB_Fan_Init();
@@ -167,7 +168,7 @@ int main(void)
 	// *********************** Inverter ***********************
 	FEB_CAN_Inverter_Process();
 
-	if (FEB_CAN_CHARGER_START_CHARGE == 1) {
+	if (FEB_CAN_CHARGER_STATE == 1) {
 		HAL_Delay(1000);	// 1Hz
 	} else {
 		HAL_Delay(200);		// 5Hz

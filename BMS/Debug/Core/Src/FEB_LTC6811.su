@@ -1,4 +1,4 @@
-../Core/Src/FEB_LTC6811.c:32:6:FEB_LTC6811_Setup	48	static
+../Core/Src/FEB_LTC6811.c:32:6:FEB_LTC6811_Init	48	static
 ../Core/Src/FEB_LTC6811.c:43:6:FEB_LTC6811_Config_Cell_Discharge	16	static
 ../Core/Src/FEB_LTC6811.c:53:6:FEB_LTC6811_Poll_Voltage	8	static
 ../Core/Src/FEB_LTC6811.c:59:6:FEB_LTC6811_Start_Cell_ADC_Measurement	8	static

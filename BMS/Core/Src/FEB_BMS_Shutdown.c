@@ -1,4 +1,4 @@
-// ********************************** Includes **********************************
+// ********************************** Includes & External **********************************
 
 #include "FEB_BMS_Shutdown.h"
 
@@ -21,12 +21,12 @@ void FEB_BMS_Shutdown_Initiate(char shutdown_message[]) {
 	HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), 100);
 
 	// Stop Discharge
-	if (FEB_LTC6811_Balance_Cells_State == 1) {
+	if (FEB_LTC6811_BALANCE_STATE == 1) {
 		FEB_LTC6811_Clear_Balance_Cells();
 	}
 
 	// Stop charge
-	if (FEB_CAN_CHARGER_START_CHARGE == 1) {
+	if (FEB_CAN_CHARGER_STATE == 1) {
 		FEB_CAN_Charger_Stop_Charge(&hcan1);
 	}
 

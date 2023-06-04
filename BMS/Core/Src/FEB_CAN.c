@@ -20,7 +20,7 @@ uint32_t FEB_CAN_TxMailbox;
 void FEB_CAN_Init() {
 	FEB_CAN_Filter_Config();
 	if (HAL_CAN_Start(&hcan1) != HAL_OK) {
-		FEB_BMS_Shutdown_Initiate("CAN perhipheral startup error");
+		FEB_BMS_Shutdown_Initiate("CAN peripheral startup error");
 	}
 	HAL_CAN_ActivateNotification(&hcan1, FEB_CAN_FIFO_Interrupt);
 }
