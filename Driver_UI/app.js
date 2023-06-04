@@ -33,7 +33,7 @@ const data = {
     timerStart: true,
     timerStop: false,
     timerReset: false,
-    readyToDrive:false
+    readyToDrive:0
 }
 
 // timer
@@ -82,8 +82,8 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
 io.on('connection', (socket) => { 
   console.log('socket connection made')
   socket.on('cpp_data',(dataString)=>{
-
-    let received_string = String(dataString).replace(/\s+/g, ''); //ensures the received data is of a string datatype
+    //NOTE: string parsing from previous versions has been removed since we assume the format 
+    //ASSUMED FORMAT: "<timestamp>,<CAN NODE>,<Message Type>,<value>"
     let comma_sep_data = received_string.split(',');
     if(comma_sep_data.length != 4){
       console.log('Incorrect length of data / # of arguments. Data may have been truncated.')
@@ -100,8 +100,10 @@ io.on('connection', (socket) => {
       }else if (message_type == 'VOLTAGE'){
         data.voltage = received_data;
       }
-    }else if (sender == 'RMS'){
+    }else if (sender == 'RMS_INFO'){
       data.speed = received_data;
+    }else if (sender == 'SW'){
+      data.readyToDrive = received_data;
     }
     socket.emit('data',data);
   });
