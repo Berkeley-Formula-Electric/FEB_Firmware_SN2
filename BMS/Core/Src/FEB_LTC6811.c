@@ -195,8 +195,10 @@ void FEB_LTC6811_Validate_Voltage(void) {
 	for (uint8_t bank_idx = 0; bank_idx < NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < CELLS_PER_BANK; cell_idx++) {
 			float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
-			if (voltage < MIN_VOLTAGE || voltage > MAX_VOLTAGE) {
-				FEB_BMS_Shutdown_Initiate();
+			if (voltage < MIN_VOLTAGE) {
+				FEB_BMS_Shutdown_Initiate("Module under voltage");
+			} else if (voltage > MAX_VOLTAGE) {
+				FEB_BMS_Shutdown_Initiate("Module over voltage");
 			}
 		}
 	}
@@ -356,8 +358,10 @@ void FEB_LTC6811_Validate_Temperature(void) {
 				min_temperature = MIN_CHARGING_TEMPERATURE;
 				max_temperature = MAX_CHARGING_TEMPERATURE;
 			}
-			if (temperature < min_temperature || temperature > max_temperature) {
-				FEB_BMS_Shutdown_Initiate();
+			if (temperature < min_temperature) {
+				FEB_BMS_Shutdown_Initiate("Module under temperature");
+			} else if (temperature > max_temperature) {
+				FEB_BMS_Shutdown_Initiate("Module over temperature");
 			}
 		}
 	}

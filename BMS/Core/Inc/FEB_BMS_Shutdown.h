@@ -10,7 +10,7 @@
 
 // ********************************** Functions **********************************
 
-void FEB_BMS_Shutdown_Startup(void);	// Close shutdown switch to start car
-void FEB_BMS_Shutdown_Initiate(void);	// Initiate shutdown circuit + open AIRs
+void FEB_BMS_Shutdown_Startup(void);						// Close relay
+void FEB_BMS_Shutdown_Initiate(char shutdown_message[]);	// Open relay
 
 #endif /* INC_FEB_BMS_SHUTDOWN_H_ */

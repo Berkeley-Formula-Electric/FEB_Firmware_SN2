@@ -27,7 +27,7 @@ void FEB_CAN_Charger_Init() {
 
 	// Initialize charger settings
 	FEB_CAN_Charger_BMS_Message.max_voltage = (uint16_t) (MAX_VOLTAGE * CELLS_PER_BANK * NUM_BANKS * 10);
-	FEB_CAN_Charger_BMS_Message.max_current = (uint16_t) (MAX_CHARGING_CURRENT * 10);
+	FEB_CAN_Charger_BMS_Message.max_current = (uint16_t) (FEB_CAN_CHARGER_MAX_CHARGING_CURRENT * 10);
 	FEB_CAN_Charger_BMS_Message.control = 0;
 
 	FEB_CAN_Charger_State_Bool = 0;
@@ -50,7 +50,7 @@ uint8_t FEB_CAN_Charger_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assi
 	my_can_filter_config.SlaveStartFilterBank = 27;
 
 	if (HAL_CAN_ConfigFilter(hcan, &my_can_filter_config)) {
-		Error_Handler();
+		FEB_BMS_Shutdown_Initiate("Invalid charger CAN filter configuration");
 	}
 
 	return ++bank;
@@ -111,7 +111,7 @@ void FEB_CAN_Charger_Validate_Status(uint8_t status) {
 		input_voltage_failure == 1		||
 		starting_state_failure == 1		||
 		communication_state_failure == 1) {
-		FEB_BMS_Shutdown_Initiate();
+		FEB_BMS_Shutdown_Initiate("Charger status error");
 	}
 }
 
@@ -123,8 +123,9 @@ void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {
 	if (FEB_CAN_Charger_Rx_Flag == 1) {
 		FEB_CAN_Charger_Rx_Flag = 0;
 		float operating_current = (float) FEB_CAN_Charger_Charger_Message.operating_current * 0.1;
-		if (operating_current > MAX_CHARGING_CURRENT) {
+		if (operating_current > FEB_CAN_CHARGER_MAX_CHARGING_CURRENT) {
 			FEB_CAN_Charger_Stop_Charge(hcan);
+			FEB_BMS_Shutdown_Initiate("Charger over current");
 		}
 	}
 
@@ -143,6 +144,4 @@ void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan) {
 	FEB_CAN_Charger_BMS_Message.max_current = 0;
 	FEB_CAN_Charger_BMS_Message.control = 1;
 	FEB_CAN_Charger_Transmit(hcan);
-
-	FEB_BMS_Shutdown_Initiate();
 }

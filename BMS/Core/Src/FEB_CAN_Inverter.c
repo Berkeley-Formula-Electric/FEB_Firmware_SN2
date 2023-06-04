@@ -40,7 +40,7 @@ uint8_t FEB_CAN_Inverter_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Ass
 		filter_config.SlaveStartFilterBank = 27;
 
 		if (HAL_CAN_ConfigFilter(hcan, &filter_config)) {
-			FEB_BMS_Shutdown_Initiate();
+			FEB_BMS_Shutdown_Initiate("Invalid inverter CAN filter configuration");
 		}
 	}
 	return bank;
@@ -63,7 +63,7 @@ void FEB_CAN_Inverter_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) 
 void FEB_CAN_Inverter_Process(void) {
 	for (uint8_t i = 0; i < 5; i++) {
 		if (*FEB_CAN_Inverter_Temperatures[i] > FEB_CAN_Inverter_Temperature_Max) {
-			FEB_BMS_Shutdown_Initiate();
+			FEB_BMS_Shutdown_Initiate("Inverter over temperature");
 		} else if (*FEB_CAN_Inverter_Temperatures[i] > FEB_CAN_Inverter_Temperature_Limit_Torque) {
 			// TODO: Limit torque
 		}

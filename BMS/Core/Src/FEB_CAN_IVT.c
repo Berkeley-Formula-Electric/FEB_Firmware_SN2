@@ -34,7 +34,7 @@ uint8_t FEB_CAN_IVT_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignme
 		filter_config.SlaveStartFilterBank = 27;
 
 		if(HAL_CAN_ConfigFilter(hcan, &filter_config)) {
-			Error_Handler();
+			FEB_BMS_Shutdown_Initiate("Invalid IVT CAN filter configuration");
 		}
 	}
 	return bank;
@@ -76,7 +76,7 @@ void FEB_CAN_IVT_Process(void) {
 		FEB_CAN_IVT_FLAG.IVT_Current = 0;
 		float Ivt_Current_A = (float) FEB_CAN_IVT_MESSAGE.IVT_Voltage3 * 0.001;
 		if (Ivt_Current_A > MAX_OPERATING_CURRENT) {
-			FEB_BMS_Shutdown_Initiate();
+			FEB_BMS_Shutdown_Initiate("Over current");
 		}
 	}
 	if (FEB_CAN_IVT_FLAG.IVT_Voltage1 == 1) {

@@ -33,7 +33,6 @@
 #define CHARGED_PERCENTAGE 1
 
 // current thresholds
-#define MAX_CHARGING_CURRENT 0.1
 #define MAX_OPERATING_CURRENT 55
 
 // ********************************** Cell Balance Configuration **********************************

@@ -13,7 +13,8 @@
 
 // ********************************** Charger Configuration **********************************
 
-#define FEB_CAN_CHARGER_START_CHARGE 0 			// 0 (No charge), 1 (Charge)
+#define FEB_CAN_CHARGER_START_CHARGE 0 				// 0 (No charge), 1 (Charge)
+#define FEB_CAN_CHARGER_MAX_CHARGING_CURRENT 0.1	// 0-12A, 0.1A resolution
 
 // ********************************** CAN Configuration **********************************
 
