@@ -5,8 +5,6 @@
 #include <unistd.h> // for sleep
 
 #include <wiringPiSPI.h>
-
-//Libraries for https communication with node js server
 #include "sio_client.h"
 
 #include <chrono>
@@ -19,39 +17,20 @@
  * sclk    23   pb10
  * ce0     24   pb12
  *********************/
- //compile with    g++ data_logger.cpp -l wiringPi -o data_logger
- // g++ data_logger.cpp socket.io-client-cpp/src/*.cpp socket.io-client-cpp/src/internal/*.cpp -I socket.io-client-cpp/src -I socket.io-client-cpp/src/internal -I socket.io-client-cpp/lib/asio/asio/include -I socket.io-client-cpp/lib/websocketpp -I socket.io-client-cpp/lib/rapidjson/include -l  wiringPi
- // g++ data_logger.cpp sio_client.cpp sio_socket.cpp internal/sio_client_impl.cpp internal/sio_packet.cpp -I socket.io-client-cpp/lib/asio/asio/include -I socket.io-client-cpp/lib/websocketpp -I socket.io-client-cpp/lib/rapidjson/include -l  wiringPi
 
 using namespace std;
-using namespace sio;
 using namespace std::chrono;
 
 // SPI chip select 0 on pi, and clock speed
 #define SPI_CHANNEL 0
 #define SPI_CLK_SPEED 500000 //can be 500kHz to 32MHz
 
-//Forward declarations
-//void updateData(string updateString, CURL* curl);
+#define MAX_DATA_LENGTH 4
+const char delimiter[1] = "s";
+string data[MAX_DATA_LENGTH];
 
 int main() {
 
-	//INITIALIZE CURL PARAMETERS
-	//~ CURL *curl;
-	//~ struct curl_slist *headers = NULL;
-	//~ curl_global_init(CURL_GLOBAL_ALL);
-	//~ curl = curl_easy_init();
-	//~ if(curl){
-		//~ //set URL and request type
-		//~ curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/api/postdata");
-		//~ curl_easy_setopt(curl, CURLOPT_POST,1L);
-
-		//~ //set request headers
-		//~ headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
-		//~ curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-	//~ }
-
-	// setup socket io client connection
 	sio::client h;
 	h.connect("http://localhost:3000");
 
@@ -152,17 +131,16 @@ int main() {
 			data_buffer[i] = c;
 		}
 		//cout << data_buffer << endl;
+		
+		
 
-		string data_buffer_str = data_buffer;
-		string data = "data=\"" + data_buffer_str + "\"";
+		string data = data_buffer;
 		cout << data << endl;
-		//updateData(data, curl);
 		h.socket()->emit("cpp_data", data);
 
-		//log_file << data_buffer << endl;
+		log_file << data_buffer << endl;
 
 		memset(data_buffer, 0, data_buffer_len);
-		//usleep(20000);
 
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop-start);
@@ -171,28 +149,7 @@ int main() {
 
 	log_file.close();
 
-		//Free all curl related objects
-	//~ curl_easy_cleanup(curl);
-	//~ curl_slist_free_all(headers);
-	//~ curl_global_cleanup();
 
 	return 0;
 }
 
-//~ void updateData(string updateString,CURL* curl) {
-	//~ // CURLcode res;
-	//~ auto start = high_resolution_clock::now();
-	//~ curl_easy_setopt(curl,CURLOPT_POSTFIELDS,updateString.c_str());
-	//~ auto stop = high_resolution_clock::now();
-	//~ auto duration = duration_cast<microseconds>(stop-start);
-	//~ cout << "set: " << duration.count() << " us" << endl;
-	//~ // res = curl_easy_perform(curl);
-	//~ start = high_resolution_clock::now();
-	//~ curl_easy_perform(curl);
-	//~ stop = high_resolution_clock::now();
-	//~ duration = duration_cast<microseconds>(stop-start);
-	//~ cout << "perform: " << duration.count() << " us" << endl;
-	//~ if(res != CURLE_OK){
-		//~ cout << "Error" << endl;
-	//~ }
-//~ }

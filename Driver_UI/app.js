@@ -25,43 +25,7 @@ app.get("/", (req, res) => {
     res.render("screen.ejs")
 });
 
-
-/* POST REQUEST BODY FORMAT 
-{
-  'data': <String of all data to be parsed here>
-}
-*/
-app.post('/api/postdata',(req,res)=>{
-  //String processing code since data is of format "time_stamp, node, msg_type, data"
-  console.time("split");
-  let received_string = String(req.body.data).replace(/\s+/g, ''); //ensures the received data is of a string datatype
-  let comma_sep_data = received_string.split(',');
-  console.timeEnd("split");
-  if(comma_sep_data.length != 4){
-    res.end();
-    return;
-  }
-  let sender = comma_sep_data[1];
-  let message_type = comma_sep_data[2];
-  let received_data = comma_sep_data[3];
-
-  //Parse data into proper field
-  console.time("store");
-  if (sender == 'BMS'){
-    if (message_type == 'TEMPERATURE'){
-      data.temperature = received_data;
-    }else if (message_type == 'VOLTAGE'){
-      data.voltage = received_data;
-    }
-  }else if (sender == 'RMS_INFO'){
-    data.speed = received_data;
-  }
-  console.timeEnd("store");
-  console.time("res");
-  res.end();
-  console.timeEnd("res");
-});
-
+// TEST DATA
 const data = {
     temperature: 0,
     voltage: 0,
@@ -69,6 +33,7 @@ const data = {
     timerStart: true,
     timerStop: false,
     timerReset: false,
+    readyToDrive:0
 }
 
 // timer
@@ -114,13 +79,36 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
 // });
 
 // socket connection
-//~ io.on('connection', (socket) => {
-    //~ setInterval(() => {
-        //~ socket.emit("data", data)
-    //~ }, 100)
-//~ });
-io.on('connection', (socket) => {
-        socket.emit("data", data)
+io.on('connection', (socket) => { 
+  console.log('socket connection made');
+  socket.on('cpp_data',(dataString)=>{
+    //NOTE: string parsing from previous versions has been removed since we assume the format 
+    //ASSUMED FORMAT: "<timestamp>,<CAN NODE>,<Message Type>,<value>"
+    console.log(dataString);
+    let comma_sep_data = dataString.split(',');
+    if(comma_sep_data.length != 4){
+      //~ console.log('Incorrect length of data / # of arguments. Data may have been truncated.');
+      //~ console.log(dataString);
+      return;
+    }
+    let sender = comma_sep_data[1];
+    let message_type = comma_sep_data[2];
+    let received_data = comma_sep_data[3];
+  
+    //Parse data into proper field
+    if (sender == 'BMS'){
+      if (message_type == 'TEMPERATURE'){
+        data.temperature = received_data;
+      }else if (message_type == 'VOLTAGE'){
+        data.voltage = received_data;
+      }
+    }else if (sender == 'RMS_INFO'){
+      data.speed = received_data;
+    }else if (sender == 'SW'){
+      data.readyToDrive = received_data;
+    }
+    socket.emit('data',data);
+  });
 });
 
 // activate server
