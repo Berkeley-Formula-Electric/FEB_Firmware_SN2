@@ -80,13 +80,13 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
 
 // socket connection
 io.on('connection', (socket) => { 
-  console.log('socket connection made')
+  console.log('socket connection made');
   socket.on('cpp_data',(dataString)=>{
     //NOTE: string parsing from previous versions has been removed since we assume the format 
     //ASSUMED FORMAT: "<timestamp>,<CAN NODE>,<Message Type>,<value>"
     let comma_sep_data = received_string.split(',');
     if(comma_sep_data.length != 4){
-      console.log('Incorrect length of data / # of arguments. Data may have been truncated.')
+      console.log('Incorrect length of data / # of arguments. Data may have been truncated.');
       return;
     }
     let sender = comma_sep_data[1];

@@ -8,7 +8,7 @@ Speed - Temperature - Voltage - Ready To Drive - Battery percentage - Timer/Lap
 
 */
 const carData = {
-    temperature: 0, voltage: 0, speed: 0, rtd: true, time : 0
+    temperature: 0, voltage: 0, speed: 0, rtd: 0, time : 0
 }
 const carTemperature = {
     lowTemp: 30, highTemp: 40
@@ -26,6 +26,17 @@ socket.on("connect", (socket) => {
     console.log("connected!")
 })
 
+/*  data fields 
+{
+    temperature: 0,
+    voltage: 0,
+    speed: 0,
+    timerStart: true,
+    timerStop: false,
+    timerReset: false,
+    readyToDrive:0
+}
+*/
 socket.on("data", (data) => {
     if ("temperature" in data) {
         carData.temperature = data.temperature
@@ -44,6 +55,9 @@ socket.on("data", (data) => {
     }
     if ("timerReset" in data) {
         carTimer.reset = data.timerReset
+    }
+    if ('readyToDrive' in data ){
+        carData.rtd = data.readyToDrive
     }
 })
 
@@ -195,7 +209,7 @@ function draw() {
     text("°C", width / 8 * 5, height / 4 * 3 + height/6);
 
     // ready to drive
-    if (carData.rtd) {
+    if (carData.rtd>0) {
         fill(64, 173, 62)
     } else {
         fill(235, 64, 52)
