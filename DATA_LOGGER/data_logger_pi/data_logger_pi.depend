@@ -1,0 +1,32 @@
+# depslib dependency file v1.0
+1685847437 source:/home/feb/Desktop/FEB_Firmware_2023/DATA_LOGGER/data_logger_pi/main.cpp
+	<iostream>
+	<fstream>
+	<cstdio>
+	<cstring>
+	<unistd.h>
+	<wiringPiSPI.h>
+	<curl/curl.h>
+	"sio_client.h"
+	<chrono>
+
+1685845588 source:/home/feb/Desktop/FEB_Firmware_2023/DATA_LOGGER/data_logger_pi/socket.io-client-cpp/src/internal/sio_packet.cpp
+	"sio_packet.h"
+	<rapidjson/document.h>
+	<rapidjson/encodedstream.h>
+	<rapidjson/writer.h>
+	<cassert>
+
+1685845588 /home/feb/Desktop/FEB_Firmware_2023/DATA_LOGGER/data_logger_pi/socket.io-client-cpp/src/internal/sio_packet.h
+	<sstream>
+	"../sio_message.h"
+	<functional>
+
+1685845588 /home/feb/Desktop/FEB_Firmware_2023/DATA_LOGGER/data_logger_pi/socket.io-client-cpp/src/sio_message.h
+	<string>
+	<memory>
+	<vector>
+	<map>
+	<cassert>
+	<type_traits>
+

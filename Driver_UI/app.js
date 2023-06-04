@@ -38,7 +38,7 @@ app.post('/api/postdata',(req,res)=>{
   let comma_sep_data = received_string.split(',');
   console.timeEnd("split");
   if(comma_sep_data.length != 4){
-    res.sendStatus(200);
+    res.end();
     return;
   }
   let sender = comma_sep_data[1];
@@ -58,7 +58,7 @@ app.post('/api/postdata',(req,res)=>{
   }
   console.timeEnd("store");
   console.time("res");
-  res.sendStatus(200);
+  res.end();
   console.timeEnd("res");
 });
 
@@ -114,10 +114,13 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
 // });
 
 // socket connection
+//~ io.on('connection', (socket) => {
+    //~ setInterval(() => {
+        //~ socket.emit("data", data)
+    //~ }, 100)
+//~ });
 io.on('connection', (socket) => {
-    setInterval(() => {
         socket.emit("data", data)
-    }, 100)
 });
 
 // activate server
