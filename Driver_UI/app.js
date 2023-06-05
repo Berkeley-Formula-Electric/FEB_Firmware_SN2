@@ -5,9 +5,9 @@ const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
 const path = require("path")
-const fs = require("fs")
-const { SerialPort } = require("serialport")
-const xbee = require("xbee");
+//~ const fs = require("fs")
+//~ const { SerialPort } = require("serialport")
+//~ const xbee = require("xbee");
 
 // initalize web server
 const app = express();
@@ -26,46 +26,46 @@ app.get("/", (req, res) => {
 });
 
 // TEST DATA
-const data = {
-    temperature: 0,
-    voltage: 0,
-    speed: 0,
-    timerStart: true,
-    timerStop: false,
-    timerReset: false,
-    readyToDrive:0
-}
+//~ const data = {
+    //~ temperature: 0,
+    //~ voltage: 0,
+    //~ speed: 0,
+    //~ timerStart: false,
+    //~ timerStop: false,
+    //~ timerReset: false,
+    //~ readyToDrive:0
+//~ }
 
 // timer
-let time = 0
-const dt = 10;
-setInterval(() => {
-    time += dt * 0.001
-}, dt)
-let counter = 1;
+//~ let time = 0
+//~ const dt = 10;
+//~ setInterval(() => {
+    //~ time += dt * 0.001
+//~ }, dt)
+//~ let counter = 1;
 
-function roundPrecision(value, degree) {
-    return Math.round(value * Math.pow(10, degree)) / Math.pow(10, degree)
-}
+//~ function roundPrecision(value, degree) {
+    //~ return Math.round(value * Math.pow(10, degree)) / Math.pow(10, degree)
+//~ }
 
-let version = 0;
-fs.readFile('data.txt', 'utf8', (err, data) => {
-    if (err) throw err;
-    version = parseInt(data);
-    console.log(version)
+//~ let version = 0;
+//~ fs.readFile('data.txt', 'utf8', (err, data) => {
+    //~ if (err) throw err;
+    //~ version = parseInt(data);
+    //~ console.log(version)
 
-    fs.open(`data/data${parseInt(data)}.csv`, 'w', (err) => {})
-    fs.writeFile('data.txt', `${parseInt(data) + 1}`, (err) => {
-        if (err) throw err;
-        console.log('The file has been saved!');
-      }); 
+    //~ fs.open(`data/data${parseInt(data)}.csv`, 'w', (err) => {})
+    //~ fs.writeFile('data.txt', `${parseInt(data) + 1}`, (err) => {
+        //~ if (err) throw err;
+        //~ console.log('The file has been saved!');
+      //~ }); 
 
-    fs.appendFile(`data/data${version}.csv`, `\n`, (err) => {});
-    setInterval(() => {
-        fs.appendFile(`data/data${version}.csv`, `${roundPrecision(time, 1)}, ${counter}\n`, (err) => {});    
-        counter++
-    }, 100);
-});
+    //~ fs.appendFile(`data/data${version}.csv`, `\n`, (err) => {});
+    //~ setInterval(() => {
+        //~ fs.appendFile(`data/data${version}.csv`, `${roundPrecision(time, 1)}, ${counter}\n`, (err) => {});    
+        //~ counter++
+    //~ }, 100);
+//~ });
 
 // const serial_xbee = new SerialPort({
 //     path: "/dev/cu.usbserial-D309NYWG",
@@ -81,33 +81,21 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
 // socket connection
 io.on('connection', (socket) => { 
   console.log('socket connection made');
-  socket.on('cpp_data',(dataString)=>{
-    //NOTE: string parsing from previous versions has been removed since we assume the format 
-    //ASSUMED FORMAT: "<timestamp>,<CAN NODE>,<Message Type>,<value>"
-    console.log(dataString);
-    let comma_sep_data = dataString.split(',');
-    if(comma_sep_data.length != 4){
-      //~ console.log('Incorrect length of data / # of arguments. Data may have been truncated.');
-      //~ console.log(dataString);
-      return;
-    }
-    let sender = comma_sep_data[1];
-    let message_type = comma_sep_data[2];
-    let received_data = comma_sep_data[3];
-  
-    //Parse data into proper field
+  socket.on('cpp_data',(sender, message_type, received_data)=>{
+    received_data = Number(received_data);
     if (sender == 'BMS'){
       if (message_type == 'TEMPERATURE'){
-        data.temperature = received_data;
+        socket.broadcast.emit("temperature", received_data);
       }else if (message_type == 'VOLTAGE'){
-        data.voltage = received_data;
+        socket.broadcast.emit("voltage", received_data);
       }
     }else if (sender == 'RMS_INFO'){
-      data.speed = received_data;
+      socket.broadcast.emit("speed", received_data);
     }else if (sender == 'SW'){
-      data.readyToDrive = received_data;
+      if(message_type == "READY_TO_DRIVE") {
+        socket.broadcast.emit("readyToDrive", received_data);
+      }
     }
-    socket.emit('data',data);
   });
 });
 

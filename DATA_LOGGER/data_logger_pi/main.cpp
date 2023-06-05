@@ -25,10 +25,6 @@ using namespace std::chrono;
 #define SPI_CHANNEL 0
 #define SPI_CLK_SPEED 500000 //can be 500kHz to 32MHz
 
-#define MAX_DATA_LENGTH 4
-const char delimiter[1] = "s";
-string data[MAX_DATA_LENGTH];
-
 int main() {
 
 	sio::client h;
@@ -115,6 +111,8 @@ int main() {
    cout << "Init result: " << fd << endl;
    usleep(10000); //wait for 10ms
    log_file.open(log_file_path, ios::out | ios::app);
+   
+   char* cptr;
 
 	while(1) {
 		auto start = high_resolution_clock::now();
@@ -130,17 +128,35 @@ int main() {
 			}
 			data_buffer[i] = c;
 		}
-		//cout << data_buffer << endl;
-		
-		
-
-		string data = data_buffer;
-		cout << data << endl;
-		h.socket()->emit("cpp_data", data);
-
+		cout << data_buffer << endl;
 		log_file << data_buffer << endl;
-
+		
+		cptr = strtok(data_buffer, ",");
+		int count = 0;
+		sio::message::list data_list;
+		// parse the string into <sender>, <message_type>, <data>
+		while (cptr) {
+			// limit only few sender msg to driver UI
+			if (count == 1) {
+				if(strcmp(cptr, "BMS")!=0 && strcmp(cptr, "RMS_INFO")!=0 && strcmp(cptr, "SW")!=0) {
+					break;
+				}
+			}
+			// the first entry of the string is time_stamp. not sending to driver UI
+			if(count >= 1) {
+				data_list.push(sio::string_message::create(cptr));
+			}
+			count++;
+			cptr = strtok(NULL, ",");
+		}
 		memset(data_buffer, 0, data_buffer_len);
+		
+		if (count != 4) {
+			continue;
+		}
+	
+		h.socket()->emit("cpp_data", data_list);
+
 
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop-start);

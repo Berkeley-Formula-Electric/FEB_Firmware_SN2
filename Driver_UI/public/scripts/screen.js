@@ -22,8 +22,8 @@ const carTimer = {
 
 // Socket connection
 
-socket.on("connect", (socket) => {
-    console.log("connected!")
+socket.on("connect", () => {
+    console.log("connected!");
 })
 
 /*  data fields 
@@ -37,7 +37,9 @@ socket.on("connect", (socket) => {
     readyToDrive:0
 }
 */
+/*
 socket.on("data", (data) => {
+    console.log("received");
     if ("temperature" in data) {
         carData.temperature = data.temperature
     }
@@ -60,6 +62,30 @@ socket.on("data", (data) => {
         carData.rtd = data.readyToDrive
     }
 })
+*/
+
+socket.on("temperature", (data) => {
+    carData.temperature = data;
+})
+socket.on("voltage", (data) => {
+    carData.voltage = data;
+})
+socket.on("speed", (data) => {
+    carData.speed = data;
+})
+socket.on("timerStart", (data) => {
+    carData.start = data;
+})
+socket.on("timerStop", (data) => {
+    carData.stop = data;
+})
+socket.on("timerReset", (data) => {
+    carData.restet = data;
+})
+socket.on("readyToDrive", (data) => {
+    carData.rtd = data;
+})
+
 
 // Data formatting
 function roundPrecision(value, degree) {
