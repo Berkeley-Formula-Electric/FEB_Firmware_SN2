@@ -192,22 +192,22 @@ class HeaderFile:
         store_msg_str_arr.append(" ")
         store_msg_str_arr.append("        // IDs that are not auto-generated")
         store_msg_str_arr.append("        default:")
-        store_msg_str_arr.append("            switch(pHeader->StdId) {")
-        store_msg_str_arr.append("                case 0x0C0: { //inverter command")
-        store_msg_str_arr.append("                    float torque = (((uint16_t) RxData[1] << 8) | RxData[0]) / 10.0;")
-        store_msg_str_arr.append("                    buf_len = sprintf(buf, \",%.3f,RMS_CMD,TORQUE,%.1f,\\n\", HAL_GetTick()/1000.0, torque);")
-        store_msg_str_arr.append("                }")
-        store_msg_str_arr.append("                case 0x0A5: { //inverter motor position info")
-        store_msg_str_arr.append("                    // 1:3.43 gear ratio")
-        store_msg_str_arr.append("                    // wheel diameter 20.5")
-        store_msg_str_arr.append("                    float wheel_linear_speed = (((uint16_t) RxData[3] << 8) | RxData[2]) / 3.43 * 20.5 * 3.14 / 63360 * 60;")
-        store_msg_str_arr.append("                    buf_len = sprintf(buf, \",%.3f,RMS_INFO,SPEED,%.1f,\\n\", HAL_GetTick()/1000.0, wheel_linear_speed);")
-        store_msg_str_arr.append("                }")
-        store_msg_str_arr.append("                default:")
-        store_msg_str_arr.append("                    return;")
+        store_msg_str_arr.append("            if (pHeader->StdId == 0x0C0) { //inverter command")
+        store_msg_str_arr.append("                float torque = (((uint16_t) RxData[1] << 8) | RxData[0]) / 10.0;")
+        store_msg_str_arr.append("                buf_len = sprintf(buf, \"<%.2f,RMS_CMD,TORQUE,%.1f>\\n\", HAL_GetTick()/1000.0, torque);")
+        store_msg_str_arr.append("            } else if (pHeader->StdId == 0x0A5){ //inverter motor position info")
+        store_msg_str_arr.append("                // 1:3.43 gear ratio")
+        store_msg_str_arr.append("                // wheel diameter 20.5")
+        store_msg_str_arr.append("                float wheel_linear_speed = (((uint16_t) RxData[3] << 8) | RxData[2]) / 3.43 * 20.5 * 3.14 / 63360 * 60;")
+        store_msg_str_arr.append("                buf_len = sprintf(buf, \"<%.2f,RMS_INFO,SPEED,%.1f>\\n\", HAL_GetTick()/1000.0, wheel_linear_speed);")
+        store_msg_str_arr.append("            } else {")
+        store_msg_str_arr.append("                return;")
         store_msg_str_arr.append("            }")
-        store_msg_str_arr.append("            HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);")
-        store_msg_str_arr.append("            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);")
+
+        store_msg_str_arr.append("            HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);")
+        # store_msg_str_arr.append("            HAL_UART_Transmit_DMA(&huart2, (uint8_t *)buf, buf_len);")
+        # store_msg_str_arr.append("            HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 200);")
+        store_msg_str_arr.append("            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);")
         
         store_msg_str_arr.append("    }")
         store_msg_str_arr.append("}")
@@ -317,15 +317,17 @@ class Board:
                 if str(message["data_type"]) == "uint8_t":
                     data_format = "%d"
                 elif str(message["data_type"]) == "float":
-                    data_format = "%.3f"
-                # board_str_lst.append(f"            buf_len = sprintf(buf, \"%.3f    %d    {self.name}    {message['name']}    {data_format}\\n\", HAL_GetTick()/1000.0, msg_count++, {self.name}_MESSAGE.{message['name'].lower()});")
-                board_str_lst.append(f"            buf_len = sprintf(buf, \",%.3f,{self.name},{message['name']},{data_format},\\n\", HAL_GetTick()/1000.0, {self.name}_MESSAGE.{message['name'].lower()});")
+                    data_format = "%.1f"
+                board_str_lst.append(f"            buf_len = sprintf(buf, \"<%.2f,{self.name},{message['name']},{data_format}>\\n\", HAL_GetTick()/1000.0, {self.name}_MESSAGE.{message['name'].lower()});")
 
                 board_str_lst.append("            break;")
             
             board_str_lst.append("    }")
-            board_str_lst.append("    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);")
-            board_str_lst.append("    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);")
+
+            board_str_lst.append("    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);")
+            # board_str_lst.append("    HAL_UART_Transmit_DMA(&huart2, (uint8_t *)buf, buf_len);")
+            # board_str_lst.append("    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 200);")
+            board_str_lst.append("    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);")
             board_str_lst.append("}")
 
         string += "\n".join(board_str_lst)

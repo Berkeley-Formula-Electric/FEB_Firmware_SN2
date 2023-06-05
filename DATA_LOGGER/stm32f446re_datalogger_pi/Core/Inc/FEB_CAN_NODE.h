@@ -40,15 +40,15 @@ void Store_EMERGENCY_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_leng
     switch (RxId){
         case EMERGENCY_APPS_EMERGENCY:
             memcpy(&(EMERGENCY_MESSAGE.apps_emergency), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,EMERGENCY,APPS_EMERGENCY,%d,\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.apps_emergency);
+            buf_len = sprintf(buf, "<%.2f,EMERGENCY,APPS_EMERGENCY,%d>\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.apps_emergency);
             break;
         case EMERGENCY_SW_EMERGENCY:
             memcpy(&(EMERGENCY_MESSAGE.sw_emergency), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,EMERGENCY,SW_EMERGENCY,%d,\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.sw_emergency);
+            buf_len = sprintf(buf, "<%.2f,EMERGENCY,SW_EMERGENCY,%d>\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.sw_emergency);
             break;
     }
-    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
+    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
 }
 
 /*** BMS IDs ***/
@@ -72,15 +72,15 @@ void Store_BMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     switch (RxId){
         case BMS_TEMPERATURE:
             memcpy(&(BMS_MESSAGE.temperature), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,BMS,TEMPERATURE,%.3f,\n", HAL_GetTick()/1000.0, BMS_MESSAGE.temperature);
+            buf_len = sprintf(buf, "<%.2f,BMS,TEMPERATURE,%.1f>\n", HAL_GetTick()/1000.0, BMS_MESSAGE.temperature);
             break;
         case BMS_VOLTAGE:
             memcpy(&(BMS_MESSAGE.voltage), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,BMS,VOLTAGE,%.3f,\n", HAL_GetTick()/1000.0, BMS_MESSAGE.voltage);
+            buf_len = sprintf(buf, "<%.2f,BMS,VOLTAGE,%.1f>\n", HAL_GetTick()/1000.0, BMS_MESSAGE.voltage);
             break;
     }
-    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
+    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
 }
 
 /*** SW IDs ***/
@@ -110,23 +110,23 @@ void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     switch (RxId){
         case SW_READY_TO_DRIVE:
             memcpy(&(SW_MESSAGE.ready_to_drive), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,SW,READY_TO_DRIVE,%d,\n", HAL_GetTick()/1000.0, SW_MESSAGE.ready_to_drive);
+            buf_len = sprintf(buf, "<%.2f,SW,READY_TO_DRIVE,%d>\n", HAL_GetTick()/1000.0, SW_MESSAGE.ready_to_drive);
             break;
         case SW_COOLANT_PUMP:
             memcpy(&(SW_MESSAGE.coolant_pump), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,SW,COOLANT_PUMP,%d,\n", HAL_GetTick()/1000.0, SW_MESSAGE.coolant_pump);
+            buf_len = sprintf(buf, "<%.2f,SW,COOLANT_PUMP,%d>\n", HAL_GetTick()/1000.0, SW_MESSAGE.coolant_pump);
             break;
         case SW_ACUMULATOR_FANS:
             memcpy(&(SW_MESSAGE.acumulator_fans), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,SW,ACUMULATOR_FANS,%d,\n", HAL_GetTick()/1000.0, SW_MESSAGE.acumulator_fans);
+            buf_len = sprintf(buf, "<%.2f,SW,ACUMULATOR_FANS,%d>\n", HAL_GetTick()/1000.0, SW_MESSAGE.acumulator_fans);
             break;
         case SW_EXTRA:
             memcpy(&(SW_MESSAGE.extra), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,SW,EXTRA,%d,\n", HAL_GetTick()/1000.0, SW_MESSAGE.extra);
+            buf_len = sprintf(buf, "<%.2f,SW,EXTRA,%d>\n", HAL_GetTick()/1000.0, SW_MESSAGE.extra);
             break;
     }
-    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
+    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
 }
 
 /*** APPS IDs ***/
@@ -156,23 +156,23 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     switch (RxId){
         case APPS_ACCELERATOR1_PEDAL:
             memcpy(&(APPS_MESSAGE.accelerator1_pedal), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,APPS,ACCELERATOR1_PEDAL,%.3f,\n", HAL_GetTick()/1000.0, APPS_MESSAGE.accelerator1_pedal);
+            buf_len = sprintf(buf, "<%.2f,APPS,ACCELERATOR1_PEDAL,%.1f>\n", HAL_GetTick()/1000.0, APPS_MESSAGE.accelerator1_pedal);
             break;
         case APPS_ACCELERATOR2_PEDAL:
             memcpy(&(APPS_MESSAGE.accelerator2_pedal), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,APPS,ACCELERATOR2_PEDAL,%.3f,\n", HAL_GetTick()/1000.0, APPS_MESSAGE.accelerator2_pedal);
+            buf_len = sprintf(buf, "<%.2f,APPS,ACCELERATOR2_PEDAL,%.1f>\n", HAL_GetTick()/1000.0, APPS_MESSAGE.accelerator2_pedal);
             break;
         case APPS_BRAKE_PEDAL:
             memcpy(&(APPS_MESSAGE.brake_pedal), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,APPS,BRAKE_PEDAL,%.3f,\n", HAL_GetTick()/1000.0, APPS_MESSAGE.brake_pedal);
+            buf_len = sprintf(buf, "<%.2f,APPS,BRAKE_PEDAL,%.1f>\n", HAL_GetTick()/1000.0, APPS_MESSAGE.brake_pedal);
             break;
         case APPS_TORQUE:
             memcpy(&(APPS_MESSAGE.torque), RxData, data_length);
-            buf_len = sprintf(buf, ",%.3f,APPS,TORQUE,%.3f,\n", HAL_GetTick()/1000.0, APPS_MESSAGE.torque);
+            buf_len = sprintf(buf, "<%.2f,APPS,TORQUE,%.1f>\n", HAL_GetTick()/1000.0, APPS_MESSAGE.torque);
             break;
     }
-    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
+    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
 }
 
 /*** LVPDB IDs ***/
@@ -236,22 +236,19 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
  
         // IDs that are not auto-generated
         default:
-            switch(pHeader->StdId) {
-                case 0x0C0: { //inverter command
-                    float torque = (((uint16_t) RxData[1] << 8) | RxData[0]) / 10.0;
-                    buf_len = sprintf(buf, ",%.3f,RMS_CMD,TORQUE,%.1f,\n", HAL_GetTick()/1000.0, torque);
-                }
-                case 0x0A5: { //inverter motor position info
-                    // 1:3.43 gear ratio
-                    // wheel diameter 20.5
-                    float wheel_linear_speed = (((uint16_t) RxData[3] << 8) | RxData[2]) / 3.43 * 20.5 * 3.14 / 63360 * 60;
-                    buf_len = sprintf(buf, ",%.3f,RMS_INFO,SPEED,%.1f,\n", HAL_GetTick()/1000.0, wheel_linear_speed);
-                }
-                default:
-                    return;
+            if (pHeader->StdId == 0x0C0) { //inverter command
+                float torque = (((uint16_t) RxData[1] << 8) | RxData[0]) / 10.0;
+                buf_len = sprintf(buf, "<%.2f,RMS_CMD,TORQUE,%.1f>\n", HAL_GetTick()/1000.0, torque);
+            } else if (pHeader->StdId == 0x0A5){ //inverter motor position info
+                // 1:3.43 gear ratio
+                // wheel diameter 20.5
+                float wheel_linear_speed = (((uint16_t) RxData[3] << 8) | RxData[2]) / 3.43 * 20.5 * 3.14 / 63360 * 60;
+                buf_len = sprintf(buf, "<%.2f,RMS_INFO,SPEED,%.1f>\n", HAL_GetTick()/1000.0, wheel_linear_speed);
+            } else {
+                return;
             }
-            HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
-            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
+            HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
+            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
     }
 }
 
