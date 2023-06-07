@@ -37,17 +37,17 @@
 /* USER CODE BEGIN PD */
 #define SLEEP_TIME 10
 
-#define ACC_PEDAL_1_START 840.0
-#define ACC_PEDAL_1_END 1200.0
+#define ACC_PEDAL_1_START 845.0
+#define ACC_PEDAL_1_END 1095.0
 
-#define ACC_PEDAL_2_START 3255.0
-#define ACC_PEDAL_2_END 2890.0
+#define ACC_PEDAL_2_START 3250.0
+#define ACC_PEDAL_2_END 3000.0
 
 //#define BRAKE_PEDAL_1_START 1350.0
 //#define BRAKE_PEDAL_1_END 910.0
 
-#define BRAKE_PEDAL_1_START 385.0
-#define BRAKE_PEDAL_1_END 415.0
+#define BRAKE_PEDAL_1_START 345.0
+#define BRAKE_PEDAL_1_END 500.0
 
 #define BRAKE_PEDAL_2_START 1390.0
 #define BRAKE_PEDAL_2_END 1160.0
@@ -105,6 +105,11 @@ float FEB_Normalized_Acc_Pedals(){
 
 	uint16_t acc_pedal_1 = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
 	uint16_t acc_pedal_2 = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
+//	char buf[128];
+//		uint8_t buf_len;
+//		buf_len = sprintf(buf, "acc1:%d acc2:%d\n", acc_pedal_1, acc_pedal_2);
+//		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+
 
 	// check implausibility for shorting
 	if (acc_pedal_1 < Sensor_Min || acc_pedal_1 > Sensor_Max
@@ -149,6 +154,10 @@ float FEB_Normalized_Acc_Pedals(){
 
 float FEB_Normalized_Brake_Pedals(){
 	uint16_t brake_pedal_1 = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+//	char buf[128];
+//		uint8_t buf_len;
+//		buf_len = sprintf(buf, "brake%d\n", brake_pedal_1);
+//		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
 	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
@@ -198,10 +207,7 @@ void FEB_RMS_Init(){
 	uint8_t message_data[8] = {0,0,0,0,0,0,0};
 	normalized_acc = 0;
 	normalized_brake = 0;
-	for (int i=0; i<100; i+=1) {
-		FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
-	    HAL_Delay(100);
-	}
+	FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
 	FEB_RMS_enable();
 
 	// Select CAN msg to broadcast
@@ -284,8 +290,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  //ready to drive
-//	  if (SW_MESSAGE.ready_to_drive == 1) {
-	  if(1) {
+	  if (SW_MESSAGE.ready_to_drive == 1) {
 		  normalized_acc = FEB_Normalized_Acc_Pedals();
 	  } else {
 		  normalized_acc = 0.0;
@@ -293,7 +298,7 @@ int main(void)
 
 	  normalized_brake = FEB_Normalized_Brake_Pedals();
 
-	  uint16_t torque = normalized_acc * 50;
+	  uint16_t torque = normalized_acc * 40;
 
 
 	  //Transmit CAN messages to other boards
