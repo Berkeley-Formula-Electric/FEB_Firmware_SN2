@@ -44,8 +44,10 @@
 CAN_HandleTypeDef hcan1;
 
 SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi2_tx;
 
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -54,6 +56,7 @@ UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_SPI2_Init(void);
@@ -94,16 +97,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_CAN1_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  uint16_t sleep_time = 100;
-  char buf[128];
-  uint8_t buf_len;
-  float temp = 0.0;
-  float volt = 0.0;
-  FEB_CAN_Init(&hcan1, DL_ID);
+  uint16_t sleep_time = 0;
+  float temp = 30.0;
+  float volt = 200.0;
+  float speed = 0.0;
+  uint8_t ready_to_drive = 0;
+  FEB_CAN_Init(&hcan1);
 
   /* USER CODE END 2 */
 
@@ -111,14 +115,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  temp = temp + 1;
-	  FEB_CAN_Transmit(&hcan1, BMS_TEMPERATURE, &temp, sizeof(BMS_TEMPERATURE_TYPE));
-	  volt = volt + 2;
-	  FEB_CAN_Transmit(&hcan1, BMS_VOLTAGE, &volt, sizeof(BMS_VOLTAGE_TYPE));
+//	  temp = temp + 0.01;
+//	  FEB_CAN_Transmit(&hcan1, BMS_TEMPERATURE, &temp, sizeof(BMS_TEMPERATURE_TYPE));
+//	  volt = volt + 0.02;
+//	  FEB_CAN_Transmit(&hcan1, BMS_VOLTAGE, &volt, sizeof(BMS_VOLTAGE_TYPE));
+//	  speed = speed + 3;
+//	  FEB_CAN_Transmit(&hcan1, 0x0A5, &speed, sizeof(float));
+//	  ready_to_drive = !ready_to_drive;
+//	  FEB_CAN_Transmit(&hcan1, SW_READY_TO_DRIVE, &ready_to_drive, sizeof(SW_READY_TO_DRIVE_TYPE));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(sleep_time);
+//	  HAL_Delay(sleep_time);
   }
   /* USER CODE END 3 */
 }
@@ -186,7 +194,7 @@ static void MX_CAN1_Init(void)
   /* USER CODE END CAN1_Init 1 */
   hcan1.Instance = CAN1;
   hcan1.Init.Prescaler = 16;
-  hcan1.Init.Mode = CAN_MODE_LOOPBACK;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
   hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan1.Init.TimeSeg1 = CAN_BS1_3TQ;
   hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
@@ -273,6 +281,25 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
+  /* DMA1_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }
 

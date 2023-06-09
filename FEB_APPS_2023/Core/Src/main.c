@@ -37,8 +37,8 @@
 /* USER CODE BEGIN PD */
 #define SLEEP_TIME 10
 
-#define ACC_PEDAL_1_START 845.0
-#define ACC_PEDAL_1_END 1095.0
+#define ACC_PEDAL_1_START 850.0
+#define ACC_PEDAL_1_END 1100.0
 
 #define ACC_PEDAL_2_START 3250.0
 #define ACC_PEDAL_2_END 3000.0
@@ -47,7 +47,7 @@
 //#define BRAKE_PEDAL_1_END 910.0
 
 #define BRAKE_PEDAL_1_START 345.0
-#define BRAKE_PEDAL_1_END 500.0
+#define BRAKE_PEDAL_1_END 400.0
 
 #define BRAKE_PEDAL_2_START 1390.0
 #define BRAKE_PEDAL_2_END 1160.0
@@ -100,9 +100,6 @@ float pedal6;
 
 float FEB_Normalized_Acc_Pedals(){
 	// raw ADC readings of the two acc pedal sensors
-//	uint16_t acc_pedal_1 = buffer[2];
-//	uint16_t acc_pedal_2 = buffer[3];
-
 	uint16_t acc_pedal_1 = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
 	uint16_t acc_pedal_2 = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
 //	char buf[128];
@@ -134,7 +131,7 @@ float FEB_Normalized_Acc_Pedals(){
 	float final_normalized = 0.5*(ped1_normalized + ped2_normalized);
 
 	// Implausiblity check if both pedals are stepped
-	if (normalized_brake > 0.1 && normalized_acc > 0.25) {
+	if (normalized_brake > 0.2 && normalized_acc > 0.25) {
 		isImpl = true;
 	}
 
@@ -158,6 +155,7 @@ float FEB_Normalized_Brake_Pedals(){
 //		uint8_t buf_len;
 //		buf_len = sprintf(buf, "brake%d\n", brake_pedal_1);
 //		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
 	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
@@ -205,17 +203,19 @@ void FEB_RMS_Init(){
 
 	// send disable command to remove lockout
 	uint8_t message_data[8] = {0,0,0,0,0,0,0};
-	normalized_acc = 0;
-	normalized_brake = 0;
-	FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
-	FEB_RMS_enable();
+	for (int i = 0; i < 10; i++) {
+		FEB_CAN_Transmit(&hcan1, 0x0C0, message_data, 8);
+		HAL_Delay(10);
+	}
 
 	// Select CAN msg to broadcast
 	uint8_t param_addr = 148;
-	uint8_t CAN_active_msg = 0b00100000; //only motor position is broadcasted by the inverter
-	param_msg[0] = param_addr;
-	param_msg[4] = CAN_active_msg;
-	FEB_CAN_Transmit(&hcan1, 0x0C1, param_msg, 8);
+	uint8_t CAN_active_msg_byte4 = 0b00100000; // motor position
+	uint8_t CAN_active_msg_byte5 = 0b00000100; // internal states
+//	uint8_t CAN_active_msg_byte4 = 0xff;
+//	uint8_t CAN_active_msg_byte5 = 0xff;
+	uint8_t broadcast_msg[8] = {param_addr, 0, 1, 0, CAN_active_msg_byte4, CAN_active_msg_byte5, 0, 0};
+	FEB_CAN_Transmit(&hcan1, 0x0C1, broadcast_msg, 8);
 }
 /* USER CODE END PV */
 
@@ -268,7 +268,6 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-//  HAL_ADC_Start_DMA(&hadc1,buffer,6);
   HAL_ADCEx_InjectedStart(&hadc1);
   HAL_TIM_Base_Start(&htim5);
 
@@ -277,7 +276,7 @@ int main(void)
   uint8_t buf_len;
 
   FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
-  FEB_RMS_Init();
+  //FEB_RMS_Init();
 
   /* USER CODE END 2 */
 
@@ -292,21 +291,25 @@ int main(void)
 	  //ready to drive
 	  if (SW_MESSAGE.ready_to_drive == 1) {
 		  normalized_acc = FEB_Normalized_Acc_Pedals();
+		  if (!RMSControl.enabled) {  // when the car just powered on, driver commands ready to drive but rms is not enabled
+			  FEB_RMS_Init();
+			  RMSControl.enabled = 1;
+		  }
 	  } else {
 		  normalized_acc = 0.0;
+		  if (Inverter_enable_lockout) { // if rms is lockout when not ready to drive, do not disable the rms since this will undesirably remove lockout
+			  RMSControl.enabled = 1;
+		  } else { //
+			  RMSControl.enabled = 0;
+		  }
 	  }
 
-	  normalized_brake = FEB_Normalized_Brake_Pedals();
-
 	  uint16_t torque = normalized_acc * 40;
-
-
-	  //Transmit CAN messages to other boards
-
+	  normalized_brake = FEB_Normalized_Brake_Pedals();
 	  FEB_RMS_setTorque(torque);
 	  FEB_APPS_sendBrake();
 
-	  buf_len = sprintf(buf, "rtd:%d, impl:%d acc: %.3f brake: %.3f\n", SW_MESSAGE.ready_to_drive, isImpl, normalized_acc, normalized_brake);
+	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake);
 	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 	  HAL_Delay(SLEEP_TIME);

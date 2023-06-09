@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := stm32f446re_can_bus
+BUILD_ARTIFACT_NAME := STEERING_WHEEL
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-stm32f446re_can_bus.elf \
+STEERING_WHEEL.elf \
 
 MAP_FILES += \
-stm32f446re_can_bus.map \
+STEERING_WHEEL.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-stm32f446re_can_bus.list \
+STEERING_WHEEL.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: stm32f446re_can_bus.elf secondary-outputs
+main-build: STEERING_WHEEL.elf secondary-outputs
 
 # Tool invocations
-stm32f446re_can_bus.elf stm32f446re_can_bus.map: $(OBJS) $(USER_OBJS) /Users/imasmm/Academic/STM32CubeIDE/workspace_1.8.0/stm32f446re_can_bus/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32f446re_can_bus.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/imasmm/Academic/STM32CubeIDE/workspace_1.8.0/stm32f446re_can_bus/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32f446re_can_bus.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+STEERING_WHEEL.elf STEERING_WHEEL.map: $(OBJS) $(USER_OBJS) /Users/imasmm/Academic/feb/FEB_Firmware_2023/STEERING_WHEEL/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "STEERING_WHEEL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/imasmm/Academic/feb/FEB_Firmware_2023/STEERING_WHEEL/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STEERING_WHEEL.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-stm32f446re_can_bus.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "stm32f446re_can_bus.list"
+STEERING_WHEEL.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "STEERING_WHEEL.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout stm32f446re_can_bus.elf stm32f446re_can_bus.list stm32f446re_can_bus.map
+	-$(RM) STEERING_WHEEL.elf STEERING_WHEEL.list STEERING_WHEEL.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

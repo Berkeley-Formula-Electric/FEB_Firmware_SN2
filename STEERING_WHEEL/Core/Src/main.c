@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -21,8 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "FEB_CAN.h"
 #include "stdio.h"
+#include "stdbool.h"
+#include "FEB_CAN.h"
 
 /* USER CODE END Includes */
 
@@ -33,6 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,6 +47,10 @@ CAN_HandleTypeDef hcan1;
 
 I2C_HandleTypeDef hi2c1;
 
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim13;
+TIM_HandleTypeDef htim14;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -55,14 +61,22 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_CAN1_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM14_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_CAN1_Init(void);
+static void MX_TIM13_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+//static const uint8_t IOEXP1_ADDR = 0b0100000 << 1; // Use 8-bit address
+static const uint8_t IOEXP2_ADDR = 0b0100001 << 1;
+static const uint8_t VOLUME = 100; // volume of the buzzer (10%)
+static bool Button_Checking = false;
+static bool Button_Timer_Flag = false;
 
 /* USER CODE END 0 */
 
@@ -95,32 +109,47 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_CAN1_Init();
   MX_I2C1_Init();
+  MX_TIM14_Init();
+  MX_TIM2_Init();
+  MX_CAN1_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t sleep_time = 10;
+
+  bool ready_to_drive = false;
+  bool last_button_state = false;
+  bool lock = false;
+
+  bool lastButton_4 = 0; // coolant pump
+  bool lastButton_5 = 0; // acumulator fans
+  bool lastButton_6 = 0; // extra
+  bool lock_4 = 0;
+  bool lock_5 = 0;
+  bool lock_6 = 0;
+  bool coolant_pump = 0;
+  bool accumulator_fans = 0;
+  bool extra = 0;
+
   char buf[128];
-  uint8_t buf_len;
+  int buf_len;
+  //uint8_t data1;
+  uint8_t data2;
+  HAL_StatusTypeDef ret;
 
-	/* Node_1 */
-//	FEB_CAN_Init(&hcan1, BMS_ID);
-//	float temp = 0.0;
-//	float volt = 0.0;
+  HAL_TIM_Base_Start_IT(&htim13);
+  HAL_TIM_Base_Stop_IT(&htim13);
+  HAL_TIM_Base_Start_IT(&htim14);
+  HAL_TIM_Base_Stop_IT(&htim14);
+  Button_Checking = false;
+  Button_Timer_Flag = false;
+  // 0% PWM cycle to turnoff buzzer
+  htim2.Instance->CCR2 = 0;
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 
-	/* Node_2 */
-	FEB_CAN_Init(&hcan1, SM_ID);
-	uint8_t cmd_1 = 0;
 
-	/* Node_3 */
-//	FEB_CAN_Init(&hcan1, APPS_ID);
-//	float acc_1 = 0.0;
-//	float acc_2 = 0.0;
-//	float brake = 0.0;
-//	float torque = 0.0;
+  FEB_CAN_Init(&hcan1, SW_ID);
 
-	/* Node_4 */
-//	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t emergency = 0;
+
 
   /* USER CODE END 2 */
 
@@ -128,41 +157,137 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /* Node_1 */
-//	  temp = temp + 1;
-//	  FEB_CAN_Transmit(&hcan1, BMS_TEMPERATURE, &temp, sizeof(BMS_TEMPERATURE_TYPE));
-//	  volt = volt + 2;
-//	  FEB_CAN_Transmit(&hcan1, BMS_VOLTAGE, &volt, sizeof(BMS_VOLTAGE_TYPE));
-//	  buf_len = sprintf(buf, "BMS node. Receiving \nSM_CMD1: %d \nEmergency: %d \n\n", SM_MESSAGE.command_1, EMERGENCY_MESSAGE.sm_emergency);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+	  HAL_Delay(10);
 
-	  /* Node_2 */
-	  cmd_1 += 1;
-	  FEB_CAN_Transmit(&hcan1, SM_COMMAND_1, &cmd_1, sizeof(SM_COMMAND_1_TYPE));
-	  buf_len = sprintf(buf, "SM node. Receiving \nBMS_temp:%d BMS_volt:%d \n\n", BMS_MESSAGE.temperature, BMS_MESSAGE.voltage);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+	  // read both IOexpanders
+//	  ret = HAL_I2C_Master_Receive(&hi2c1, IOEXP1_ADDR, &data1, 1, HAL_MAX_DELAY);
+//	  if ( ret != HAL_OK ) {
+//		  buf_len = sprintf((char*)buf, "IO_1 Error\r\n");
+//	  }
+	  ret = HAL_I2C_Master_Receive(&hi2c1, IOEXP2_ADDR, &data2, 1, HAL_MAX_DELAY);
+	  if ( ret != HAL_OK ) {
+		  buf_len = sprintf((char*)buf, "IO_2 Error\r\n");
+	  }
 
-	  /* Node_3 */
-//	  acc_1 = acc_1 + 0.1;
-//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR1_PEDAL, &acc_1, sizeof(APPS_ACCELERATOR1_PEDAL_TYPE));
-//	  acc_2 = acc_2 + 0.2;
-//	  FEB_CAN_Transmit(&hcan1, APPS_ACCELERATOR2_PEDAL, &acc_2, sizeof(APPS_ACCELERATOR2_PEDAL_TYPE));
-//	  brake = acc_2 + 0.3;
-//	  FEB_CAN_Transmit(&hcan1, APPS_BRAKE_PEDAL, &brake, sizeof(APPS_BRAKE_PEDAL_TYPE));
-//	  torque = torque + 0.4;
-//	  FEB_CAN_Transmit(&hcan1, APPS_TORQUE, &torque, sizeof(APPS_TORQUE_TYPE));
-//	  buf_len = sprintf(buf, "APPS node. Receiving \nSM_CMD1: %d \n\n", SM_MESSAGE.command_1);
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 10);
+	  // check the read values
+//	  if (data1 == 0xFF && data2 == 0xFF) {
+//		  buf_len = sprintf((char*)buf, "NO BUT\r\n");
+//	  }
+//	  if (!(data1 & (1<<1))) { // BUT_0 -> IO1 P1
+//		  buf_len = sprintf((char*)buf, "BUT_0\r\n");
+//	  }
+//	  if (!(data1 & (1<<0))) { // BUT_1 -> IO1 P0
+//		  buf_len = sprintf((char*)buf, "BUT_1\r\n");
+//	  }
+//	  if (!(data2 & (1<<7))) { // BUT_2 -> IO2 P7
+//		  buf_len = sprintf((char*)buf, "BUT_2\r\n");
+//	  }
+//	  if (!(data2 & (1<<0))) { // BUT_3 -> IO2 P0
+//		  buf_len = sprintf((char*)buf, "BUT_3\r\n");
+//		  // Start timer
+//		  HAL_TIM_Base_Start_IT(&htim14);
+//		  // turn on buzzer with 30% PWM cycle
+//		  htim2.Instance->CCR2 = VOLUME;
+//	  }
 
-	  /* Node_4 */
-//	  emergency += 1;
-//	  FEB_CAN_Transmit(&hcan1, EMERGENCY_SM_EMERGENCY, &emergency, sizeof(EMERGENCY_SM_EMERGENCY_TYPE));
+	  if (!(data2 & (1<<1))) { // BUT_4 -> IO2 P1, coolant pump
+		  if (!lastButton_4) {
+			  lock_4 = true;
+			  coolant_pump = !coolant_pump;
+			  FEB_CAN_Transmit(&hcan1, SW_COOLANT_PUMP, (uint8_t *) &coolant_pump, 1);
+		  }
+		  lastButton_4 = true;
+	  } else {
+		  if (lastButton_4) {
+			  lock_4 = false;
+		  }
+		  lastButton_4 = false;
+	  }
+
+	  if (!(data2 & (1<<2))) { // BUT_5 -> IO2 P2, accumulator fans
+		  if (!lastButton_5) {
+			  lock_5 = true;
+			  accumulator_fans = !accumulator_fans;
+			  FEB_CAN_Transmit(&hcan1, SW_ACUMULATOR_FANS, (uint8_t *) &accumulator_fans, 1);
+		  }
+		  lastButton_5 = true;
+	  } else {
+		  if (lastButton_5) {
+			  lock_5 = false;
+		  }
+		  lastButton_5 = false;
+	  }
+
+	  if (!(data2 & (1<<3))) { // BUT_6 -> IO2 P3, extra
+		  if (!lastButton_6) {
+			  lock_6 = true;
+			  extra = !extra;
+			  FEB_CAN_Transmit(&hcan1, SW_EXTRA, (uint8_t *) &extra, 1);
+		  }
+		  lastButton_6 = true;
+	  } else {
+		  if (lastButton_6) {
+			  lock_6 = false;
+		  }
+		  lastButton_6 = false;
+	  }
+
+	  if (!(data2 & (1<<0))) { // BUT_3 -> IO2 P0, ready to drive
+//		  buf_len = sprintf((char*)buf, "BUT_3\r\n");
+//		  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+
+		  // if the system is not checking a button, start the timer to check the timer
+		  if (!Button_Checking && (last_button_state == false) && !lock) {
+			  // Start timer to count 1 sec hold time
+			  HAL_TIM_Base_Start_IT(&htim13);
+			  Button_Checking = true;
+
+//			  buf_len = sprintf((char*)buf, "starting timer 13\r\n");
+//			  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+		  }
+		  // if 1 sec has elapsed, and this button is still pressed, it is a valid action
+		  // turn on buzzer and send CAN msg, reset states
+		  if (Button_Timer_Flag) {
+			  ready_to_drive = !ready_to_drive;
+
+			  // when the ready_to_drive state is just changed, lock from changing again
+			  lock = true;
+
+			  // start timer for buzzer
+			  HAL_TIM_Base_Start_IT(&htim14);
+			  // turn on buzzer at VOLUME
+			  htim2.Instance->CCR2 = VOLUME;
+
+			  FEB_CAN_Transmit(&hcan1, SW_READY_TO_DRIVE, (uint8_t *) &ready_to_drive, 1);
+
+			  Button_Timer_Flag = false;
+
+//			  buf_len = sprintf((char*)buf, "staring timer 14\r\n");
+//			  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+		  }
+
+		  //record button state
+		  last_button_state = true;
+
+	  } else {
+		  Button_Timer_Flag = false;
+
+		  // allow ready_to_drive to change when button is released.
+		  if (last_button_state) {
+			  last_button_state = false;
+			  lock = false;
+		  }
+	  }
+//	  buf_len = sprintf((char*)buf, "check:%d flag:%d\r\n", Button_Checking, Button_Timer_Flag);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+	  buf_len = sprintf((char*)buf, "ready: %d coolant: %d accumulator: %d extra: %d\r\n", ready_to_drive, coolant_pump, accumulator_fans, extra);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+
 
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(sleep_time);
   }
   /* USER CODE END 3 */
 }
@@ -285,6 +410,127 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 160-1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 100-1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 100;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
+  * @brief TIM13 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM13_Init(void)
+{
+
+  /* USER CODE BEGIN TIM13_Init 0 */
+
+  /* USER CODE END TIM13_Init 0 */
+
+  /* USER CODE BEGIN TIM13_Init 1 */
+
+  /* USER CODE END TIM13_Init 1 */
+  htim13.Instance = TIM13;
+  htim13.Init.Prescaler = 8000-1;
+  htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim13.Init.Period = 10000-1;
+  htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM13_Init 2 */
+
+  /* USER CODE END TIM13_Init 2 */
+
+}
+
+/**
+  * @brief TIM14 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM14_Init(void)
+{
+
+  /* USER CODE BEGIN TIM14_Init 0 */
+
+  /* USER CODE END TIM14_Init 0 */
+
+  /* USER CODE BEGIN TIM14_Init 1 */
+
+  /* USER CODE END TIM14_Init 1 */
+  htim14.Instance = TIM14;
+  htim14.Init.Prescaler = 8000-1;
+  htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim14.Init.Period = 15000-1;
+  htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM14_Init 2 */
+
+  /* USER CODE END TIM14_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -325,6 +571,8 @@ static void MX_USART2_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -341,12 +589,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -354,9 +596,41 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+// Callback: timer has rolled over
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+//	char buf[10];
+//	int buf_len;
+
+	// timer for button
+	// if 1 sec has passed since the first detection of button pressed, go back to not checking state
+	if (htim == &htim13) {
+	  Button_Checking = false;
+	  Button_Timer_Flag = true;
+	  HAL_TIM_Base_Stop_IT(&htim13);
+
+//	  buf_len = sprintf((char*)buf, "Timer13\r\n");
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+	}
+
+	// timer for buzzer
+	if (htim == &htim14)
+	{
+	  // turn off buzzer
+	  htim2.Instance->CCR2 = 0;
+	  // Stop timer
+	  HAL_TIM_Base_Stop_IT(&htim14);
+
+//	  buf_len = sprintf((char*)buf, "Timer14\r\n");
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+	}
+}
+
 
 /* USER CODE END 4 */
 

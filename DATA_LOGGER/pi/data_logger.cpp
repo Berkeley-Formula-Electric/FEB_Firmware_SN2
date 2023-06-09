@@ -4,7 +4,9 @@
 #include <unistd.h> // for sleep
 
 #include <wiringPiSPI.h>
-#include <unistd.h>
+
+//Libraries for https communication with node js server
+#include <curl/curl.h>
 
 /**********************
  *         pi  stm32
@@ -13,7 +15,7 @@
  * sclk    23   pb10
  * ce1     11   pb12
  *********************/
- //compile with    g++ data_logger.cpp -l wiringPi -o data_logger
+ //compile with    g++ data_logger.cpp -l wiringPi -lcurl -o data_logger
 
 using namespace std;
 
@@ -21,9 +23,26 @@ using namespace std;
 #define SPI_CHANNEL 1
 #define SPI_CLK_SPEED 1000000 //can be 500kHz to 32MHz
 
+//Forward declarations 
+void updateData(string updateString, CURL* curl); 
 
 int main() {
-	
+
+	//INITIALIZE CURL PARAMETERS
+	CURL *curl;
+	struct curl_slist *headers = NULL; 
+	curl_global_init(CURL_GLOBAL_ALL); 
+	curl = curl_easy_init();
+	if(curl){
+		//set URL and request type 
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/api/postdata");
+		curl_easy_setopt(curl, CURLOPT_POST,1L);
+
+		//set request headers
+		headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	}
+
 	// setting up the file
 	bool isUSB = 0;
 	fstream meta_file;
@@ -89,7 +108,7 @@ int main() {
 	
 	// setting up spi
 	int fd;
-	unsigned char buffer[128];
+	char buffer[128];
 
 	cout << "Initializing" << endl ;
 
@@ -104,25 +123,47 @@ int main() {
 	
 	
 	while(1) {
-		log_file.open(log_file_path, ios::out | ios::app);
+		// read the SPI buffer
 		read(fd, buffer, 128);
 		
+		// if the stm32 has not send anything, the SPI buffer will keep the latest byte
+		// in this case, should be the endline character of the last received string
 		if (buffer[0] != 10) {
+			log_file.open(log_file_path, ios::out | ios::app);
 			for(int i = 0; i < 128; i++) {
-				if(buffer[i] == 10){
-				   log_file << endl;
-				   cout << endl;
-				   break;
+				if(buffer[i] == 10) {
+					log_file << endl;
+					cout << endl;
+					break;
 				}
 				log_file << buffer[i];
 				cout << buffer[i];
 			}
+			log_file.close();
+			
+			//Sending POST Request to Node Js server
+			//string buffer_str = buffer;
+			//string data = "data=\"" + buffer_str + "\""; 
+			//updateData(data, curl);
+			
 		}
-		  
-		log_file.close();
+
 		usleep(1000); //wait for 1ms
 	}
+
+		//Free all curl related objects
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	curl_global_cleanup();
 	
 	return 0;
 }
 
+void updateData(string updateString,CURL* curl) {
+	CURLcode res;
+	curl_easy_setopt(curl,CURLOPT_POSTFIELDS,updateString.c_str());
+	res = curl_easy_perform(curl);
+	if(res != CURLE_OK){
+		cerr << "Error" << endl;
+	}
+}

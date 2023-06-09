@@ -8,7 +8,6 @@ CAN_RxHeaderTypeDef RxHeader;
 uint8_t TxData[8];
 uint8_t RxData[8];
 uint32_t TxMailbox;
-uint8_t CAN_Flag = 0;
 
 void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_array, uint8_t filter_array_len, uint8_t FIFO_Assignment) {
 	for (int i = 0; i < filter_array_len; i++) {
@@ -93,12 +92,10 @@ void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	FEB_CAN_Receive(hcan, CAN_RX_FIFO0);
-	CAN_Flag = 1;
 }
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	FEB_CAN_Receive(hcan, CAN_RX_FIFO1);
-	CAN_Flag = 1;
 }
 
 #endif /* INC_FEB_CAN_H_ */

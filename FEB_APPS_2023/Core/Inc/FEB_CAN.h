@@ -8,7 +8,9 @@ CAN_RxHeaderTypeDef RxHeader;
 uint8_t TxData[8];
 uint8_t RxData[8];
 uint32_t TxMailbox;
-uint8_t CAN_Flag = 0;
+uint8_t Inverter_enable = 0;
+uint8_t Inverter_enable_lockout = 1;
+extern UART_HandleTypeDef huart2;
 
 void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_array, uint8_t filter_array_len, uint8_t FIFO_Assignment) {
 	for (int i = 0; i < filter_array_len; i++) {
@@ -30,6 +32,26 @@ void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_
 		  Error_Handler();
 		}
 	}
+
+	// for receiving motor info
+	CAN_FilterTypeDef filter_config;
+
+	filter_config.FilterActivation = CAN_FILTER_ENABLE;
+	filter_config.FilterBank = filter_array_len;
+	filter_config.FilterFIFOAssignment = FIFO_Assignment;
+	filter_config.FilterIdHigh = 0xAA << 5;
+	filter_config.FilterIdLow = 0;
+	filter_config.FilterMaskIdHigh = 0x7FF << 5;
+	filter_config.FilterMaskIdLow = 0;
+	filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
+	filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
+	filter_config.SlaveStartFilterBank = 27;
+
+	if(HAL_CAN_ConfigFilter(hcan, &filter_config))
+	{
+	  Error_Handler();
+	}
+
 }
 
 void FEB_CAN_Init(CAN_HandleTypeDef* hcan, uint32_t NODE_ID) {
@@ -70,7 +92,16 @@ void FEB_CAN_Receive(CAN_HandleTypeDef *hcan, uint32_t CAN_RX_FIFO) {
 	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO, &RxHeader, RxData) != HAL_OK) {
 		Error_Handler();
 	}
-	store_msg(&RxHeader, RxData);
+	if (RxHeader.StdId == 0x0AA) { //internal states from the inverter
+		char buf[128];
+//		uint8_t buf_len;
+//		buf_len = sprintf(buf, "received info, byte6: %d\n", RxData[6]);
+//		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+		Inverter_enable = RxData[6] && 0x1; // bit 1
+		Inverter_enable_lockout = (RxData[6] && 0x80) >> 6; // bit 7
+	} else {
+		store_msg(&RxHeader, RxData);
+	}
 }
 
 void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData, uint8_t size) {
@@ -93,12 +124,10 @@ void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	FEB_CAN_Receive(hcan, CAN_RX_FIFO0);
-	CAN_Flag = 1;
 }
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	FEB_CAN_Receive(hcan, CAN_RX_FIFO1);
-	CAN_Flag = 1;
 }
 
 #endif /* INC_FEB_CAN_H_ */
