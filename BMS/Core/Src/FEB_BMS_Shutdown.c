@@ -5,6 +5,10 @@
 extern CAN_HandleTypeDef hcan1;
 extern UART_HandleTypeDef huart2;
 
+// ********************************** Global Variable **********************************
+
+uint8_t FEB_BMS_Shutdown_State = 0;		// 0 - not shutdown, 1 - shutdown
+
 // ********************************** Functions **********************************
 
 void FEB_BMS_Shutdown_Startup(void) {
@@ -12,6 +16,8 @@ void FEB_BMS_Shutdown_Startup(void) {
 }
 
 void FEB_BMS_Shutdown_Initiate(char shutdown_message[]) {
+	FEB_BMS_Shutdown_State = 1;
+
 	// Shutdown Circuit
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
 
@@ -30,6 +36,6 @@ void FEB_BMS_Shutdown_Initiate(char shutdown_message[]) {
 		FEB_CAN_Charger_Stop_Charge(&hcan1);
 	}
 
-	// Do nothing
-	while (1) {}
+	// Turn off fans
+	FEB_Fan_All_Speed_Set(0);
 }

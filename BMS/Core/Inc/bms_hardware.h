@@ -43,39 +43,25 @@ Copyright 2017 Linear Technology Corp. (LTC)
 #ifndef BMSHARDWARE_H
 #define BMSHARDWARE_H
 
+// ********************************** Includes **********************************
 
+#include "stdint.h"
 
+#include "stm32f4xx_hal.h"
+#include "FEB_Timer.h"
 
-#include <stdint.h>
+// ********************************** Functions **********************************
 
-
-void cs_low(uint8_t pin);//name conflicts with linduino
-
-void cs_high(uint8_t pin);
-
+// Delay
 void delay_u(uint16_t micro);
-
 void delay_m(uint16_t milli);
 
-void set_spi_freq();
+// SPI
+void cs_low(uint8_t pin);
+void cs_high(uint8_t pin);
+void set_spi_freq(void);
+void spi_write_array(uint8_t len, uint8_t data[]);
+void spi_write_read(uint8_t tx_Data[], uint8_t tx_len, uint8_t *rx_data, uint8_t rx_len);
+uint8_t spi_read_byte(uint8_t tx_dat);
 
-
-/*
-Writes an array of bytes out of the SPI port
-*/
-void spi_write_array(uint8_t len, // Option: Number of bytes to be written on the SPI port
-                     uint8_t data[] //Array of bytes to be written on the SPI port
-                    );
-/*
- Writes and read a set number of bytes using the SPI port.
-
-*/
-
-void spi_write_read(uint8_t tx_Data[],//array of data to be written on SPI port
-                    uint8_t tx_len, //length of the tx data arry
-                    uint8_t *rx_data,//Input: array that will store the data read by the SPI port
-                    uint8_t rx_len //Option: number of bytes to be read from the SPI port
-                   );
-
-uint8_t spi_read_byte(uint8_t tx_dat);//name conflicts with linduino also needs to take a byte as a parameter
 #endif

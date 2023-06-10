@@ -8,6 +8,7 @@
 
 #include "FEB_LTC6811.h"
 #include "FEB_CAN_Charger.h"
+#include "FEB_Fan.h"
 
 // ********************************** Functions **********************************
 

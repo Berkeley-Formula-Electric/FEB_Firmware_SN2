@@ -5,6 +5,7 @@
 extern CAN_TxHeaderTypeDef FEB_CAN_TxHeader;
 extern uint8_t FEB_CAN_TxData[8];
 extern uint32_t FEB_CAN_TxMailbox;
+extern uint8_t FEB_BMS_Shutdown_State;
 
 // ********************************** CAN Configuration **********************************
 
@@ -112,6 +113,8 @@ void FEB_CAN_Charger_Validate_Status(uint8_t status) {
 void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {
 	if (FEB_CAN_CHARGER_STATE == 0 || FEB_CAN_Charger_Stop_Charge_Bool == 1) {
 		return;
+	} else if (FEB_BMS_Shutdown_State == 1) {
+		FEB_CAN_Charger_Stop_Charge(hcan);
 	}
 	if (FEB_CAN_Charger_Rx_Flag == 1) {
 		FEB_CAN_Charger_Rx_Flag = 0;
