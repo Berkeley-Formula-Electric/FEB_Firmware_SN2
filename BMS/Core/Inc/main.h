@@ -40,6 +40,10 @@ extern "C" {
 #include "FEB_CAN_IVT.h"
 #include "FEB_CAN_Charger.h"
 #include "FEB_CAN.h"
+#include "FEB_BMS_State.h"
+#include "FEB_Fan.h"
+#include "FEB_Timer.h"
+#include "FEB_CAN_Inverter.h"
 
 /* USER CODE END Includes */
 
@@ -57,6 +61,8 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
