@@ -31,5 +31,9 @@ void FEB_BMS_Shutdown_Initiate(char shutdown_message[]) {
 	}
 
 	// Do nothing
-	while (1) {}
+	while (1) {
+	  sprintf(str, "shutting down: %s.\n", shutdown_message);
+	  HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), 100);
+	  HAL_Delay(100);
+	}
 }

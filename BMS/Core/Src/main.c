@@ -124,8 +124,8 @@ int main(void)
   FEB_LTC6811_Init();
   FEB_CAN_Init();
   FEB_CAN_Charger_Init();
-  FEB_Fan_Init();
   FEB_Timer_Init();
+  FEB_Fan_Init();
 
   HAL_Delay(1000);
 
@@ -138,41 +138,41 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	// *********************** Reset State ***********************
-	FEB_LTC6811_Clear_Voltage();
-	FEB_LTC6811_Clear_Temperature();
+    // *********************** Reset State ***********************
+    FEB_LTC6811_Clear_Voltage();
+    FEB_LTC6811_Clear_Temperature();
 
-	// *********************** Cell Voltage ***********************
-	FEB_LTC6811_Poll_Voltage();
-  	FEB_LTC6811_Validate_Voltage();
-	FEB_LTC6811_UART_Transmit_Voltage();
+    // *********************** Cell Voltage ***********************
+    FEB_LTC6811_Poll_Voltage();
+      FEB_LTC6811_Validate_Voltage();
+    FEB_LTC6811_UART_Transmit_Voltage();
 
-	// *********************** Cell Temperature ***********************
-	FEB_LTC6811_Poll_Temperature();
-  	FEB_LTC6811_Validate_Temperature();
-	FEB_LTC6811_UART_Transmit_Temperature();
+    // *********************** Cell Temperature ***********************
+    FEB_LTC6811_Poll_Temperature();
+      FEB_LTC6811_Validate_Temperature();
+    FEB_LTC6811_UART_Transmit_Temperature();
 
-	// *********************** IVT ***********************
-	FEB_CAN_IVT_Process();
+    // *********************** IVT ***********************
+    FEB_CAN_IVT_Process();
 
-	// *********************** Cell Balance ***********************
-	FEB_LTC6811_Balance_Cells();
-	FEB_LTC6811_UART_Transmit_Discharge();
+    // *********************** Cell Balance ***********************
+    FEB_LTC6811_Balance_Cells();
+    FEB_LTC6811_UART_Transmit_Discharge();
 
-	// *********************** Charger ***********************
-	FEB_CAN_Charger_Process(&hcan1);
+    // *********************** Charger ***********************
+    FEB_CAN_Charger_Process(&hcan1);
 
-	// *********************** Fan ***********************
-	FEB_Fan_Process();
+    // *********************** Fan ***********************
+    FEB_Fan_Process();
 
-	// *********************** Inverter ***********************
-	FEB_CAN_Inverter_Process();
+    // *********************** Inverter ***********************
+    FEB_CAN_Inverter_Process();
 
-	if (FEB_CAN_CHARGER_STATE == 1) {
-		HAL_Delay(1000);	// 1Hz
-	} else {
-		HAL_Delay(200);		// 5Hz
-	}
+    if (FEB_CAN_CHARGER_STATE == 1) {
+      HAL_Delay(1000);	// 1Hz
+    } else {
+      HAL_Delay(200);		// 5Hz
+    }
   }
   /* USER CODE END 3 */
 }

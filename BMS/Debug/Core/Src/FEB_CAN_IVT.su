@@ -1,3 +1,0 @@
-../Core/Src/FEB_CAN_IVT.c:21:9:FEB_CAN_IVT_Filter_Config	64	static
-../Core/Src/FEB_CAN_IVT.c:44:6:FEB_CAN_IVT_Store_Msg	24	static
-../Core/Src/FEB_CAN_IVT.c:72:6:FEB_CAN_IVT_Process	24	static

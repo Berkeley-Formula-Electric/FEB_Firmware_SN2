@@ -10,7 +10,7 @@ static float FEB_LTC6811_Temp_Map[][2] = {{1.3, 120.0}, {1.301, 119.5}, {1.302, 
 
 float FEB_LTC6811_Temp_LUT_Get_Temperature(float voltage) {
 	if (voltage < FEB_LTC6811_TEMP_LUT_MIN_MAP_VOLT || voltage > FEB_LTC6811_TEMP_LUT_MAX_MAP_VOLT) {
-		return -42.0;
+		return -41.0;
 	}
 	uint16_t index = (uint16_t) round((voltage - FEB_LTC6811_TEMP_LUT_MIN_MAP_VOLT) / FEB_LTC6811_TEMP_LUT_RESOLUTION);
 	return FEB_LTC6811_Temp_Map[index][1];

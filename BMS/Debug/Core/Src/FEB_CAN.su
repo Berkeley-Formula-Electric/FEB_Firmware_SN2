@@ -1,3 +1,0 @@
-../Core/Src/FEB_CAN.c:20:6:FEB_CAN_Init	8	static
-../Core/Src/FEB_CAN.c:28:6:FEB_CAN_Filter_Config	16	static
-../Core/Src/FEB_CAN.c:35:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static

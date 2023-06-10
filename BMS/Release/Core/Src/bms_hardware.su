@@ -1,7 +1,0 @@
-../Core/Src/bms_hardware.c:50:6:cs_low	0	static
-../Core/Src/bms_hardware.c:55:6:cs_high	0	static
-../Core/Src/bms_hardware.c:60:6:delay_u	0	static
-../Core/Src/bms_hardware.c:65:6:delay_m	0	static
-../Core/Src/bms_hardware.c:73:6:spi_write_array	0	static
-../Core/Src/bms_hardware.c:85:6:spi_write_read	24	static
-../Core/Src/bms_hardware.c:104:9:spi_read_byte	16	static

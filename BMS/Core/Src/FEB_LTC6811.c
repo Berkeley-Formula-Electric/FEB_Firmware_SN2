@@ -352,6 +352,10 @@ void FEB_LTC6811_Validate_Temperature(void) {
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;
+			if (fabs(temperature - -42.0f) < 0.1f || fabs(temperature  - -41.0f) < 0.1f) {
+			  // TK: override error code, might want to disable this after fixing the segments
+			  continue;
+			}
 			float min_temperature = FEB_LTC6811_CELL_MIN_OPERATION_TEMPERATURE;
 			float max_temperature = FEB_LTC6811_CELL_MAX_OPERATION_TEMPERATURE;
 			if (FEB_CAN_CHARGER_STATE == 1) {

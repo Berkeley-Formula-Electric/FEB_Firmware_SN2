@@ -17,7 +17,7 @@
 
 // accumulator configuration
 #define FEB_LTC6811_NUM_CELLS_PER_BANK 				17
-#define FEB_LTC6811_NUM_BANKS 						1
+#define FEB_LTC6811_NUM_BANKS 						    5
 #define FEB_LTC6811_NUM_CELLS_PER_DAUGHTER_BOARD	12
 
 // cell temperature thresholds
