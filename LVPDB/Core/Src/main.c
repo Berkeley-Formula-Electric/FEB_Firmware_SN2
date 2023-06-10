@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "FEB_CAN.h"
 #include "stdio.h"
+#include "stdbool.h"
 
 /* USER CODE END Includes */
 
@@ -37,6 +38,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define SLEEP_TIME 10
+#define BRAKE_THRE 0.2
 
 /* USER CODE END PM */
 
@@ -44,16 +47,35 @@
 CAN_HandleTypeDef hcan1;
 
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef* hi2c1p;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-static const uint8_t LV_ADDR = 0x40 << 1;
-static const uint8_t CP_ADDR = 0x44 << 1;
-static const uint8_t AF_ADDR = 0x45 << 1;
-static const uint8_t EX_ADDR = 0x41 << 1;
-static const uint8_t ENABLE_REG = 0x06 << 1;
-static const uint8_t LIMIT_REG = 0x07 << 1;
+// hotswap addresses
+const uint8_t LV_ADDR = 0b1000000 << 1;
+const uint8_t CP_ADDR = 0b1000100 << 1;
+const uint8_t AF_ADDR = 0b1000101 << 1;
+const uint8_t EX_ADDR = 0b1000001 << 1;
+
+// configuration register value
+uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
+
+// calibration register value
+uint8_t CAL[2] = {0b00000000, 0b00000011};// setting Current_LSB to 1 for both
+
+// alert types
+uint8_t UNDERV[2] = {0b00010000, 0b00000000};
+uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
+
+// limits
+uint8_t LV_LIMIT[2] = {0b00000000, 0b00010110}; // = 22
+uint8_t CP_LIMIT[2] = {0b00000001, 0b01010000}; // = 336, 14 * 24
+uint8_t AF_LIMIT[2] = {0b00000000, 0b11000000}; // = 192, 8 * 24
+uint8_t EX_LIMIT[2] = {0b00000000, 0b10010000}; // = 144, 6 * 24
+
+static bool isDriving = false;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,7 +100,6 @@ static void MX_I2C1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_StatusTypeDef ret;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -103,36 +124,26 @@ int main(void)
   MX_CAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-//  uint8_t sleep_time = 10;
-//  char buf[128];
-//  uint8_t buf_len;
 
-	/* Node_1 */
-//	FEB_CAN_Init(&hcan1, BMS_ID);
-//	float temp = 0.0;
-//	float volt = 0.0;
+	FEB_CAN_Init(&hcan1, LVPDB_ID);
 
-	/* Node_2 */
-	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t cmd_1 = 0;
+	hi2c1p = &hi2c1;
 
-	/* Node_3 */
-//	FEB_CAN_Init(&hcan1, APPS_ID);
-//	float acc_1 = 0.0;
-//	float acc_2 = 0.0;
-//	float brake = 0.0;
-//	float torque = 0.0;
+	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
 
-	/* Node_4 */
-//	FEB_CAN_Init(&hcan1, SM_ID);
-//	uint8_t emergency = 0;
+	// uncomment if we need to pull ENs high to start
+	/*
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
+	*/
 
-	// write to lv hotswap that i want to alert undervoltage for bus
+	char buf[128];
+	int buf_len;
 
-	// set limit to 22V
-
-	// for each of these hotswaps, want to alert for overpower
-	// set limit to 14 * 24 for coolant pump, 8 * 24 for accumulator fans
 
   /* USER CODE END 2 */
 
@@ -141,37 +152,56 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  // receive brake positioning float point value from APPS
-	  // if value > 0 :
-	  	  // PA1 high
-	  // else:
-	  	  // PA1 low
+	  if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
+	  } else {
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
+	  }
 
-	  // for lv hotswap
-	  // if receives undervoltage alert, pull all ENs for other hotswaps low and turn off brake light
+	  // activate peripheral devices if ready to drive
+	  if (SW_MESSAGE.ready_to_drive == 1 && !isDriving) {
+		  isDriving = true;
+		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
+		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
 
-	  // for coolant pump hotswap
-	  // pull PC11 to EN
-	  // if receives overpower alert, pull EN low
-	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG switches to low while EN is on, pull EN low
+	  // de-activate if not ready to drive
+	  } else if (SW_MESSAGE.ready_to_drive == 0 && isDriving) {
+		  isDriving = false;
+		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+	  }
 
-	  // for accumulator fans hotswap
-	  // pull PB5 to EN
-	  // if receives overpower alert, pull EN low
-	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG switches to low while EN is on, pull EN low
+/***
+	  // lv hotswap
+	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
+	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7) == GPIO_PIN_RESET) || (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)) {
+		  // pull all ENs low
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+		  //turn off brake light
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+	  }
 
-	  // for extra hotswap
-	  // pull PC3 to EN
-	  // if receives overpower alert, pull EN low
-	  // if shunt voltage, bus voltage, current over limits, pull EN low
-	  // if PG switches to low while EN is on, pull EN low
+	  // coolant pump hotswap
+	  FEB_TPS2482_shutdownIfError(hi2c1p, CP_ADDR, GPIOC, GPIO_PIN_11, GPIOA, GPIO_PIN_15, GPIOC, GPIO_PIN_10, 22.5, 25.5, 15, 10, 340, 300);
 
+	  // accumulator fans hotswap
+	  FEB_TPS2482_shutdownIfError(hi2c1p, AF_ADDR, GPIOB, GPIO_PIN_5, GPIOC, GPIO_PIN_12, GPIOB, GPIO_PIN_4, 22.5, 25.5, 9, 6, 200, 160);
+
+	  // extra hotswap
+	  FEB_TPS2482_shutdownIfError(hi2c1p, EX_ADDR, GPIOC, GPIO_PIN_3, GPIOC, GPIO_PIN_1, GPIOC, GPIO_PIN_2, 22.5, 25.5, 7, 4, 150, 120);
+***/
+
+
+	  buf_len = sprintf((char*)buf, "ready: %d, coolant: %d, accumulator: %d, extra: %d\r\n", SW_MESSAGE.ready_to_drive, SW_MESSAGE.coolant_pump, SW_MESSAGE.acumulator_fans, SW_MESSAGE.extra);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(sleep_time);
+	  HAL_Delay(SLEEP_TIME);
   }
   /* USER CODE END 3 */
 }
@@ -405,8 +435,7 @@ static void MX_GPIO_Init(void)
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-void Error_Handler(void)
-{
+void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();

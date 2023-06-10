@@ -10,6 +10,8 @@ uint8_t RxData[8];
 uint32_t TxMailbox;
 uint8_t CAN_Flag = 0;
 
+void Error_Handler(void);
+
 void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_array, uint8_t filter_array_len, uint8_t FIFO_Assignment) {
 	for (int i = 0; i < filter_array_len; i++) {
 		CAN_FilterTypeDef filter_config;
