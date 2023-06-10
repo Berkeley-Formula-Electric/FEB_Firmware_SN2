@@ -196,7 +196,7 @@ int main(void)
 ***/
 
 
-	  buf_len = sprintf((char*)buf, "ready: %d, coolant: %d, accumulator: %d, extra: %d\r\n", SW_MESSAGE.ready_to_drive, SW_MESSAGE.coolant_pump, SW_MESSAGE.acumulator_fans, SW_MESSAGE.extra);
+	  buf_len = sprintf((char*)buf, "ready: %d, brake: %.3f\r\n", SW_MESSAGE.ready_to_drive, APPS_MESSAGE.brake_pedal);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
