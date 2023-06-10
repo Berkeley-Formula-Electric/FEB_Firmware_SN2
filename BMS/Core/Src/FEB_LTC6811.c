@@ -3,6 +3,7 @@
 #include "FEB_LTC6811.h"
 
 extern UART_HandleTypeDef huart2;
+extern uint8_t FEB_BMS_Shutdown_State;
 
 // ********************************** LTC6811 Configuration **********************************
 
@@ -119,7 +120,7 @@ void FEB_LTC6811_Set_Discharge_Target_Voltage(void) {
 }
 
 void FEB_LTC6811_Balance_Cells(void) {
-	if (FEB_LTC6811_BALANCE_STATE == 0 || FEB_LTC6811_Cells_Balanced == 1) {
+	if (FEB_LTC6811_BALANCE_STATE == 0 || FEB_LTC6811_Cells_Balanced == 1 || FEB_BMS_Shutdown_State == 1) {
 		return;
 	} else if (FEB_LTC6811_Target_Voltage_Set == 0) {
 		FEB_LTC6811_Set_Discharge_Target_Voltage();
@@ -192,6 +193,9 @@ void FEB_LTC6811_UART_Transmit_Discharge(void) {
 // ******************** Voltage Interface ********************
 
 void FEB_LTC6811_Validate_Voltage(void) {
+	if (FEB_BMS_Shutdown_State == 1) {
+		return;
+	}
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
@@ -349,6 +353,9 @@ float FEB_LTC6811_Convert_Temperature(uint16_t value) {
 // ******************** Temperature Interface ********************
 
 void FEB_LTC6811_Validate_Temperature(void) {
+	if (FEB_BMS_Shutdown_State == 1) {
+		return;
+	}
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			float temperature = accumulator.banks[bank_idx].cells[cell_idx].temperature;

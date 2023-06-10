@@ -19,6 +19,7 @@ void FEB_Fan_Init(void);
 // PWM
 void FEB_Fan_PWM_Start(void);
 void FEB_Fan_Init_Speed_Set(void);
+void FEB_Fan_All_Speed_Set(uint8_t speed);
 void FEB_Fan_1_Speed_Set(uint8_t speed);
 void FEB_Fan_2_Speed_Set(uint8_t speed);
 void FEB_Fan_3_Speed_Set(uint8_t speed);

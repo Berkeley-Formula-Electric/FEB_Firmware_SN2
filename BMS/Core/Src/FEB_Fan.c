@@ -6,6 +6,7 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
+extern uint8_t FEB_BMS_Shutdown_State;
 
 // ********************************** Fan Configuration **********************************
 
@@ -33,19 +34,24 @@ void FEB_Fan_PWM_Start(void) {
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 }
 
-void FEB_Fan_Init_Speed_Set(void) {
-	if (FEB_CAN_CHARGER_STATE == 0) {
-		FEB_Fan_1_Speed_Set(255);
-		FEB_Fan_2_Speed_Set(255);
-		FEB_Fan_3_Speed_Set(255);
-		FEB_Fan_4_Speed_Set(255);
-	} else if (FEB_CAN_CHARGER_STATE == 1) {
-		FEB_Fan_1_Speed_Set(127);
-		FEB_Fan_2_Speed_Set(127);
-		FEB_Fan_3_Speed_Set(127);
-		FEB_Fan_4_Speed_Set(127);
+void FEB_Fan_Init_Speed_Set(void) {\
+	if (FEB_BMS_Shutdown_State == 1) {
+		return;
 	}
+	uint8_t speed;
+	if (FEB_CAN_CHARGER_STATE == 0) {
+		speed = 255;
+	} else if (FEB_CAN_CHARGER_STATE == 1) {
+		speed = 127;
+	}
+	FEB_Fan_All_Speed_Set(speed);
+}
 
+void FEB_Fan_All_Speed_Set(uint8_t speed) {
+	FEB_Fan_1_Speed_Set(speed);
+	FEB_Fan_2_Speed_Set(speed);
+	FEB_Fan_3_Speed_Set(speed);
+	FEB_Fan_4_Speed_Set(speed);
 }
 
 void FEB_Fan_1_Speed_Set(uint8_t speed) {

@@ -41,69 +41,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Copyright 2017 Linear Technology Corp. (LTC)
 */
 
-#include <stdint.h>
+// ********************************** Includes & External **********************************
+
 #include "bms_hardware.h"
-#include "stm32f4xx_hal.h"
 
 extern SPI_HandleTypeDef hspi1;
 
-void cs_low(uint8_t pin)
-{
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+// ********************************** Functions **********************************
+
+// ******************** Delay ********************
+
+void delay_u(uint16_t micro) {
+	FEB_Timer_Delay_Micro(micro);
 }
 
-void cs_high(uint8_t pin)
-{
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);
+void delay_m(uint16_t milli) {
+	HAL_Delay(milli);
 }
 
-void delay_u(uint16_t micro)
-{
-  HAL_Delay(1);
+// ******************** SPI ********************
+
+void cs_low(uint8_t pin) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
 }
 
-void delay_m(uint16_t milli)
-{
-  HAL_Delay(milli);
+void cs_high(uint8_t pin) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);
 }
 
-/*
-Writes an array of bytes out of the SPI port
-*/
-void spi_write_array(uint8_t len, // Option: Number of bytes to be written on the SPI port
-                     uint8_t data[] //Array of bytes to be written on the SPI port
-                    )
-{
-  HAL_SPI_Transmit(&hspi1, data, len, 100);
+void spi_write_array(uint8_t len, uint8_t data[]) {
+	HAL_SPI_Transmit(&hspi1, data, len, 100);
 }
 
-/*
- Writes and read a set number of bytes using the SPI port.
+void spi_write_read(uint8_t tx_Data[], uint8_t tx_len, uint8_t *rx_data, uint8_t rx_len) {
+	for (uint8_t i = 0; i < tx_len; i++) {
+		HAL_SPI_Transmit(&hspi1, &tx_Data[i], 1, 100);
+	}
 
-*/
-
-void spi_write_read(uint8_t tx_Data[],//array of data to be written on SPI port
-                    uint8_t tx_len, //length of the tx data arry
-                    uint8_t *rx_data,//Input: array that will store the data read by the SPI port
-                    uint8_t rx_len //Option: number of bytes to be read from the SPI port
-                   )
-{
-  for (uint8_t i = 0; i < tx_len; i++)
-  {
-    HAL_SPI_Transmit(&hspi1, &tx_Data[i], 1, 100);
-  }
-
-  for (uint8_t i = 0; i < rx_len; i++)
-  {
-	HAL_SPI_Receive(&hspi1, &rx_data[i], 1, 100);
-  }
-
+	for (uint8_t i = 0; i < rx_len; i++) {
+		HAL_SPI_Receive(&hspi1, &rx_data[i], 1, 100);
+	}
 }
 
-
-uint8_t spi_read_byte(uint8_t tx_dat)
-{
+uint8_t spi_read_byte(uint8_t tx_dat) {
   uint8_t data;
   HAL_SPI_Receive(&hspi1, &data, 1, 100);
-  return(data);
+  return data;
 }
