@@ -93,9 +93,10 @@ void FEB_CAN_IVT_Process(void) {
 		FEB_CAN_IVT_FLAG.voltage_3 = 0;
 		float voltage = (float) FEB_CAN_IVT_MESSAGE.voltage_3_mV * 0.001;
 		if (voltage > FEB_LTC6811_Total_Bank_Voltage() * 0.9) {
-			FEB_BMS_Precharge_Close();
+		  // comment this out when testing the battery
+			FEB_BMS_AIR_Close();
 		} else {
-			FEB_BMS_Precharge_Open();
+			FEB_BMS_AIR_Open();
 		}
 	}
 }

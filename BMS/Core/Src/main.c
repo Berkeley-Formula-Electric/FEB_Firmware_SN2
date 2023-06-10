@@ -117,7 +117,7 @@ int main(void)
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
 
-  FEB_BMS_Precharge_Open();
+  FEB_BMS_AIR_Open();
   FEB_BMS_Shutdown_Startup();
   FEB_BMS_State_Validate();
 

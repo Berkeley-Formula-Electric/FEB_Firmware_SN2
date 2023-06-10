@@ -21,6 +21,9 @@ void FEB_BMS_Shutdown_Initiate(char shutdown_message[]) {
 	// Shutdown Circuit
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
 
+	// Open AIR Circuit
+	FEB_BMS_AIR_Open();
+
 	// Broadcast Message
 	char str[128];
 	sprintf(str, "Shutdown: %s.", shutdown_message);

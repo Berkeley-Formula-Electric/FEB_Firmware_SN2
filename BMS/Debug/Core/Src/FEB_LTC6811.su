@@ -26,5 +26,5 @@
 ../Core/Src/FEB_LTC6811.c:307:6:FEB_LTC6811_Store_Temperature	32	static
 ../Core/Src/FEB_LTC6811.c:344:7:FEB_LTC6811_Convert_Temperature	16	static
 ../Core/Src/FEB_LTC6811.c:355:6:FEB_LTC6811_Validate_Temperature	24	static
-../Core/Src/FEB_LTC6811.c:377:6:FEB_LTC6811_UART_Transmit_Temperature	1296	static
-../Core/Src/FEB_LTC6811.c:401:6:FEB_LTC6811_Clear_Temperature	16	static
+../Core/Src/FEB_LTC6811.c:381:6:FEB_LTC6811_UART_Transmit_Temperature	1296	static
+../Core/Src/FEB_LTC6811.c:405:6:FEB_LTC6811_Clear_Temperature	16	static

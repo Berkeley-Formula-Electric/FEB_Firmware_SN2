@@ -1,5 +1,5 @@
-#ifndef INC_FEB_BMS_PRECHARGE_H_
-#define INC_FEB_BMS_PRECHARGE_H_
+#ifndef INC_FEB_BMS_AIR_H_
+#define INC_FEB_BMS_AIR_H_
 
 // ********************************** Includes **********************************
 
@@ -7,7 +7,7 @@
 
 // ********************************** Functions **********************************
 
-void FEB_BMS_Precharge_Open(void);
-void FEB_BMS_Precharge_Close(void);
+void FEB_BMS_AIR_Open(void);
+void FEB_BMS_AIR_Close(void);
 
-#endif /* INC_FEB_BMS_PRECHARGE_H_ */
+#endif /* INC_FEB_BMS_AIR_H_ */
