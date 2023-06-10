@@ -150,8 +150,8 @@ const FilterArrayLength BMS_RX_NUM = 1;
 const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID};
 const FilterArrayLength APPS_RX_NUM = 2;
 
-const AddressIdType LVPDB_RX_ID[] = {SW_ID};
-const FilterArrayLength LVPDB_RX_NUM = 1;
+const AddressIdType LVPDB_RX_ID[] = {SW_ID, APPS_ID};
+const FilterArrayLength LVPDB_RX_NUM = 2;
 
 const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
     switch(NODE_ID) {

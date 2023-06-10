@@ -11,7 +11,7 @@ CAN ID Length,Bits per Board,Boards,Rx,Message Types,Data Type,Rx Any (T/F),Comm
 ,,,,Accelerator2 Pedal,float,,
 ,,,,Brake Pedal,float,,
 ,,,,Torque ,float,,
-,,LVPDB,SW,, ,F,
+,,LVPDB,SW APPS,, ,F,
 ,,,,,,,
 ,,,,,,,
 ,,,,,,,
