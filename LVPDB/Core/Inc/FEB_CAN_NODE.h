@@ -139,12 +139,8 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     }
 }
 
-/*** RMS IDs ***/
-#define RMS_ID 0b0000100
-
-
 /*** LVPDB IDs ***/
-#define LVPDB_ID 0b0000101
+#define LVPDB_ID 0b0000100
 
 
 /*** RX Arrays ***/
@@ -154,11 +150,8 @@ const FilterArrayLength BMS_RX_NUM = 1;
 const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID};
 const FilterArrayLength APPS_RX_NUM = 2;
 
-const AddressIdType RMS_RX_ID[] = {APPS_ID};
-const FilterArrayLength RMS_RX_NUM = 1;
-
-const AddressIdType LVPDB_RX_ID[] = {SW_ID};
-const FilterArrayLength LVPDB_RX_NUM = 1;
+const AddressIdType LVPDB_RX_ID[] = {SW_ID, APPS_ID};
+const FilterArrayLength LVPDB_RX_NUM = 2;
 
 const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
     switch(NODE_ID) {
@@ -167,9 +160,6 @@ const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
             break;
         case APPS_ID:
             return APPS_RX_ID;
-            break;
-        case RMS_ID:
-            return RMS_RX_ID;
             break;
         case LVPDB_ID:
             return LVPDB_RX_ID;
@@ -185,9 +175,6 @@ FilterArrayLength assign_filter_array_legnth(AddressIdType NODE_ID) {
             break;
         case APPS_ID:
             return APPS_RX_NUM;
-            break;
-        case RMS_ID:
-            return RMS_RX_NUM;
             break;
         case LVPDB_ID:
             return LVPDB_RX_NUM;
