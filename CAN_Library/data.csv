@@ -3,7 +3,7 @@ CAN ID Length,Bits per Board,Boards,Rx,Message Types,Data Type,Rx Any (T/F),Comm
 ,,,,SW_Emergency,uint8_t,,
 ,,BMS,SW,Temperature,float,T,
 ,,,,Voltage,float,,
-,,SW,,Ready_to_drive,uint8_t,F,
+,,SW,APPS,Ready_to_drive,uint8_t,F,
 ,,,,Coolant_pump,uint8_t,,
 ,,,,Acumulator_fans,uint8_t,,
 ,,,,Extra,uint8_t,,

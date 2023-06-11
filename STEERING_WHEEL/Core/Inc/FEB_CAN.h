@@ -8,6 +8,8 @@ CAN_RxHeaderTypeDef RxHeader;
 uint8_t TxData[8];
 uint8_t RxData[8];
 uint32_t TxMailbox;
+float HV_Voltage = 0.0;
+extern UART_HandleTypeDef huart2;
 
 void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_array, uint8_t filter_array_len, uint8_t FIFO_Assignment) {
 	for (int i = 0; i < filter_array_len; i++) {
@@ -28,6 +30,24 @@ void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_
 		{
 		  Error_Handler();
 		}
+	}
+
+	CAN_FilterTypeDef filter_config;
+
+	filter_config.FilterActivation = CAN_FILTER_ENABLE;
+	filter_config.FilterBank = filter_array_len;
+	filter_config.FilterFIFOAssignment = FIFO_Assignment;
+	filter_config.FilterIdHigh = 0xA7 << 5;
+	filter_config.FilterIdLow = 0;
+	filter_config.FilterMaskIdHigh = 0x7FF << 5;
+	filter_config.FilterMaskIdLow = 0;
+	filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
+	filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
+	filter_config.SlaveStartFilterBank = 27;
+
+	if(HAL_CAN_ConfigFilter(hcan, &filter_config))
+	{
+	  Error_Handler();
 	}
 }
 
@@ -69,7 +89,15 @@ void FEB_CAN_Receive(CAN_HandleTypeDef *hcan, uint32_t CAN_RX_FIFO) {
 	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO, &RxHeader, RxData) != HAL_OK) {
 		Error_Handler();
 	}
-	store_msg(&RxHeader, RxData);
+	if (RxHeader.StdId == 0xA7) { //DC voltage measured by the inverter
+//		char buf[128];
+//		uint8_t buf_len;
+//		buf_len = sprintf(buf, "received info, byte6: %d\n", RxData[6]);
+//		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+		HV_Voltage = (((uint16_t) RxData[1] << 8) | RxData[0]) / 10.0;
+	} else {
+		store_msg(&RxHeader, RxData);
+	}
 }
 
 void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData, uint8_t size) {

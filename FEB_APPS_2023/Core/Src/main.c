@@ -46,7 +46,7 @@
 //#define BRAKE_PEDAL_1_START 1350.0
 //#define BRAKE_PEDAL_1_END 910.0
 
-#define BRAKE_PEDAL_1_START 345.0
+#define BRAKE_PEDAL_1_START 350.0
 #define BRAKE_PEDAL_1_END 400.0
 
 #define BRAKE_PEDAL_2_START 1390.0
@@ -160,6 +160,10 @@ float FEB_Normalized_Brake_Pedals(){
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
 	final_normalized = final_normalized < 0.05 ? 0 : final_normalized;
 
+	if (brake_pedal_1 < 10 || brake_pedal_1 > 4085) {
+		return 0.0;
+	}
+
 	return final_normalized;
 }
 
@@ -210,7 +214,7 @@ void FEB_RMS_Init(){
 
 	// Select CAN msg to broadcast
 	uint8_t param_addr = 148;
-	uint8_t CAN_active_msg_byte4 = 0b00100000; // motor position
+	uint8_t CAN_active_msg_byte4 = 0b10100000; // motor position, input voltage
 	uint8_t CAN_active_msg_byte5 = 0b00000100; // internal states
 //	uint8_t CAN_active_msg_byte4 = 0xff;
 //	uint8_t CAN_active_msg_byte5 = 0xff;
@@ -276,7 +280,8 @@ int main(void)
   uint8_t buf_len;
 
   FEB_CAN_Init(&hcan1, APPS_ID); // The transceiver must be connected otherwise you get sent into an infinite loop
-  //FEB_RMS_Init();
+  RMSControl.enabled = 1;
+  RMSControl.torque= 0.0;
 
   /* USER CODE END 2 */
 
@@ -310,7 +315,7 @@ int main(void)
 	  FEB_APPS_sendBrake();
 
 	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake);
-	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
 
 	  HAL_Delay(SLEEP_TIME);
   }

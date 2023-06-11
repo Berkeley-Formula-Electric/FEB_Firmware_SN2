@@ -147,6 +147,9 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 const AddressIdType BMS_RX_ID[] = {SW_ID};
 const FilterArrayLength BMS_RX_NUM = 1;
 
+const AddressIdType SW_RX_ID[] = {APPS_ID};
+const FilterArrayLength SW_RX_NUM = 1;
+
 const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID};
 const FilterArrayLength APPS_RX_NUM = 2;
 
@@ -157,6 +160,9 @@ const AddressIdType* assign_filter_array(AddressIdType NODE_ID) {
     switch(NODE_ID) {
         case BMS_ID:
             return BMS_RX_ID;
+            break;
+        case SW_ID:
+            return SW_RX_ID;
             break;
         case APPS_ID:
             return APPS_RX_ID;
@@ -172,6 +178,9 @@ FilterArrayLength assign_filter_array_legnth(AddressIdType NODE_ID) {
     switch(NODE_ID) {
         case BMS_ID:
             return BMS_RX_NUM;
+            break;
+        case SW_ID:
+            return SW_RX_NUM;
             break;
         case APPS_ID:
             return APPS_RX_NUM;

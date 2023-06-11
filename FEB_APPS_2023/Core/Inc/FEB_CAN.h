@@ -93,12 +93,12 @@ void FEB_CAN_Receive(CAN_HandleTypeDef *hcan, uint32_t CAN_RX_FIFO) {
 		Error_Handler();
 	}
 	if (RxHeader.StdId == 0x0AA) { //internal states from the inverter
-		char buf[128];
-//		uint8_t buf_len;
-//		buf_len = sprintf(buf, "received info, byte6: %d\n", RxData[6]);
-//		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
-		Inverter_enable = RxData[6] && 0x1; // bit 1
-		Inverter_enable_lockout = (RxData[6] && 0x80) >> 6; // bit 7
+		Inverter_enable = (RxData[6] & 0x1); // bit 0
+		Inverter_enable_lockout = (RxData[6] & 0x80) >> 7; // bit 7
+//			char buf[128];
+//			uint8_t buf_len;
+//			buf_len = sprintf(buf, "byte6: %d, enable:%d lockout:%d\n", RxData[6], Inverter_enable, Inverter_enable_lockout);
+//			HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 	} else {
 		store_msg(&RxHeader, RxData);
 	}

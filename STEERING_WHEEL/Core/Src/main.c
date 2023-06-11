@@ -237,7 +237,8 @@ int main(void)
 //		  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 		  // if the system is not checking a button, start the timer to check the timer
-		  if (!Button_Checking && (last_button_state == false) && !lock) {
+		  // also check if brake is pressed and Tractive System is on
+		  if (!Button_Checking && (last_button_state == false) && !lock && APPS_MESSAGE.brake_pedal > 0.2 && HV_Voltage > 60.0) {
 			  // Start timer to count 1 sec hold time
 			  HAL_TIM_Base_Start_IT(&htim13);
 			  Button_Checking = true;
@@ -278,10 +279,17 @@ int main(void)
 			  lock = false;
 		  }
 	  }
+
+	  // if at sometime Tractive System falls below 60V (not enough battery or E-Stop), disable ready_to_drive
+	  if (HV_Voltage < 60.0 && ready_to_drive) {
+		  ready_to_drive = false;
+		  FEB_CAN_Transmit(&hcan1, SW_READY_TO_DRIVE, (uint8_t *) &ready_to_drive, 1);
+	  }
+
 //	  buf_len = sprintf((char*)buf, "check:%d flag:%d\r\n", Button_Checking, Button_Timer_Flag);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
-	  buf_len = sprintf((char*)buf, "ready: %d coolant: %d accumulator: %d extra: %d\r\n", ready_to_drive, coolant_pump, accumulator_fans, extra);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+	  buf_len = sprintf((char*)buf, "ready:%d voltage:%.1f brake:%.1f\r\n", ready_to_drive, HV_Voltage, APPS_MESSAGE.brake_pedal);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 
 
 
