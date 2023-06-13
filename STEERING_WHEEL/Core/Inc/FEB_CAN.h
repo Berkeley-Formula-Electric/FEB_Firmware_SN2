@@ -12,34 +12,34 @@ float HV_Voltage = 0.0;
 extern UART_HandleTypeDef huart2;
 
 void FEB_CAN_Filter_Config(CAN_HandleTypeDef* hcan, const AddressIdType* filter_array, uint8_t filter_array_len, uint8_t FIFO_Assignment) {
-	for (int i = 0; i < filter_array_len; i++) {
-		CAN_FilterTypeDef filter_config;
-
-		filter_config.FilterActivation = CAN_FILTER_ENABLE;
-		filter_config.FilterBank = i;
-		filter_config.FilterFIFOAssignment = FIFO_Assignment;
-		filter_config.FilterIdHigh = filter_array[i] << (16 - BITS_PER_ID);
-		filter_config.FilterIdLow = 0;
-		filter_config.FilterMaskIdHigh = 0x7F << (16 - BITS_PER_ID);
-		filter_config.FilterMaskIdLow = 0;
-		filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
-		filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
-		filter_config.SlaveStartFilterBank = 27;
-
-		if(HAL_CAN_ConfigFilter(hcan, &filter_config))
-		{
-		  Error_Handler();
-		}
-	}
+//	for (int i = 0; i < filter_array_len; i++) {
+//		CAN_FilterTypeDef filter_config;
+//
+//		filter_config.FilterActivation = CAN_FILTER_ENABLE;
+//		filter_config.FilterBank = i;
+//		filter_config.FilterFIFOAssignment = FIFO_Assignment;
+//		filter_config.FilterIdHigh = filter_array[i] << (16 - BITS_PER_ID);
+//		filter_config.FilterIdLow = 0;
+//		filter_config.FilterMaskIdHigh = 0x7F << (16 - BITS_PER_ID);
+//		filter_config.FilterMaskIdLow = 0;
+//		filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
+//		filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
+//		filter_config.SlaveStartFilterBank = 27;
+//
+//		if(HAL_CAN_ConfigFilter(hcan, &filter_config))
+//		{
+//		  Error_Handler();
+//		}
+//	}
 
 	CAN_FilterTypeDef filter_config;
 
 	filter_config.FilterActivation = CAN_FILTER_ENABLE;
-	filter_config.FilterBank = filter_array_len;
+	filter_config.FilterBank = 0; // filter_array_len;
 	filter_config.FilterFIFOAssignment = FIFO_Assignment;
 	filter_config.FilterIdHigh = 0xA7 << 5;
 	filter_config.FilterIdLow = 0;
-	filter_config.FilterMaskIdHigh = 0x7FF << 5;
+	filter_config.FilterMaskIdHigh = 0; //0x7FF << 5;
 	filter_config.FilterMaskIdLow = 0;
 	filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
 	filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -92,8 +92,8 @@ void FEB_CAN_Receive(CAN_HandleTypeDef *hcan, uint32_t CAN_RX_FIFO) {
 	if (RxHeader.StdId == 0xA7) { //DC voltage measured by the inverter
 //		char buf[128];
 //		uint8_t buf_len;
-//		buf_len = sprintf(buf, "received info, byte6: %d\n", RxData[6]);
-//		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+//		buf_len = sprintf(buf, "voltage received, byte6: %d\n", RxData[6]);
+//		HAL_UART_Transmit_IT(&huart2,(uint8_t *)buf, buf_len);
 		HV_Voltage = (((uint16_t) RxData[1] << 8) | RxData[0]) / 10.0;
 	} else {
 		store_msg(&RxHeader, RxData);
@@ -119,10 +119,18 @@ void FEB_CAN_Transmit(CAN_HandleTypeDef* hcan, AddressIdType Msg_ID, void* pData
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+	char buf[128];
+	uint8_t buf_len;
+	buf_len = sprintf(buf, "received in fifo0");
+	HAL_UART_Transmit_IT(&huart2,(uint8_t *)buf, buf_len);
 	FEB_CAN_Receive(hcan, CAN_RX_FIFO0);
 }
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+	char buf[128];
+	uint8_t buf_len;
+	buf_len = sprintf(buf, "received in fifo1");
+	HAL_UART_Transmit_IT(&huart2,(uint8_t *)buf, buf_len);
 	FEB_CAN_Receive(hcan, CAN_RX_FIFO1);
 }
 

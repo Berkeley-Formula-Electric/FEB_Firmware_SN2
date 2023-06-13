@@ -7,4 +7,4 @@ stm32f4xx_hal_msp.c:221:6:HAL_TIM_Base_MspInit	4
 stm32f4xx_hal_msp.c:265:6:HAL_TIM_MspPostInit	2
 stm32f4xx_hal_msp.c:297:6:HAL_TIM_Base_MspDeInit	4
 stm32f4xx_hal_msp.c:347:6:HAL_UART_MspInit	2
-stm32f4xx_hal_msp.c:383:6:HAL_UART_MspDeInit	2
+stm32f4xx_hal_msp.c:386:6:HAL_UART_MspDeInit	2
