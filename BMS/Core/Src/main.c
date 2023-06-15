@@ -127,9 +127,6 @@ int main(void)
   FEB_Timer_Init();
   FEB_Fan_Init();
 
-  // add memory for air closure
-  FEB_CAN_IVT_Init();
-
   HAL_Delay(1000);
 
   /* USER CODE END 2 */

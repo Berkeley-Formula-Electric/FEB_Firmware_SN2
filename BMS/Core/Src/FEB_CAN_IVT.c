@@ -13,16 +13,7 @@ static uint16_t FEB_CAN_IVT_Filter_ID_Arr[] = {
 		FEB_CAN_IVT_VOLTAGE_3_ID
 };
 
-static uint16_t AIR_CLOSED;
-
 // ********************************** Functions **********************************
-
-// ******************** Init *******************
-void FEB_CAN_IVT_Init(void) {
-	AIR_CLOSED = 0;
-}
-
-
 
 // ******************** CAN ********************
 
@@ -94,13 +85,7 @@ void FEB_CAN_IVT_Process(void) {
 		if (voltage > FEB_LTC6811_Total_Bank_Voltage() * 0.9) {
 		  // comment this out when testing the battery
 			FEB_BMS_AIR_Close();
-			AIR_CLOSED = 1;
-		} else {
-			if (!AIR_CLOSED) {
-				FEB_BMS_AIR_Open();
-			}
 		}
-
 	}
 	if (FEB_CAN_IVT_FLAG.voltage_2 == 1) {
 		FEB_CAN_IVT_FLAG.voltage_2 = 0;
