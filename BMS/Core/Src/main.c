@@ -127,6 +127,9 @@ int main(void)
   FEB_Timer_Init();
   FEB_Fan_Init();
 
+  // add memory for air closure
+  FEB_CAN_IVT_Init();
+
   HAL_Delay(1000);
 
   /* USER CODE END 2 */
@@ -144,12 +147,12 @@ int main(void)
 
     // *********************** Cell Voltage ***********************
     FEB_LTC6811_Poll_Voltage();
-      FEB_LTC6811_Validate_Voltage();
+    FEB_LTC6811_Validate_Voltage();
     FEB_LTC6811_UART_Transmit_Voltage();
 
     // *********************** Cell Temperature ***********************
     FEB_LTC6811_Poll_Temperature();
-      FEB_LTC6811_Validate_Temperature();
+    FEB_LTC6811_Validate_Temperature();
     FEB_LTC6811_UART_Transmit_Temperature();
 
     // *********************** IVT ***********************

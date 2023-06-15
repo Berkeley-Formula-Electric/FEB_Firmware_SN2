@@ -37,7 +37,7 @@ typedef struct FEB_CAN_IVT_MESSAGE_TYPE {
 } FEB_CAN_IVT_MESSAGE_TYPE;
 
 // ********************************** Functions **********************************
-
+void FEB_CAN_IVT_Init(void);
 uint8_t FEB_CAN_IVT_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignment, uint8_t bank);
 void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]);
 void FEB_CAN_IVT_Process(void);
