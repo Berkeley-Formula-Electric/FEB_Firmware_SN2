@@ -16,10 +16,12 @@ class Data:
         self.nums[self.__index(bank, cell)] = value
 
     def calculate(self):
-        self.std_deviation = statistics.stdev(self.nums)
-        self.mean = sum(self.nums) / len(self.nums)
-        self.min = min(self.nums)
-        self.max = max(self.nums)
+        error_codes = [-41, -42]
+        filtered_nums = list(filter(lambda x : int(x) not in error_codes, self.nums))
+        self.std_deviation = statistics.stdev(filtered_nums)
+        self.mean = sum(filtered_nums) / len(filtered_nums)
+        self.min = min(filtered_nums)
+        self.max = max(filtered_nums)
         self.range = self.max - self.min
 
     def get_value(self, type):
