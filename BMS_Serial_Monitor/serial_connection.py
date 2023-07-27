@@ -25,6 +25,10 @@ class Serial_Connection:
                 for i in range(constants.NUM_CELLS_PER_BANK):
                     table.update_value(float(message[i + 1]), bank, i, "T")
             case constants.DISCHARGE_ID:
+                # print("this ")
+                # print(message)
+                if bank == 0:
+                    print(bank, message)
                 for i in range(constants.NUM_CELLS_PER_BANK):
                     table.update_discharge(int(message[i + 1]), bank, i)
     

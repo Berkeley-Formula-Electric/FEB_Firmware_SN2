@@ -16,6 +16,7 @@ static uint8_t FEB_LTC6811_Target_Voltage_Set = 0;	// 0 (not set), 1 (set)
 static uint8_t FEB_LTC6811_Cells_Balanced = 0;		// 0 (not balanced), 1 (balanced)
 static float FEB_LTC6811_Target_Voltage;
 
+
 // Set configuration bits
 static bool REFON = 1; 												//!< Reference Powered Up Bit
 static bool ADCOPT = 0; 											//!< ADC Mode option bit
@@ -104,19 +105,31 @@ uint8_t FEB_LTC6811_Cell_Idx(uint8_t cell) {
 }
 
 void FEB_LTC6811_Set_Discharge_Target_Voltage(void) {
+	FEB_LTC6811_Balance_All_Cells();
+
+
 	// Find lowest voltage
+	int low_cell = 0;
+	int low_bank = 0;
 	float lowest_voltage = FEB_LTC6811_CELL_MAX_VOLTAGE;
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
 			if (accumulator.banks[bank_idx].cells[cell_idx].voltage < lowest_voltage) {
 				lowest_voltage = accumulator.banks[bank_idx].cells[cell_idx].voltage;
+				low_cell = cell_idx;
+				low_bank = bank_idx;
 			}
 		}
 	}
 
 	// Set target voltage
 	FEB_LTC6811_Target_Voltage = lowest_voltage;
+
 	FEB_LTC6811_Target_Voltage_Set = 1;
+
+	FEB_LTC6811_UART_Transmit_Discharge_Lowest_V();
+	FEB_LTC6811_UART_Transmit_Discharge_Lowest_Ind(low_bank, low_cell);
+
 }
 
 void FEB_LTC6811_Balance_Cells(void) {
@@ -129,12 +142,21 @@ void FEB_LTC6811_Balance_Cells(void) {
 	uint8_t cells_balanced = 1;
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
-			if (accumulator.banks[bank_idx].cells[cell_idx].voltage > FEB_LTC6811_Target_Voltage + FEB_LTC6811_BALANCE_VOLTAGE_RESOLUTION) {
+			uint8_t state = FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank_idx, cell_idx)][FEB_LTC6811_Cell_Idx(cell_idx)];
+			if (state) {
 				cells_balanced = 0;
-				FEB_LTC6811_Balance_Cell(bank_idx, cell_idx);
+				if (accumulator.banks[bank_idx].cells[cell_idx].voltage < FEB_LTC6811_Target_Voltage + FEB_LTC6811_BALANCE_VOLTAGE_RESOLUTION) {
+					FEB_LTC6811_Clear_Balance_Cell(bank_idx, cell_idx);
+				}
 			}
 		}
 	}
+
+//	char UART_str[1024];
+//	sprintf(UART_str, "Bank 1, Cell 17: %f voltage %d discharge state\n", accumulator.banks[0].cells[16].voltage, FEB_LTC6811_Get_Cell_Balance_State());
+//	HAL_UART_Transmit(&huart2, (uint8_t*) UART_str, strlen(UART_str), 100);
+
+
 
 	if (cells_balanced == 1) {
 		FEB_LTC6811_Cells_Balanced = 1;
@@ -147,6 +169,10 @@ void FEB_LTC6811_Balance_Cell(uint8_t bank, uint8_t cell) {
 	FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank, cell)][FEB_LTC6811_Cell_Idx(cell)] = 1;
 }
 
+void FEB_LTC6811_Get_Cell_Balance_State(uint8_t bank, uint8_t cell) {
+	return FEB_LTC6811_Cell_Discharge[FEB_LTC6811_Get_IC(bank, cell)][FEB_LTC6811_Cell_Idx(cell)];
+}
+
 void FEB_LTC6811_Clear_Balance_Cells(void) {
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
@@ -154,6 +180,14 @@ void FEB_LTC6811_Clear_Balance_Cells(void) {
 		}
 	}
 	FEB_LTC6811_Poll_Temperature();	// Clear cell balancing
+}
+
+void FEB_LTC6811_Balance_All_Cells(void) {
+	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
+		for (uint8_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {
+			FEB_LTC6811_Balance_Cell(bank_idx, cell_idx);
+		}
+	}
 }
 
 void FEB_LTC6811_Clear_Balance_Cell(uint8_t bank, uint8_t cell) {
@@ -190,6 +224,18 @@ void FEB_LTC6811_UART_Transmit_Discharge(void) {
 	}
 }
 
+void FEB_LTC6811_UART_Transmit_Discharge_Lowest_V(void) {
+	char UART_str[1024];
+	sprintf(UART_str, "Lowest Voltage: %f\n", FEB_LTC6811_Target_Voltage);
+	HAL_UART_Transmit(&huart2, (uint8_t*) UART_str, strlen(UART_str), 100);
+}
+
+void FEB_LTC6811_UART_Transmit_Discharge_Lowest_Ind(uint8_t bank, uint8_t cell) {
+	char UART_str[128];
+	sprintf(UART_str, "Index of Lowest Voltage Cell: %d, %d\n", bank, cell);
+	HAL_UART_Transmit(&huart2, (uint8_t*) UART_str, strlen(UART_str), 100);
+
+}
 // ******************** Voltage Interface ********************
 
 void FEB_LTC6811_Validate_Voltage(void) {

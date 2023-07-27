@@ -139,7 +139,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     // *********************** Reset State ***********************
-    FEB_LTC6811_Clear_Voltage();
+    //FEB_LTC6811_Clear_Voltage();
     FEB_LTC6811_Clear_Temperature();
 
     // *********************** Cell Voltage ***********************
@@ -161,6 +161,7 @@ int main(void)
 
     // *********************** Charger ***********************
     FEB_CAN_Charger_Process(&hcan1);
+    //FEB_BMS_AIR_Close(); // Enable this only for charging FIX LATER
 
     // *********************** Fan ***********************
     FEB_Fan_Process();

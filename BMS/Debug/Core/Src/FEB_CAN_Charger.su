@@ -3,5 +3,5 @@
 ../Core/Src/FEB_CAN_Charger.c:56:6:FEB_CAN_Charger_Transmit	16	static
 ../Core/Src/FEB_CAN_Charger.c:83:6:FEB_CAN_Charger_Store_Msg	16	static
 ../Core/Src/FEB_CAN_Charger.c:96:6:FEB_CAN_Charger_Validate_Status	24	static
-../Core/Src/FEB_CAN_Charger.c:113:6:FEB_CAN_Charger_Process	16	static
-../Core/Src/FEB_CAN_Charger.c:134:6:FEB_CAN_Charger_Stop_Charge	16	static
+../Core/Src/FEB_CAN_Charger.c:121:6:FEB_CAN_Charger_Process	16	static
+../Core/Src/FEB_CAN_Charger.c:142:6:FEB_CAN_Charger_Stop_Charge	16	static

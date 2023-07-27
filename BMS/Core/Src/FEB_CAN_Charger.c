@@ -101,13 +101,21 @@ void FEB_CAN_Charger_Validate_Status(uint8_t status) {
 	uint8_t starting_state_failure 		= (status >> 4) & 0b1;
 	uint8_t communication_state_failure = (status >> 3) & 0b1;
 
-	if (hardware_failure == 1 			||
-		temperature_failure == 1 		||
-		input_voltage_failure == 1		||
-		starting_state_failure == 1		||
-		communication_state_failure == 1) {
-		FEB_BMS_Shutdown_Initiate("CAN charger status error");
+	if (hardware_failure == 1) {
+		FEB_BMS_Shutdown_Initiate("CAN charger hardware_failure status error");
 	}
+	if (temperature_failure == 1) {
+			FEB_BMS_Shutdown_Initiate("CAN charger temperature_failure status error");
+		}
+	if (input_voltage_failure == 1) {
+			FEB_BMS_Shutdown_Initiate("CAN charger input_voltage_failure status error");
+		}
+	if (starting_state_failure == 1) {
+			FEB_BMS_Shutdown_Initiate("CAN charger starting_state_failure status error");
+		}
+	if (communication_state_failure == 1) {
+			FEB_BMS_Shutdown_Initiate("CAN charger communication_state_failure status error");
+		}
 }
 
 void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan) {

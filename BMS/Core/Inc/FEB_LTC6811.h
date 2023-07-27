@@ -17,7 +17,7 @@
 
 // accumulator configuration
 #define FEB_LTC6811_NUM_CELLS_PER_BANK 				17
-#define FEB_LTC6811_NUM_BANKS 						    5
+#define FEB_LTC6811_NUM_BANKS 						4
 #define FEB_LTC6811_NUM_CELLS_PER_DAUGHTER_BOARD	12
 
 // cell temperature thresholds
@@ -28,7 +28,7 @@
 
 // cell voltage thresholds
 #define FEB_LTC6811_CELL_MIN_VOLTAGE	3.0
-#define FEB_LTC6811_CELL_MAX_VOLTAGE	4.0
+#define FEB_LTC6811_CELL_MAX_VOLTAGE	4.1
 
 // cell current thresholds
 #define FEB_LTC6811_CELL_MAX_OPERATING_CURRENT 55
