@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "FEB_CAN.h"
 #include "stdio.h"
+#include "stdbool.h"
 
 /* USER CODE END Includes */
 
@@ -37,6 +38,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define SLEEP_TIME 10
+#define BRAKE_THRE 0.2
 
 /* USER CODE END PM */
 
@@ -50,26 +53,29 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // hotswap addresses
-const uint8_t LV_ADDR = 0x40 << 1;
-const uint8_t CP_ADDR = 0x44 << 1;
-const uint8_t AF_ADDR = 0x45 << 1;
-const uint8_t EX_ADDR = 0x41 << 1;
+const uint8_t LV_ADDR = 0b1000000 << 1;
+const uint8_t CP_ADDR = 0b1000100 << 1;
+const uint8_t AF_ADDR = 0b1000101 << 1;
+const uint8_t EX_ADDR = 0b1000001 << 1;
 
 // configuration register value
-uint8_t CONFIG[16] = {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1}; // default settings
+uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
 
 // calibration register value
-uint8_t CAL[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};// setting Current_LSB to 1 for both
+uint8_t CAL[2] = {0b00000000, 0b00000011};// setting Current_LSB to 1 for both
 
 // alert types
-uint8_t UNDERV[16] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t OVERPWR[16] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t UNDERV[2] = {0b00010000, 0b00000000};
+uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
 
 // limits
-uint8_t LV_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0}; // = 22
-uint8_t CP_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0}; // = 336, 14 * 24
-uint8_t AF_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0}; // = 192, 8 * 24
-uint8_t EX_LIMIT[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0}; // = 144, 6 * 24
+uint8_t LV_LIMIT[2] = {0b00000000, 0b00010110}; // = 22
+uint8_t CP_LIMIT[2] = {0b00000001, 0b01010000}; // = 336, 14 * 24
+uint8_t AF_LIMIT[2] = {0b00000000, 0b11000000}; // = 192, 8 * 24
+uint8_t EX_LIMIT[2] = {0b00000000, 0b10010000}; // = 144, 6 * 24
+
+static bool isDriving = false;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,16 +124,15 @@ int main(void)
   MX_CAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t sleep_time = 10;
-	/* Node_2 */
-	FEB_CAN_Init(&hcan1, SM_ID);
+
+	FEB_CAN_Init(&hcan1, LVPDB_ID);
 
 	hi2c1p = &hi2c1;
 
-	FEB_TPS2482_SETUP(hi2c1, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, CAL, UNDERV, LV_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CAL, OVERPWR, CP_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, CAL, OVERPWR, AF_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, CAL, OVERPWR, EX_LIMIT);
 
 	// uncomment if we need to pull ENs high to start
 	/*
@@ -135,6 +140,9 @@ int main(void)
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
 	*/
+
+	char buf[128];
+	int buf_len;
 
 
   /* USER CODE END 2 */
@@ -144,12 +152,28 @@ int main(void)
   while (1)
   {
 	  // Brake Light
-	  if (APPS_MESSAGE.brake_pedal == 1) {
+	  if (APPS_MESSAGE.brake_pedal > BRAKE_THRE) {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);// PA1 high
 	  } else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);// PA1 low
 	  }
 
+	  // activate peripheral devices if ready to drive
+	  if (SW_MESSAGE.ready_to_drive == 1 && !isDriving) {
+		  isDriving = true;
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
+
+	  // de-activate if not ready to drive
+	  } else if (SW_MESSAGE.ready_to_drive == 0 && isDriving) {
+		  isDriving = false;
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+	  }
+
+/***
 	  // lv hotswap
 	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
 	  if ((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7) == GPIO_PIN_RESET) || (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)) {
@@ -169,12 +193,15 @@ int main(void)
 
 	  // extra hotswap
 	  FEB_TPS2482_shutdownIfError(hi2c1p, EX_ADDR, GPIOC, GPIO_PIN_3, GPIOC, GPIO_PIN_1, GPIOC, GPIO_PIN_2, 22.5, 25.5, 7, 4, 150, 120);
+***/
 
 
+	  buf_len = sprintf((char*)buf, "ready: %d, brake: %.3f\r\n", SW_MESSAGE.ready_to_drive, APPS_MESSAGE.brake_pedal);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(sleep_time);
+	  HAL_Delay(SLEEP_TIME);
   }
   /* USER CODE END 3 */
 }
