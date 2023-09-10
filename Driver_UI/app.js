@@ -5,9 +5,9 @@ const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
 const path = require("path")
-const fs = require("fs")
-const { SerialPort } = require("serialport")
-const xbee = require("xbee");
+//~ const fs = require("fs")
+//~ const { SerialPort } = require("serialport")
+//~ const xbee = require("xbee");
 
 // initalize web server
 const app = express();
@@ -25,67 +25,28 @@ app.get("/", (req, res) => {
     res.render("screen.ejs")
 });
 
-
-/* POST REQUEST BODY FORMAT 
-{
-  'data': <String of all data to be parsed here>
-}
-*/
-app.post('/api/postdata',(req,res)=>{
-  //String processing code since data is of format "time_stamp, node, msg_type, data"
-  let received_string = String(req.body.data).replace(/\s+/g, ''); //ensures the received data is of a string datatype
-  let comma_sep_data = received_string.split(',');
-  if(comma_sep_data.length != 5){
-    res.sendStatus(100);
-    console.log('Incorrect length of data / # of arguments. Data may have been truncated.')
-    return;
-  }
-  let sender = comma_sep_data[2];
-  let message_type = comma_sep_data[3];
-  let received_data = comma_sep_data[4];
-
-  //Parse data into proper field
-  if (sender == 'BMS'){
-    if (message_type == 'TEMPERATURE'){
-      actual_data.temperature = received_data;
-    }else if (message_type == 'VOLTAGE'){
-      actual_data.voltage = received_data;
-    }
-  }else if (sender == 'RMS'){
-    actual_data.speed = received_data;
-  }
-  res.sendStatus(200);
-});
-
-//Used to receive from POST request. Change to 'data' once testing is done
-//Fields initialized to 0 on startup
-const actual_data = {
-  temperature: 0,
-  voltage: 0,
-  speed:0
-}
-
 // TEST DATA
-const data = {
-    temperature: 26,
-    voltage: 632,
-    speed: 54,
-    timerStart: true,
-    timerStop: false,
-    timerReset: false,
-}
+//~ const data = {
+    //~ temperature: 0,
+    //~ voltage: 0,
+    //~ speed: 0,
+    //~ timerStart: false,
+    //~ timerStop: false,
+    //~ timerReset: false,
+    //~ readyToDrive:0
+//~ }
 
 // timer
-let time = 0
-const dt = 10;
-setInterval(() => {
-    time += dt * 0.001
-}, dt)
-let counter = 1;
+//~ let time = 0
+//~ const dt = 10;
+//~ setInterval(() => {
+    //~ time += dt * 0.001
+//~ }, dt)
+//~ let counter = 1;
 
-function roundPrecision(value, degree) {
-    return Math.round(value * Math.pow(10, degree)) / Math.pow(10, degree)
-}
+//~ function roundPrecision(value, degree) {
+    //~ return Math.round(value * Math.pow(10, degree)) / Math.pow(10, degree)
+//~ }
 
 //~ let version = 0;
 //~ fs.readFile('data.txt', 'utf8', (err, data) => {
@@ -118,13 +79,24 @@ function roundPrecision(value, degree) {
 // });
 
 // socket connection
-io.on('connection', (socket) => {
-    setInterval(() => {
-        data.temperature += (Math.random() - 0.5) * 0.1
-        data.voltage += (Math.random() - 0.5) * 0.1
-        data.speed += (Math.random() - 0.5) * 0.1
-        socket.emit("data", data)
-    }, 100)
+io.on('connection', (socket) => { 
+  console.log('socket connection made');
+  socket.on('cpp_data',(sender, message_type, received_data)=>{
+    received_data = Number(received_data);
+    if (sender == 'BMS'){
+      if (message_type == 'TEMPERATURE'){
+        socket.broadcast.emit("temperature", received_data);
+      }else if (message_type == 'VOLTAGE'){
+        socket.broadcast.emit("voltage", received_data);
+      }
+    }else if (sender == 'RMS_INFO'){
+      socket.broadcast.emit("speed", received_data);
+    }else if (sender == 'SW'){
+      if(message_type == "READY_TO_DRIVE") {
+        socket.broadcast.emit("readyToDrive", received_data);
+      }
+    }
+  });
 });
 
 // activate server
