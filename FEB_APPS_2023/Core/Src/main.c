@@ -215,7 +215,7 @@ void FEB_RMS_Init(){
 	// Select CAN msg to broadcast
 	uint8_t param_addr = 148;
 	uint8_t CAN_active_msg_byte4 = 0b10100000; // motor position, input voltage
-	uint8_t CAN_active_msg_byte5 = 0b00000100; // internal states
+	uint8_t CAN_active_msg_byte5 = 0b00010100; // internal states, torque/timer info
 //	uint8_t CAN_active_msg_byte4 = 0xff;
 //	uint8_t CAN_active_msg_byte5 = 0xff;
 	uint8_t broadcast_msg[8] = {param_addr, 0, 1, 0, CAN_active_msg_byte4, CAN_active_msg_byte5, 0, 0};
