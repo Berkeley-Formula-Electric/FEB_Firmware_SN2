@@ -47,8 +47,8 @@ void Store_EMERGENCY_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_leng
             buf_len = sprintf(buf, "<%.2f,EMERGENCY,SW_EMERGENCY,%d>\n", HAL_GetTick()/1000.0, EMERGENCY_MESSAGE.sw_emergency);
             break;
     }
-    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
+    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 }
 
 /*** BMS IDs ***/
@@ -79,8 +79,8 @@ void Store_BMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
             buf_len = sprintf(buf, "<%.2f,BMS,VOLTAGE,%.1f>\n", HAL_GetTick()/1000.0, BMS_MESSAGE.voltage);
             break;
     }
-    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
+    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 }
 
 /*** SW IDs ***/
@@ -125,8 +125,8 @@ void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
             buf_len = sprintf(buf, "<%.2f,SW,EXTRA,%d>\n", HAL_GetTick()/1000.0, SW_MESSAGE.extra);
             break;
     }
-    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
+    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 }
 
 /*** APPS IDs ***/
@@ -171,8 +171,8 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
             buf_len = sprintf(buf, "<%.2f,APPS,TORQUE,%.1f>\n", HAL_GetTick()/1000.0, APPS_MESSAGE.torque);
             break;
     }
-    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
-    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
+    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 }
 
 /*** LVPDB IDs ***/
@@ -247,8 +247,8 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
             } else {
                 return;
             }
-            HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);
-            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);
+            HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);
+            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
     }
 }
 

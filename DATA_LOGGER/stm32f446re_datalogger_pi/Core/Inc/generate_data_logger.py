@@ -204,11 +204,11 @@ class HeaderFile:
         store_msg_str_arr.append("                return;")
         store_msg_str_arr.append("            }")
 
-        store_msg_str_arr.append("            HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);")
-        # store_msg_str_arr.append("            HAL_UART_Transmit_DMA(&huart2, (uint8_t *)buf, buf_len);")
-        # store_msg_str_arr.append("            HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 200);")
-        store_msg_str_arr.append("            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);")
-        
+        # store_msg_str_arr.append("            HAL_SPI_Transmit_IT(&hspi2, (uint8_t *)buf, buf_len);")
+        # store_msg_str_arr.append("            HAL_UART_Transmit_IT(&huart2, (uint8_t *)buf, buf_len);")
+        store_msg_str_arr.append("            HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);")
+        store_msg_str_arr.append("            HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);")
+
         store_msg_str_arr.append("    }")
         store_msg_str_arr.append("}")
 
@@ -324,10 +324,11 @@ class Board:
             
             board_str_lst.append("    }")
 
-            board_str_lst.append("    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)buf, buf_len);")
-            # board_str_lst.append("    HAL_UART_Transmit_DMA(&huart2, (uint8_t *)buf, buf_len);")
-            # board_str_lst.append("    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 200);")
-            board_str_lst.append("    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 200);")
+            # board_str_lst.append("    HAL_SPI_Transmit_IT(&hspi2, (uint8_t *)buf, buf_len);")
+            # board_str_lst.append("    HAL_UART_Transmit_IT(&huart2, (uint8_t *)buf, buf_len);")
+            board_str_lst.append("    HAL_SPI_Transmit(&hspi2, (uint8_t *)buf, buf_len, 1000);")
+            board_str_lst.append("    HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);")
+            
             board_str_lst.append("}")
 
         string += "\n".join(board_str_lst)
