@@ -122,6 +122,9 @@ typedef struct APPS_MESSAGE_TYPE {
 } APPS_MESSAGE_TYPE;
 APPS_MESSAGE_TYPE APPS_MESSAGE;
 
+
+
+
 void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     switch (RxId){
         case APPS_ACCELERATOR1_PEDAL:
@@ -139,6 +142,30 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
     }
 }
 
+
+
+/*** RMS ID's ***/
+#define RMS_ID 0b0001010
+#define RMS_VOLTAGE_INFO 0b00010100111
+#define RMS_MOTOR_INFO   0b00010100101
+
+typedef struct RMS_MESSAGE_TYPE {
+    int16_t HV_Bus_Voltage;
+    int16_t Motor_Speed;
+} RMS_MESSAGE_TYPE;
+RMS_MESSAGE_TYPE RMS_MESSAGE;
+
+void Store_RMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
+	switch (RxId){
+		case RMS_VOLTAGE_INFO:
+			memcpy(&(RMS_MESSAGE.HV_Bus_Voltage), RxData, 2);
+			break;
+		case RMS_MOTOR_INFO:
+			memcpy(&(RMS_MESSAGE.Motor_Speed), RxData+2, 2);
+			break;
+	}
+}
+
 /*** LVPDB IDs ***/
 #define LVPDB_ID 0b0000100
 
@@ -150,8 +177,8 @@ const FilterArrayLength BMS_RX_NUM = 1;
 const AddressIdType SW_RX_ID[] = {APPS_ID};
 const FilterArrayLength SW_RX_NUM = 1;
 
-const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID};
-const FilterArrayLength APPS_RX_NUM = 2;
+const AddressIdType APPS_RX_ID[] = {BMS_ID, SW_ID, RMS_ID};
+const FilterArrayLength APPS_RX_NUM = 3;
 
 const AddressIdType LVPDB_RX_ID[] = {SW_ID, APPS_ID};
 const FilterArrayLength LVPDB_RX_NUM = 2;
@@ -206,6 +233,9 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
         case APPS_ID:
             Store_APPS_Msg(pHeader->StdId, RxData, pHeader->DLC);
             break;
+        case RMS_ID:
+        	Store_RMS_Msg(pHeader->StdId, RxData, pHeader->DLC);
+        	break;
     }
 }
 

@@ -55,6 +55,10 @@
 #define PRESURE_START 345.0
 #define PRESURE_END 380.0
 
+#define INIT_VOLTAGE 242 // initial voltage of accumulator
+#define PEAK_CURRENT 95  // max current (in amps) we want to pull
+#define MAX_TORQUE 230
+
 const uint16_t Sensor_Min = 4095.0/5.0*0.5;
 const uint16_t Sensor_Max = 4095.0/5.0*4.5;
 /* USER CODE END PD */
@@ -105,7 +109,7 @@ float FEB_Normalized_Acc_Pedals(){
 	char buf[128];
 	uint8_t buf_len;
 	buf_len = sprintf(buf, "acc1:%d acc2:%d\n", acc_pedal_1, acc_pedal_2);
-	HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+	//HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 
 	// check implausibility for shorting
@@ -221,6 +225,24 @@ void FEB_RMS_Init(){
 	uint8_t broadcast_msg[8] = {param_addr, 0, 1, 0, CAN_active_msg_byte4, CAN_active_msg_byte5, 0, 0};
 	FEB_CAN_Transmit(&hcan1, 0x0C1, broadcast_msg, 8);
 }
+
+int16_t min(int16_t x1, int16_t x2) {
+	if (x1 < x2) {
+		return x1;
+	}
+	return x2;
+}
+
+float FEB_getTorque(float normalized_acc) {
+	int16_t accumulator_voltage = min(INIT_VOLTAGE, (RMS_MESSAGE.HV_Bus_Voltage - 50) / 10);
+	int16_t motor_speed = -1 * RMS_MESSAGE.Motor_Speed;
+	if (motor_speed == 0) {
+		return normalized_acc * MAX_TORQUE;
+	}
+	uint16_t maxTorque = min(MAX_TORQUE, (accumulator_voltage * PEAK_CURRENT) / motor_speed);
+	return normalized_acc * maxTorque;
+}
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -306,13 +328,14 @@ int main(void)
 		  RMSControl.enabled = 0;
 	  }
 
-	  uint16_t torque = (normalized_acc * 130);
+	  uint16_t torque = FEB_getTorque(normalized_acc);
 	  normalized_brake = FEB_Normalized_Brake_Pedals();
 	  FEB_RMS_setTorque(torque);
 	  FEB_APPS_sendBrake();
 
-	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake);
-//	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
+	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed);
+
+	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
 
 	  HAL_Delay(SLEEP_TIME);
   }
