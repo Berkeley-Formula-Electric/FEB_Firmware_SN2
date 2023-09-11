@@ -233,7 +233,7 @@ int16_t min(int16_t x1, int16_t x2) {
 	return x2;
 }
 
-float FEB_getTorque(float normalized_acc) {
+uint16_t FEB_getTorque(float normalized_acc) {
 	int16_t accumulator_voltage = min(INIT_VOLTAGE, (RMS_MESSAGE.HV_Bus_Voltage - 50) / 10);
 	int16_t motor_speed = -1 * RMS_MESSAGE.Motor_Speed;
 	if (motor_speed == 0) {
