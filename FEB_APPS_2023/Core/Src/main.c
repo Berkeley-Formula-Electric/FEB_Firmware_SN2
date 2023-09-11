@@ -58,6 +58,7 @@
 #define INIT_VOLTAGE 242 // initial voltage of accumulator
 #define PEAK_CURRENT 95  // max current (in amps) we want to pull
 #define MAX_TORQUE 230
+#define RPM_TO_RAD_S .10472
 
 const uint16_t Sensor_Min = 4095.0/5.0*0.5;
 const uint16_t Sensor_Max = 4095.0/5.0*4.5;
@@ -235,7 +236,7 @@ int16_t min(int16_t x1, int16_t x2) {
 
 uint16_t FEB_getTorque(float normalized_acc) {
 	int16_t accumulator_voltage = min(INIT_VOLTAGE, (RMS_MESSAGE.HV_Bus_Voltage - 50) / 10);
-	int16_t motor_speed = -1 * RMS_MESSAGE.Motor_Speed;
+	int16_t motor_speed = -1 * RMS_MESSAGE.Motor_Speed * RPM_TO_RAD_S;
 	if (motor_speed == 0) {
 		return normalized_acc * MAX_TORQUE;
 	}
