@@ -233,15 +233,15 @@ int16_t min(int16_t x1, int16_t x2) {
 	}
 	return x2;
 }
-
-uint16_t FEB_getTorque(float normalized_acc) {
-	int16_t accumulator_voltage = min(INIT_VOLTAGE, (RMS_MESSAGE.HV_Bus_Voltage - 50) / 10);
-	int16_t motor_speed = -1 * RMS_MESSAGE.Motor_Speed * RPM_TO_RAD_S;
+// returns a maximum torque that can be given from the motor at a given RPM and voltage
+uint16_t FEB_getMaxTorque(int16_t voltage, int16_t RPM) {
+	int16_t accumulator_voltage = min(INIT_VOLTAGE, (voltage-50) / 10);
+	int16_t motor_speed = -1 * RPM * RPM_TO_RAD_S;
 	if (motor_speed == 0) {
-		return normalized_acc * MAX_TORQUE;
+		return MAX_TORQUE;
 	}
 	uint16_t maxTorque = min(MAX_TORQUE, (accumulator_voltage * PEAK_CURRENT) / motor_speed);
-	return normalized_acc * maxTorque;
+	return maxTorque;
 }
 
 /* USER CODE END PV */
@@ -328,8 +328,9 @@ int main(void)
 		  normalized_acc = 0.0;
 		  RMSControl.enabled = 0;
 	  }
-
-	  uint16_t torque = FEB_getTorque(normalized_acc);
+	  // Top line is Evan's new function, Bottom line is old APPS function
+	  uint16_t torque = normalized_acc * FEB_getMaxTorque(RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed);
+	  //uint16_t torque = normalized_acc * 130;
 	  normalized_brake = FEB_Normalized_Brake_Pedals();
 	  FEB_RMS_setTorque(torque);
 	  FEB_APPS_sendBrake();
