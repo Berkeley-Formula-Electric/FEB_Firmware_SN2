@@ -71,8 +71,28 @@ void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR
 			if (parsed > MAX || parsed < MIN) {
 				HAL_GPIO_WritePin(EN, EN_NUM, GPIO_PIN_RESET);
 			}
+		}c asdf
+	}
+}
+
+//Brief: Uses I2C to pull current value from a device on the bus
+//Param: hi2c Pointer to a I2C_HandleTypeDef structure that contains
+//                the configuration information for the specified I2C.
+//Param: DEV_ADDR which points to which device on the bus you want to poll
+float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
+	uint8_t buf[12];
+	buf[0] = 4; //4 is the register that stores the current value
+	float returnVal = -1;
+	HAL_StatusTypeDef reg = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
+	if(ret == HAL_OK){
+		ret = HAL_I2C_Master_Receive(hi1c, DEV_ADDR, buf, 2,100);
+		if(ret == HAL_OK){
+			int16_t val = (buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
+			returnVal = val * 0.002; // LSB-weight = 2mA/bit
 		}
 	}
+
+	return returnVal;
 }
 
 
