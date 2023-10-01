@@ -80,9 +80,10 @@ void FEB_TPS2482_pullLowIfOutOfBounds(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR
 //                the configuration information for the specified I2C.
 //Param: DEV_ADDR which points to which device on the bus you want to poll
 float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
+	//Buffer to store data;
 	uint8_t buf[12];
 	buf[0] = 4; //4 is the register that stores the current value
-	float returnVal = -1;
+	float returnVal = -1; //Set return val default to -1 as an "error". Not that great since we can actually have negative current
 	HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
 	if(ret == HAL_OK){
 		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);

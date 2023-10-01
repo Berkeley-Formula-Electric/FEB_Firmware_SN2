@@ -52,7 +52,15 @@ I2C_HandleTypeDef* hi2c1p;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-// hotswap addresses
+
+/*
+ * The LVPDB has multiple TPS chips on the bus. These are the addresses of
+ * each of the TPS chips. The naming conventions is as follows:
+ * 		LV - Low voltage bus (the main one)
+ * 		CP - Coolant pump
+ * 		AF - Accumulator fans
+ * 		EX - extra radiator fans
+ */
 const uint8_t LV_ADDR = 0b1000000 << 1;
 const uint8_t CP_ADDR = 0b1000100 << 1;
 const uint8_t AF_ADDR = 0b1000101 << 1;
@@ -61,7 +69,13 @@ const uint8_t EX_ADDR = 0b1000001 << 1;
 // configuration register value
 uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
 
-// calibration register value
+
+/*
+ * Values needed to calibrate each of the TPS chips. This value gets passed
+ * into the init function called in later
+ */
+
+// calibration register values
 uint8_t MAIN_CAL[2] = {0b00000110, 0b10001110}; // Imax = 50A
 uint8_t CP_CAL[2] = {0b00010111, 0b01101000};
 uint8_t AF_CAL[2] = {0b00101000, 0b11110110};
