@@ -237,7 +237,9 @@ int16_t min(int16_t x1, int16_t x2) {
 uint16_t FEB_getMaxTorque(int16_t voltage, int16_t RPM) {
 	int16_t accumulator_voltage = min(INIT_VOLTAGE, (voltage-50) / 10);
 	int16_t motor_speed = -1 * RPM * RPM_TO_RAD_S;
-	if (motor_speed == 0) {
+  // If speed is less than 15, we should command max torque
+  // This catches divide by 0 errors and also negative speeds (which may create very high negative torque values) 
+	if (motor_speed < 15) { 
 		return MAX_TORQUE;
 	}
 	uint16_t maxTorque = min(MAX_TORQUE, (accumulator_voltage * PEAK_CURRENT) / motor_speed);
