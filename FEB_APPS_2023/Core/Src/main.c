@@ -219,10 +219,10 @@ void FEB_RMS_Init(){
 
 	// Select CAN msg to broadcast
 	uint8_t param_addr = 148;
-	uint8_t CAN_active_msg_byte4 = 0b10100000; // motor position, input voltage
-	uint8_t CAN_active_msg_byte5 = 0b10010100; // flux info (dq axes), torque/timer info, internal states
-//	uint8_t CAN_active_msg_byte4 = 0xff;
-//	uint8_t CAN_active_msg_byte5 = 0xff;
+//	uint8_t CAN_active_msg_byte4 = 0b10100000; // motor position, input voltage
+//	uint8_t CAN_active_msg_byte5 = 0b00010101; // flux info (dq axes), torque/timer info, internal states
+	uint8_t CAN_active_msg_byte4 = 0xff; // literally log everything
+	uint8_t CAN_active_msg_byte5 = 0xff;
 	uint8_t broadcast_msg[8] = {param_addr, 0, 1, 0, CAN_active_msg_byte4, CAN_active_msg_byte5, 0, 0};
 	FEB_CAN_Transmit(&hcan1, 0x0C1, broadcast_msg, 8);
 }
@@ -332,12 +332,14 @@ int main(void)
 	  }
 	  // Top line is Evan's new function, Bottom line is old APPS function
 	  uint16_t torque = normalized_acc * FEB_getMaxTorque(RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed);
-	  //uint16_t torque = normalized_acc * 130;
+//	  uint16_t torque = normalized_acc * 130;
 	  normalized_brake = FEB_Normalized_Brake_Pedals();
 	  FEB_RMS_setTorque(torque);
 	  FEB_APPS_sendBrake();
 
-	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed);
+//	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed);
+
+	  buf_len = sprintf(buf, "Evan's Max Torque: %d\n", FEB_getMaxTorque(RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed));
 
 	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
 
