@@ -146,23 +146,22 @@ int main(void)
 
 	hi2c1p = &hi2c1;
 
+	// uncomment if we need to pull ENs high to start
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
+//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
+
 	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, MAIN_CAL, UNDERV, LV_LIMIT);
 	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CP_CAL, OVERPWR, CP_LIMIT);
 	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, AF_CAL, OVERPWR, AF_LIMIT);
 	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, EX_CAL, OVERPWR, EX_LIMIT);
-
-	// uncomment if we need to pull ENs high to start
-	/*
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);// pull PC11 high to enable coolant pump
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
-	*/
 
 	char buf[128];
 	int buf_len;
 	float current_reading;
 	float ex_current_reading;
 	float cp_current_reading;
+	float apps_current_reading;
 
   /* USER CODE END 2 */
 
@@ -216,13 +215,16 @@ int main(void)
 	  current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,LV_ADDR+1);
 	  ex_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,EX_ADDR+1);
 	  cp_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,CP_ADDR+1);
+	  FEB_CAN_Transmit(&hcan1, LVPDB_LV_CURRENT,&current_reading,sizeof(float));
+	  FEB_CAN_Transmit(&hcan1, LVPDB_EX_CURRENT,&ex_current_reading,sizeof(float));
+	  FEB_CAN_Transmit(&hcan1, LVPDB_CP_CURRENT,&cp_current_reading,sizeof(float));
 	  apps_current_reading = APPS_MESSAGE.current;
 
 
 	  buf_len = sprintf((char*)buf, "ready: %d, brake: %.3f\r\n", SW_MESSAGE.ready_to_drive, APPS_MESSAGE.brake_pedal);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
-	  buf_len = sprintf((char*) buf, "Current Draw (LV, EX, CP): %.3f, %.3f, %.3f\r\n", current_reading, ex_current_reading, cp_current_reading, apps_current_reading);
+	  buf_len = sprintf((char*) buf, "Current Draw (LV, EX, CP, APPS): %.3f, %.3f, %.3f, %.3f\r\n", current_reading, ex_current_reading, cp_current_reading, apps_current_reading);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 

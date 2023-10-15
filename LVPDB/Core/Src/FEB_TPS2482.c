@@ -92,6 +92,10 @@ float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 			returnVal = val * 0.002; // LSB-weight = 2mA/bit
 		}
 	}
+//	HAL_I2C_IsDeviceReady(hi2c, DEV_ADDR, 1, 100);
+	if(ret == HAL_ERROR) return -2.0;
+	if(ret == HAL_BUSY) return -3.0;
+	if(ret == HAL_TIMEOUT) return -4.0;
 
 	return returnVal;
 }

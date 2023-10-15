@@ -146,6 +146,10 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 
 /*** LVPDB IDs ***/
 #define LVPDB_ID 0b0000100
+#define LVPDB_LV_CURRENT 0b00001000000
+#define LVPDB_CP_CURRENT 0b00001000001
+#define LVPDB_AF_CURRENT 0b00001000010
+#define LVPDB_EX_CURRENT 0b00001000011
 
 
 /*** IVPDB IDs ***/
