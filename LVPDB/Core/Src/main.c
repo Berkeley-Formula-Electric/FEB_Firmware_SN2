@@ -213,15 +213,16 @@ int main(void)
 	  // extra hotswap
 	  FEB_TPS2482_shutdownIfError(hi2c1p, EX_ADDR, GPIOC, GPIO_PIN_3, GPIOC, GPIO_PIN_1, GPIOC, GPIO_PIN_2, 22.5, 25.5, 7, 4, 150, 120);
 ***/
-	  current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,LV_ADDR);
-	  ex_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,EX_ADDR);
-	  cp_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,CP_ADDR);
+	  current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,LV_ADDR+1);
+	  ex_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,EX_ADDR+1);
+	  cp_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,CP_ADDR+1);
+	  apps_current_reading = APPS_MESSAGE.current;
 
 
 	  buf_len = sprintf((char*)buf, "ready: %d, brake: %.3f\r\n", SW_MESSAGE.ready_to_drive, APPS_MESSAGE.brake_pedal);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
-	  buf_len = sprintf((char*) buf, "Current Draw (LV, EX, CP): %.3f, %.3f, %.3f\r\n", current_reading, ex_current_reading, cp_current_reading);
+	  buf_len = sprintf((char*) buf, "Current Draw (LV, EX, CP): %.3f, %.3f, %.3f\r\n", current_reading, ex_current_reading, cp_current_reading, apps_current_reading);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
