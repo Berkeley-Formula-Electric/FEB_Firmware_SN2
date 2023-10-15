@@ -8,4 +8,3 @@
 # Ignore build files/settings stuff for stm
 Debug/
 .settings/
-Drivers/
