@@ -74,6 +74,8 @@ ADC_HandleTypeDef hadc1;
 
 CAN_HandleTypeDef hcan1;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart2;
@@ -89,6 +91,23 @@ struct {
 
 float normalized_acc;
 float normalized_brake;
+
+const uint8_t TPS_ADDR = 0b1000000 << 1;
+// configuration register value
+uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
+/*
+ * Values needed to calibrate each of the TPS chips. This value gets passed
+ * into the init function called in later
+ */
+
+// calibration register values
+uint8_t MAIN_CAL[2] = {0b00000110, 0b10001110}; // Imax = 50A (change?)
+// alert types
+uint8_t UNDERV[2] = {0b00010000, 0b00000000};
+uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
+// limits
+uint8_t TPS_LIMIT[2] = {0b00000000, 0b00010110}; // = 22 (change?)
+float current_reading;
 
 //float pedal1;
 //float pedal2;
@@ -253,6 +272,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -294,9 +314,11 @@ int main(void)
   MX_CAN1_Init();
   MX_ADC1_Init();
   MX_TIM5_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   HAL_ADCEx_InjectedStart(&hadc1);
   HAL_TIM_Base_Start(&htim5);
+  FEB_TPS2482_SETUP(&hi2c1, TPS_ADDR, CONFIG, MAIN_CAL, UNDERV, TPS_LIMIT);
 
 
   char buf[128];
@@ -335,7 +357,11 @@ int main(void)
 	  FEB_RMS_setTorque(torque);
 	  FEB_APPS_sendBrake();
 
-	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed);
+	  // Take and send TPS reading
+	  current_reading = FEB_TPS2482_PollBusCurrent(&hi2c1,TPS_ADDR+1);
+	  FEB_CAN_Transmit(&hcan1,APPS_TPS,&current_reading,sizeof(float));
+
+	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d current: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed, current_reading);
 
 	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
 
@@ -515,6 +541,40 @@ static void MX_CAN1_Init(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief TIM5 Initialization Function
   * @param None
   * @retval None
@@ -612,6 +672,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB6 PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 

@@ -4,3 +4,8 @@
 
 # Ignore all text files
 *.DS_Store
+
+# Ignore build files/settings stuff for stm
+Debug/
+.settings/
+Drivers/

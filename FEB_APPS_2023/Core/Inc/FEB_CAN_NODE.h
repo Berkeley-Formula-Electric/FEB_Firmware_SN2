@@ -107,6 +107,7 @@ void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 #define APPS_ACCELERATOR2_PEDAL 0b00000110001
 #define APPS_BRAKE_PEDAL 0b00000110010
 #define APPS_TORQUE 0b00000110011
+#define APPS_TPS 0b00000110100
 
 /*** APPS MESSSAGE BUFFER ***/
 #define APPS_ACCELERATOR1_PEDAL_TYPE float
@@ -119,6 +120,7 @@ typedef struct APPS_MESSAGE_TYPE {
     APPS_ACCELERATOR2_PEDAL_TYPE accelerator2_pedal;
     APPS_BRAKE_PEDAL_TYPE brake_pedal;
     APPS_TORQUE_TYPE torque;
+    float current;
 } APPS_MESSAGE_TYPE;
 APPS_MESSAGE_TYPE APPS_MESSAGE;
 
@@ -139,6 +141,9 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
         case APPS_TORQUE:
             memcpy(&(APPS_MESSAGE.torque), RxData, data_length);
             break;
+        case APPS_TPS:
+        	memcpy(&(APPS_MESSAGE.current), RxData, data_length);
+        	break;
     }
 }
 
