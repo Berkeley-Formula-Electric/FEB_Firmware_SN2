@@ -143,6 +143,7 @@ void Store_APPS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 #define LVPDB_ID 0b0000100
 
 
+
 /*** RX Arrays ***/
 const AddressIdType BMS_RX_ID[] = {SW_ID};
 const FilterArrayLength BMS_RX_NUM = 1;

@@ -363,7 +363,7 @@ int main(void)
 	  voltage_reading = FEB_TPS2482_PollBusVoltage(&hi2c1, TPS_ADDR+1);
 	  FEB_CAN_Transmit(&hcan1,APPS_TPS,&current_reading,sizeof(float));
 
-	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d current: %.3f voltage: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed, current_reading, voltage_reading);
+	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d current: %.3f voltage: %.3f lvpdb current: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed, current_reading, voltage_reading, LVPDB_MESSAGE.cp_current);
 
 	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
 

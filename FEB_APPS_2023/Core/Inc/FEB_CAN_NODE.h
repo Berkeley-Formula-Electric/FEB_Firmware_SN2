@@ -173,6 +173,36 @@ void Store_RMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 
 /*** LVPDB IDs ***/
 #define LVPDB_ID 0b0000100
+#define LVPDB_LV 0b00001000000
+#define LVPDB_CP 0b00001000001
+#define LVPDB_AF 0b00001000010
+#define LVPDB_EX 0b00001000011
+
+typedef struct LVPDB_MESSAGE_TYPE {
+    float lv_current;
+    float cp_current;
+    float af_current;
+    float ex_current;
+} LVPDB_MESSAGE_TYPE;
+LVPDB_MESSAGE_TYPE LVPDB_MESSAGE;
+
+void Store_LVPDB_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
+	switch (RxId){
+		case LVPDB_LV:
+			memcpy(&(LVPDB_MESSAGE.lv_current), RxData, data_length);
+			break;
+		case LVPDB_CP:
+			memcpy(&(LVPDB_MESSAGE.cp_current), RxData, data_length);
+			break;
+		case LVPDB_AF:
+			memcpy(&(LVPDB_MESSAGE.af_current), RxData, data_length);
+			break;
+		case LVPDB_EX:
+			memcpy(&(LVPDB_MESSAGE.ex_current), RxData, data_length);
+			break;
+	}
+}
+
 
 
 /*** RX Arrays ***/
@@ -240,6 +270,9 @@ void store_msg(CAN_RxHeaderTypeDef *pHeader, uint8_t RxData[]) {
             break;
         case RMS_ID:
         	Store_RMS_Msg(pHeader->StdId, RxData, pHeader->DLC);
+        	break;
+        case LVPDB_ID:
+        	Store_LVPDB_Msg(pHeader->StdId, RxData, pHeader->DLC);
         	break;
     }
 }
