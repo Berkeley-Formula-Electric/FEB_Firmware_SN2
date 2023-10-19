@@ -107,7 +107,6 @@ uint8_t FEB_LTC6811_Cell_Idx(uint8_t cell) {
 void FEB_LTC6811_Set_Discharge_Target_Voltage(void) {
 	FEB_LTC6811_Balance_All_Cells();
 
-
 	// Find lowest voltage
 	int low_cell = 0;
 	int low_bank = 0;
@@ -151,12 +150,6 @@ void FEB_LTC6811_Balance_Cells(void) {
 			}
 		}
 	}
-
-//	char UART_str[1024];
-//	sprintf(UART_str, "Bank 1, Cell 17: %f voltage %d discharge state\n", accumulator.banks[0].cells[16].voltage, FEB_LTC6811_Get_Cell_Balance_State());
-//	HAL_UART_Transmit(&huart2, (uint8_t*) UART_str, strlen(UART_str), 100);
-
-
 
 	if (cells_balanced == 1) {
 		FEB_LTC6811_Cells_Balanced = 1;
@@ -436,7 +429,6 @@ void FEB_LTC6811_UART_Transmit_Temperature() {
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
 		sprintf(UART_Str, "%d %d", uart_temp_id, bank_idx);
-//		sprintf(UART_Str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_TEMPERATURE_ID);
 
 
 		// Add values to {@code UART_Str}

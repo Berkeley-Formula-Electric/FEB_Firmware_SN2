@@ -141,7 +141,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     // *********************** Reset State ***********************
-    //FEB_LTC6811_Clear_Voltage();
+    FEB_LTC6811_Clear_Voltage();
     FEB_LTC6811_Clear_Temperature();
 
     // *********************** Cell Voltage ***********************
@@ -153,6 +153,7 @@ int main(void)
     FEB_LTC6811_Poll_Temperature();
     FEB_LTC6811_Validate_Temperature();
     FEB_LTC6811_UART_Transmit_Temperature();
+    FEB_LTC6811_CAN_Transmit_Temperature();
 
     // *********************** IVT ***********************
     FEB_CAN_IVT_Process();
@@ -163,13 +164,15 @@ int main(void)
 
     // *********************** Charger ***********************
     FEB_CAN_Charger_Process(&hcan1);
-//    FEB_BMS_AIR_Close(); // Enable this only for charging FIX LATER
+    if (FEB_CAN_CHARGER_STATE) {
+    	FEB_BMS_AIR_Close();
+    }
 
     // *********************** Fan ***********************
-    FEB_Fan_Process();
+//    FEB_Fan_Process();
 
     // *********************** Inverter ***********************
-    FEB_CAN_Inverter_Process();
+//    FEB_CAN_Inverter_Process();
 
     if (FEB_CAN_CHARGER_STATE == 1) {
       HAL_Delay(1000);	// 1Hz
