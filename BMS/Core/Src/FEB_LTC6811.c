@@ -258,9 +258,12 @@ void FEB_LTC6811_UART_Transmit_Voltage() {
 	char UART_str[1024];
 	char temp_str[256];
 
+	uint8_t uart_volt_id = 0;
+
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
-		sprintf(UART_str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_VOLTAGE_ID);
+		sprintf(UART_str, "%d %d", uart_volt_id, bank_idx);
+//		sprintf(UART_str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_VOLTAGE_ID);
 
 
 		// Add values to {@code UART_Str}
@@ -428,9 +431,12 @@ void FEB_LTC6811_UART_Transmit_Temperature() {
 	char UART_Str[1024];
 	char temp_str[256];
 
+	uint8_t uart_temp_id = 1;
+
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
-		sprintf(UART_Str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_TEMPERATURE_ID);
+		sprintf(UART_Str, "%d %d", uart_temp_id, bank_idx);
+//		sprintf(UART_Str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_TEMPERATURE_ID);
 
 
 		// Add values to {@code UART_Str}

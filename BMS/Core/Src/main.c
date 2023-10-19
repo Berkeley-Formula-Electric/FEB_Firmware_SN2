@@ -129,6 +129,8 @@ int main(void)
 
   HAL_Delay(1000);
 
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -161,7 +163,7 @@ int main(void)
 
     // *********************** Charger ***********************
     FEB_CAN_Charger_Process(&hcan1);
-    //FEB_BMS_AIR_Close(); // Enable this only for charging FIX LATER
+//    FEB_BMS_AIR_Close(); // Enable this only for charging FIX LATER
 
     // *********************** Fan ***********************
     FEB_Fan_Process();

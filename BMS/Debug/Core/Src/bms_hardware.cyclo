@@ -1,7 +1,7 @@
-bms_hardware.c:54:6:delay_u	1
-bms_hardware.c:58:6:delay_m	1
-bms_hardware.c:64:6:cs_low	1
-bms_hardware.c:68:6:cs_high	1
-bms_hardware.c:72:6:spi_write_array	1
-bms_hardware.c:76:6:spi_write_read	3
-bms_hardware.c:86:9:spi_read_byte	1
+../Core/Src/bms_hardware.c:54:6:delay_u	1
+../Core/Src/bms_hardware.c:58:6:delay_m	1
+../Core/Src/bms_hardware.c:64:6:cs_low	1
+../Core/Src/bms_hardware.c:68:6:cs_high	1
+../Core/Src/bms_hardware.c:72:6:spi_write_array	1
+../Core/Src/bms_hardware.c:76:6:spi_write_read	3
+../Core/Src/bms_hardware.c:86:9:spi_read_byte	1

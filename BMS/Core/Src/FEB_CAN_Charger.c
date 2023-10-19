@@ -86,7 +86,7 @@ void FEB_CAN_Charger_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
 	    	FEB_CAN_Charger_Charger_Message.operating_voltage_dV = (RxData[0] << 8) + RxData[1];
 	    	FEB_CAN_Charger_Charger_Message.operating_current_dA = (RxData[2] << 8) + RxData[3];
 	    	FEB_CAN_Charger_Charger_Message.status = RxData[4];
-			FEB_CAN_Charger_Validate_Status(RxData[4]);
+//			FEB_CAN_Charger_Validate_Status(RxData[4]);
 			break;
 	}
 }

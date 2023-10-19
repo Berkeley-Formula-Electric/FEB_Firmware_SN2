@@ -28,7 +28,7 @@
 
 // cell voltage thresholds
 #define FEB_LTC6811_CELL_MIN_VOLTAGE	3.0
-#define FEB_LTC6811_CELL_MAX_VOLTAGE	4.1
+#define FEB_LTC6811_CELL_MAX_VOLTAGE	4.19
 
 // cell current thresholds
 #define FEB_LTC6811_CELL_MAX_OPERATING_CURRENT 55
@@ -36,7 +36,7 @@
 // ********************************** Cell Balance Configuration **********************************
 
 #define FEB_LTC6811_BALANCE_STATE 					0		// 0 (no cell balancing), 1 (passive cell balancing)
-#define FEB_LTC6811_BALANCE_VOLTAGE_RESOLUTION 		0.05
+#define FEB_LTC6811_BALANCE_VOLTAGE_RESOLUTION 		0.0
 
 // ********************************** Connectivity Configuration **********************************
 

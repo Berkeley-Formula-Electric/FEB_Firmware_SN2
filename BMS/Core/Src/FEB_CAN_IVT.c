@@ -2,6 +2,8 @@
 
 #include "FEB_CAN_IVT.h"
 
+extern UART_HandleTypeDef huart2;
+
 // ********************************** CAN Configuration **********************************
 
 static FEB_CAN_IVT_FLAG_TYPE FEB_CAN_IVT_FLAG;
@@ -69,9 +71,17 @@ void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
 // ******************** Process Data  ********************
 
 void FEB_CAN_IVT_Process(void) {
+	char UART_Str[1024];
+	uint8_t uart_ivt_current_id = 0b1000;
+	sprintf(UART_Str, "%d %d %d %d %f", uart_ivt_current_id, 0, 0, 0, (float) FEB_CAN_IVT_MESSAGE.current_mA * 0.001);
+	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
+
+
 	if (FEB_CAN_CHARGER_STATE == 1 || FEB_LTC6811_BALANCE_STATE == 1) {
 		return;
 	}
+
+
 	if (FEB_CAN_IVT_FLAG.current == 1) {
 		FEB_CAN_IVT_FLAG.current = 0;
 		const float current = (float) FEB_CAN_IVT_MESSAGE.current_mA * 0.001;
