@@ -1,3 +1,4 @@
 ../Core/Src/FEB_CAN_IVT.c:22:9:FEB_CAN_IVT_Filter_Config	64	static
 ../Core/Src/FEB_CAN_IVT.c:45:6:FEB_CAN_IVT_Store_Msg	24	static
-../Core/Src/FEB_CAN_IVT.c:73:6:FEB_CAN_IVT_Process	1072	static
+../Core/Src/FEB_CAN_IVT.c:73:6:FEB_CAN_IVT_Process	24	static
+../Core/Src/FEB_CAN_IVT.c:103:6:FEB_CAN_IVT_UART_Transmit	1104	static

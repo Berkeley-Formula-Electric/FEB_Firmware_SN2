@@ -40,6 +40,7 @@ typedef struct FEB_CAN_IVT_MESSAGE_TYPE {
 uint8_t FEB_CAN_IVT_Filter_Config(CAN_HandleTypeDef* hcan, uint8_t FIFO_Assignment, uint8_t bank);
 void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]);
 void FEB_CAN_IVT_Process(void);
-long unsignedToSignedLong(uint32_t value);
+void FEB_CAN_IVT_UART_Transmit(void);
+//long unsignedToSignedLong(uint32_t value);
 
 #endif /* INC_FEB_CAN_H_ */

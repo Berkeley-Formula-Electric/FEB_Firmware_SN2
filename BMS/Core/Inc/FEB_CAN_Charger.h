@@ -13,7 +13,7 @@
 // ********************************** Charger Configuration **********************************
 
 #define FEB_CAN_CHARGER_STATE 						0 		// 0 (no charge), 1 (charge state)
-#define FEB_CAN_CHARGER_MAX_CHARGING_CURRENT 		4		// [0, 12], 0.1A resolution
+#define FEB_CAN_CHARGER_MAX_CHARGING_CURRENT 		8		// [0, 12], 0.1A resolution
 #define FEB_CAN_CHARGER_CELL_CHARGED_PERCENTAGE 	1		// [0, 1]
 
 // ********************************** CAN Configuration **********************************
@@ -50,5 +50,6 @@ void FEB_CAN_Charger_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]);
 void FEB_CAN_Charger_Validate_Status(uint8_t status);
 void FEB_CAN_Charger_Process(CAN_HandleTypeDef* hcan);
 void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan);
+void FEB_CAN_Charger_UART_Transmit(void);
 
 #endif /* INC_FEB_CHARGE_H_ */

@@ -81,7 +81,7 @@ class Table:
         # self.__update_shutdown_state_table()
         # self.__update_relay_state_table()
         self.__update_IVT_table()
-        # self.__update_charger_data_table()
+        self.__update_charger_data_table()
         # self.__update_cell_balance_data_table()
 
         self.__master.after(self.__update_interval, self.update)

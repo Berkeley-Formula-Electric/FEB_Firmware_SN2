@@ -71,12 +71,6 @@ void FEB_CAN_IVT_Store_Msg(CAN_RxHeaderTypeDef* pHeader, uint8_t RxData[]) {
 // ******************** Process Data  ********************
 
 void FEB_CAN_IVT_Process(void) {
-	char UART_Str[1024];
-	uint8_t uart_ivt_current_id = 0b1000;
-	sprintf(UART_Str, "%d %d %d %d %f", uart_ivt_current_id, 0, 0, 0, (float) FEB_CAN_IVT_MESSAGE.current_mA * 0.001);
-	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
-
-
 	if (FEB_CAN_CHARGER_STATE == 1 || FEB_LTC6811_BALANCE_STATE == 1) {
 		return;
 	}
@@ -86,7 +80,7 @@ void FEB_CAN_IVT_Process(void) {
 		FEB_CAN_IVT_FLAG.current = 0;
 		const float current = (float) FEB_CAN_IVT_MESSAGE.current_mA * 0.001;
 		if (current > FEB_LTC6811_CELL_MAX_OPERATING_CURRENT) {
-			FEB_BMS_Shutdown_Initiate("IVT over current");
+//			FEB_BMS_Shutdown_Initiate("IVT over current\n");
 		}
 	}
 	if (FEB_CAN_IVT_FLAG.voltage_1 == 1) {
@@ -104,4 +98,13 @@ void FEB_CAN_IVT_Process(void) {
 		FEB_CAN_IVT_FLAG.voltage_3 = 0;
 		// Do something
 	}
+}
+
+void FEB_CAN_IVT_UART_Transmit(void) {
+	char UART_Str[1024];
+	uint8_t uart_ivt_current_id = 0b1000;
+	sprintf(UART_Str, "%d %f %f %f %f", uart_ivt_current_id, (float) FEB_CAN_IVT_MESSAGE.voltage_1_mV * 0.001,
+			(float) FEB_CAN_IVT_MESSAGE.voltage_2_mV * 0.001, (float) FEB_CAN_IVT_MESSAGE.voltage_3_mV * 0.001,
+			(float) FEB_CAN_IVT_MESSAGE.current_mA * 0.001);
+	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 }

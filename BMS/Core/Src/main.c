@@ -153,10 +153,11 @@ int main(void)
     FEB_LTC6811_Poll_Temperature();
     FEB_LTC6811_Validate_Temperature();
     FEB_LTC6811_UART_Transmit_Temperature();
-    FEB_LTC6811_CAN_Transmit_Temperature();
+//    FEB_LTC6811_CAN_Transmit_Temperature();
 
     // *********************** IVT ***********************
     FEB_CAN_IVT_Process();
+    FEB_CAN_IVT_UART_Transmit();
 
     // *********************** Cell Balance ***********************
     FEB_LTC6811_Balance_Cells();
@@ -164,6 +165,7 @@ int main(void)
 
     // *********************** Charger ***********************
     FEB_CAN_Charger_Process(&hcan1);
+    FEB_CAN_Charger_UART_Transmit();
     if (FEB_CAN_CHARGER_STATE) {
     	FEB_BMS_AIR_Close();
     }

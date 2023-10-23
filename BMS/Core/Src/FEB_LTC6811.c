@@ -256,8 +256,6 @@ void FEB_LTC6811_UART_Transmit_Voltage() {
 	for (uint8_t bank_idx = 0; bank_idx < FEB_LTC6811_NUM_BANKS; bank_idx++) {
 		// Add bank_idx, cell_idx to {@code UART_Str}
 		sprintf(UART_str, "%d %d", uart_volt_id, bank_idx);
-//		sprintf(UART_str, "%d", (bank_idx << FEB_LTC6811_UART_BITS_PER_MESSAGE) + FEB_LTC6811_UART_VOLTAGE_ID);
-
 
 		// Add values to {@code UART_Str}
 		for (uint16_t cell_idx = 0; cell_idx < FEB_LTC6811_NUM_CELLS_PER_BANK; cell_idx++) {

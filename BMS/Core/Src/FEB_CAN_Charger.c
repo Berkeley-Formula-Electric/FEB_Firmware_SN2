@@ -7,6 +7,8 @@ extern uint8_t FEB_CAN_TxData[8];
 extern uint32_t FEB_CAN_TxMailbox;
 extern uint8_t FEB_BMS_Shutdown_State;
 
+extern UART_HandleTypeDef huart2;
+
 // ********************************** CAN Configuration **********************************
 
 static FEB_CAN_CHARGER_BMS_MESSAGE_TYPE FEB_CAN_Charger_BMS_Message;
@@ -147,4 +149,16 @@ void FEB_CAN_Charger_Stop_Charge(CAN_HandleTypeDef* hcan) {
 	FEB_CAN_Charger_BMS_Message.max_current_dA = 0;
 	FEB_CAN_Charger_BMS_Message.control = 1;
 	FEB_CAN_Charger_Transmit(hcan);
+}
+
+void FEB_CAN_Charger_UART_Transmit(void) {
+	if (FEB_CAN_CHARGER_STATE == 0) {
+		return;
+	}
+	char UART_Str[1024];
+	uint8_t uart_can_charger_id = 0b0110;
+	sprintf(UART_Str, "%d %d %d %d %d %d %d\n", uart_can_charger_id, FEB_CAN_Charger_BMS_Message.control, FEB_CAN_Charger_BMS_Message.max_current_dA,
+			FEB_CAN_Charger_BMS_Message.max_voltage_dV, FEB_CAN_Charger_Charger_Message.operating_current_dA,
+			FEB_CAN_Charger_Charger_Message.operating_voltage_dV, FEB_CAN_Charger_Charger_Message.status);
+	HAL_UART_Transmit(&huart2, (uint8_t*) UART_Str, strlen(UART_Str), 100);
 }
