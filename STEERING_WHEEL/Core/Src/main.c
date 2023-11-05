@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "stdbool.h"
+#include <stdbool.h>
+#include <stdlib.h>
 #include "FEB_CAN.h"
 
 /* USER CODE END Includes */
@@ -54,6 +56,24 @@ TIM_HandleTypeDef htim14;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
+const uint8_t TPS_ADDR = 0b1000000 << 1;
+// configuration register value
+uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
+/*
+ * Values needed to calibrate each of the TPS chips. This value gets passed
+ * into the init function called in later
+ */
+
+// calibration register values
+uint8_t MAIN_CAL[2] = {0b00000110, 0b10001110}; // Imax = 50A (change?)
+// alert types
+uint8_t UNDERV[2] = {0b00010000, 0b00000000};
+uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
+// limits
+uint8_t TPS_LIMIT[2] = {0b00000000, 0b00010110}; // = 22 (change?)
+float current_reading;
+float voltage_reading;
 
 /* USER CODE END PV */
 
@@ -286,9 +306,14 @@ int main(void)
 		  FEB_CAN_Transmit(&hcan1, SW_READY_TO_DRIVE, (uint8_t *) &ready_to_drive, 1);
 	  }
 
+	  // Take and send TPS reading
+	  current_reading = FEB_TPS2482_PollBusCurrent(&hi2c1,TPS_ADDR+1);
+	  //voltage_reading = FEB_TPS2482_PollBusVoltage(&hi2c1, TPS_ADDR+1);
+	  FEB_CAN_Transmit(&hcan1,SW_TPS,&current_reading,sizeof(float));
+
 //	  buf_len = sprintf((char*)buf, "check:%d flag:%d\r\n", Button_Checking, Button_Timer_Flag);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
-	  buf_len = sprintf((char*)buf, "ready:%d voltage:%.1f brake:%.1f\r\n", ready_to_drive, HV_Voltage, APPS_MESSAGE.brake_pedal);
+	  buf_len = sprintf((char*)buf, "ready:%d voltage:%.1f brake:%.1f current: %.3f\r\n", ready_to_drive, HV_Voltage, APPS_MESSAGE.brake_pedal, current_reading);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, 1000);
 
 

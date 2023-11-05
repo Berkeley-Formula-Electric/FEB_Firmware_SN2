@@ -102,12 +102,12 @@ void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 }
 
 /*** APPS IDs ***/
-#define APPS_ID 0b0000011
+#define APPS_ID                 0b0000011
 #define APPS_ACCELERATOR1_PEDAL 0b00000110000
 #define APPS_ACCELERATOR2_PEDAL 0b00000110001
-#define APPS_BRAKE_PEDAL 0b00000110010
-#define APPS_TORQUE 0b00000110011
-#define APPS_TPS 0b00000110100
+#define APPS_BRAKE_PEDAL        0b00000110010
+#define APPS_TORQUE             0b00000110011
+#define APPS_TPS                0b00000110100
 
 /*** APPS MESSSAGE BUFFER ***/
 #define APPS_ACCELERATOR1_PEDAL_TYPE float

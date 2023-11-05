@@ -42,6 +42,7 @@ void Store_EMERGENCY_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_leng
 #define BMS_TEMPERATURE 0b00000010000
 #define BMS_VOLTAGE 0b00000010001
 
+
 /*** BMS MESSSAGE BUFFER ***/
 #define BMS_TEMPERATURE_TYPE float
 #define BMS_VOLTAGE_TYPE float
@@ -64,23 +65,26 @@ void Store_BMS_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
 }
 
 /*** SW IDs ***/
-#define SW_ID 0b0000010
-#define SW_READY_TO_DRIVE 0b00000100000
-#define SW_COOLANT_PUMP 0b00000100001
-#define SW_ACUMULATOR_FANS 0b00000100010
-#define SW_EXTRA 0b00000100011
+#define SW_ID                 0b0000010
+#define SW_READY_TO_DRIVE     0b00000100000
+#define SW_COOLANT_PUMP       0b00000100001
+#define SW_ACUMULATOR_FANS    0b00000100010
+#define SW_EXTRA              0b00000100011
+#define SW_TPS                0b00000100111
 
 /*** SW MESSSAGE BUFFER ***/
 #define SW_READY_TO_DRIVE_TYPE uint8_t
 #define SW_COOLANT_PUMP_TYPE uint8_t
 #define SW_ACUMULATOR_FANS_TYPE uint8_t
 #define SW_EXTRA_TYPE uint8_t
+#define SW_TPS_TYPE float
 
 typedef struct SW_MESSAGE_TYPE {
     SW_READY_TO_DRIVE_TYPE ready_to_drive;
     SW_COOLANT_PUMP_TYPE coolant_pump;
     SW_ACUMULATOR_FANS_TYPE acumulator_fans;
     SW_EXTRA_TYPE extra;
+    SW_TPS_TYPE current;
 } SW_MESSAGE_TYPE;
 SW_MESSAGE_TYPE SW_MESSAGE;
 
@@ -98,6 +102,9 @@ void Store_SW_Msg(AddressIdType RxId, uint8_t *RxData, uint32_t data_length) {
         case SW_EXTRA:
             memcpy(&(SW_MESSAGE.extra), RxData, data_length);
             break;
+        case SW_TPS:
+        	memcpy(&(SW_MESSAGE.current), RxData, data_length);
+        	break;
     }
 }
 
