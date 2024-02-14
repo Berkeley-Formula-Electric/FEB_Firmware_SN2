@@ -25,4 +25,7 @@ float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR);
 
 float FEB_TPS2482_PollBusVoltage(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR);
 
+//Remove when done. This was made to calibrate the calibration value
+float FEB_TPS2482_GetShunt(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR);
+
 #endif /* INC_FEB_TPS2482_H_ */

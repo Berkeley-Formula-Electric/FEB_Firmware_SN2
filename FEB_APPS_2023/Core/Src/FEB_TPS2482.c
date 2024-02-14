@@ -89,7 +89,24 @@ float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);
 		if(ret == HAL_OK){
 			int16_t val = (buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
-			returnVal = val * 0.002; // LSB-weight = 2mA/bit
+			returnVal = val * 0.00001068147; // LSB-weight = 2mA/bit
+		}
+	}
+
+	return returnVal;
+}
+
+float FEB_TPS2482_GetShunt(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
+	//buffer to store data
+	uint8_t buf[12];
+	buf[0]=1; //Register 1 stores the shunt voltage
+	float returnVal=-1; //Return -1 as an error
+	HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
+	if(ret == HAL_OK){
+		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2, 100);
+		if(ret == HAL_OK){
+			int16_t val = (buf[0]<<8) | buf[1];
+			returnVal = val *  0.0000025; // LSB-weight = 2mA/bit
 		}
 	}
 
@@ -112,5 +129,4 @@ float FEB_TPS2482_PollBusVoltage(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 
 	return returnVal;
 }
-
 

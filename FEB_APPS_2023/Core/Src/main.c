@@ -101,7 +101,7 @@ uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
  */
 
 // calibration register values
-uint8_t MAIN_CAL[2] = {0b00000110, 0b10001110}; // Imax = 50A (change?)
+uint8_t MAIN_CAL[2] = {0b00010001, 0b10010000}; // Imax = 50A (change?)
 // alert types
 uint8_t UNDERV[2] = {0b00010000, 0b00000000};
 uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
@@ -109,6 +109,7 @@ uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
 uint8_t TPS_LIMIT[2] = {0b00000000, 0b00010110}; // = 22 (change?)
 float current_reading;
 float voltage_reading;
+float shunt_voltage;
 
 //float pedal1;
 //float pedal2;
@@ -179,7 +180,7 @@ float FEB_Normalized_Brake_Pedals(){
 	char buf[128];
 		uint8_t buf_len;
 		buf_len = sprintf(buf, "brake%d\n", brake_pedal_1);
-		HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
+		//HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 	float final_normalized = (brake_pedal_1 - BRAKE_PEDAL_1_START)/ (BRAKE_PEDAL_1_END - BRAKE_PEDAL_1_START);
 	final_normalized = final_normalized > 1 ? 1 : final_normalized;
@@ -361,13 +362,14 @@ int main(void)
 	  // Take and send TPS reading
 	  current_reading = FEB_TPS2482_PollBusCurrent(&hi2c1,TPS_ADDR+1);
 	  voltage_reading = FEB_TPS2482_PollBusVoltage(&hi2c1, TPS_ADDR+1);
+	  shunt_voltage = FEB_TPS2482_GetShunt(&hi2c1, TPS_ADDR+1);
 	  FEB_CAN_Transmit(&hcan1,APPS_TPS,&current_reading,sizeof(float));
 
-	  buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d current: %.3f voltage: %.3f lvpdb current: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed, current_reading, voltage_reading, LVPDB_MESSAGE.cp_current);
-
-	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len, 1000);
-
-	  HAL_Delay(SLEEP_TIME);
+	  //buf_len = sprintf(buf, "rtd:%d, enable:%d lockout:%d impl:%d acc: %.3f brake: %.3f Bus Voltage: %d Motor Speed: %d current: %.3f voltage: %.3f lvpdb current: %.3f\n", SW_MESSAGE.ready_to_drive, Inverter_enable, Inverter_enable_lockout, isImpl, normalized_acc, normalized_brake, RMS_MESSAGE.HV_Bus_Voltage, RMS_MESSAGE.Motor_Speed, current_reading, voltage_reading, LVPDB_MESSAGE.cp_current);
+	  buf_len = sprintf(buf, "current: %.3f voltage: %.3f shuntvolt: %.8f \n", current_reading, voltage_reading,shunt_voltage);
+	  HAL_UART_Transmit(&huart2,(uint8_t *)buf, buf_len+1, 1000);
+	  //HAL_UART_Transmit(&huart2, "Hello", 5,1000);
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
