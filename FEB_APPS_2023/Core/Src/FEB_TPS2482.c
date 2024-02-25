@@ -89,7 +89,7 @@ float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);
 		if(ret == HAL_OK){
 			int16_t val = (buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
-			returnVal = val * 0.00001068147; // LSB-weight = 2mA/bit
+			returnVal = val * 0.0000305185; // LSB-weight = 2mA/bit
 		}
 	}
 

@@ -101,7 +101,7 @@ uint8_t CONFIG[2] = {0b01000001, 0b00100111}; // default settings
  */
 
 // calibration register values
-uint8_t MAIN_CAL[2] = {0b00010001, 0b10010000}; // Imax = 50A (change?)
+uint8_t MAIN_CAL[2] = {0b00111000, 0b10010000}; // Imax = 50A (change?)
 // alert types
 uint8_t UNDERV[2] = {0b00010000, 0b00000000};
 uint8_t OVERPWR[2] = {0b00001000, 0b00000000};
