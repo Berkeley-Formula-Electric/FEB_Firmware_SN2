@@ -60,8 +60,8 @@ all: main-build
 main-build: LVPDB.elf secondary-outputs
 
 # Tool invocations
-LVPDB.elf LVPDB.map: $(OBJS) $(USER_OBJS) C:\Users\nidhi\Documents\FEB_Firmware_SN2\LVPDB\STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "LVPDB.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\nidhi\Documents\FEB_Firmware_SN2\LVPDB\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LVPDB.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+LVPDB.elf LVPDB.map: $(OBJS) $(USER_OBJS) /Users/kduong170/Documents/Berkeley/FEB/FEB_Firmware_SN2/LVPDB/STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "LVPDB.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/kduong170/Documents/Berkeley/FEB/FEB_Firmware_SN2/LVPDB/STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LVPDB.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
