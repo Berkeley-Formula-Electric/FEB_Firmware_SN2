@@ -80,6 +80,8 @@ uint8_t MAIN_CAL[2] = {0b00000110, 0b10001110}; // Imax = 50A
 uint8_t CP_CAL[2] = {0b00010111, 0b01101000};
 uint8_t AF_CAL[2] = {0b00101000, 0b11110110};
 uint8_t EX_CAL[2] = {0b00110110, 0b10011101};
+uint8_t TEST_CAL_20A[2] = {0b00010000, 0b01100010}; // Imax = 20A
+uint8_t TEST_CAL_15A[2] = {0b00010101, 0b11011000}; // Imax = 15A
 
 // alert types
 uint8_t UNDERV[2] = {0b00010000, 0b00000000}; // Under Bus Voltage
@@ -90,12 +92,12 @@ uint8_t OVERV[2] = {0b10000000, 0b00000000};
 // limits
 uint8_t LV_LIMIT[2] = {0b00000000, 0b00010110}; // = 22
 uint8_t LV_NEW_LIMIT[2] = {0b01000100, 0b11000000}; // = 22 / 1.25mV/bit = 17600
-
 uint8_t LV_RESET_LIMIT[2] = {0b00101110, 0b11100000}; // = 15 / 1.25mV/bit
+
 uint8_t CP_LIMIT[2] = {0b00000001, 0b01010000}; // = 336, 14 * 24
 uint8_t AF_LIMIT[2] = {0b00000000, 0b11000000}; // = 192, 8 * 24
 uint8_t EX_LIMIT[2] = {0b00000000, 0b10010000}; // = 144, 6 * 24
-uint8_t TEST_CURR_LIMIT[2] = {0b00000011, 0b00100000}; // = (.002 Ohm * 1A) / 2.5 * 10^-6 = 800
+uint8_t TEST_OVERPWR_LIMIT[2] = {0b00000001, 0b10000100}; // = ((23.73V / 1.25mV/bit) * ((12mA + 166mA) * .46mA/bit)) / 20000 = 388
 
 static bool isDriving = false;
 
@@ -157,10 +159,10 @@ int main(void)
 //	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);// pull PB5 high to enable accumulator fans
 //	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);// pull PC3 high to enable extra
 
-	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, MAIN_CAL, UNDERV, LV_NEW_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, CP_CAL, OVERPWR, CP_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, AF_CAL, OVERPWR, AF_LIMIT);
-	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, EX_CAL, OVERPWR, EX_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, LV_ADDR, CONFIG, TEST_CAL_15A, UNDERV, LV_NEW_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, CP_ADDR, CONFIG, TEST_CAL_15A, OVERPWR, TEST_OVERPWR_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, AF_ADDR, CONFIG, TEST_CAL_15A, OVERPWR, AF_LIMIT);
+	FEB_TPS2482_SETUP(hi2c1p, EX_ADDR, CONFIG, TEST_CAL_15A, OVERPWR, EX_LIMIT);
 
 
 	char buf[128];
@@ -168,8 +170,11 @@ int main(void)
 	float current_reading;
 	float ex_current_reading;
 	float cp_current_reading;
+	float af_current_reading;
 	float apps_current_reading;
 	float shunt_voltage_reading;
+	float bus_voltage_reading;
+	float power_reading;
 
   /* USER CODE END 2 */
 
@@ -199,7 +204,7 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
 	  }
 
-
+/***
 	  // lv hotswap
 	  // if receives undervoltage alert (PB7 pulled low) or PG low (PB6), pull all ENs for other hotswaps low and turn off brake light
 
@@ -211,6 +216,12 @@ int main(void)
 		  //turn off brake light
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
 	  }
+***/
+	  // Test: If recieves overvoltage alert (PA15 pulled low), pull CP low
+	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) == GPIO_PIN_RESET) {
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+	  }
+
 /***
 	  // coolant pump hotswap
 	  FEB_TPS2482_shutdownIfError(hi2c1p, CP_ADDR, GPIOC, GPIO_PIN_11, GPIOA, GPIO_PIN_15, GPIOC, GPIO_PIN_10, 22.5, 25.5, 15, 10, 340, 300);
@@ -221,21 +232,31 @@ int main(void)
 	  // extra hotswap
 	  FEB_TPS2482_shutdownIfError(hi2c1p, EX_ADDR, GPIOC, GPIO_PIN_3, GPIOC, GPIO_PIN_1, GPIOC, GPIO_PIN_2, 22.5, 25.5, 7, 4, 150, 120);
 ***/
-	  current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,LV_ADDR);
-	  ex_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,EX_ADDR);
-	  cp_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,CP_ADDR+1);
+
+	  /*
+	   * Divides by 100 so can round to 2 decimal points (cant return full float value or do division inside pull function else integer overflow for some reason)
+	   */
+//	  current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,LV_ADDR)/100.0;
+//	  ex_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,EX_ADDR)/100.0;
+	  cp_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,CP_ADDR)/100.0;
+//	  af_current_reading = FEB_TPS2482_PollBusCurrent(hi2c1p,AF_ADDR);
+
+	  /***
 	  FEB_CAN_Transmit(&hcan1, LVPDB_LV_CURRENT,&current_reading,sizeof(float));
 	  FEB_CAN_Transmit(&hcan1, LVPDB_EX_CURRENT,&ex_current_reading,sizeof(float));
 	  FEB_CAN_Transmit(&hcan1, LVPDB_CP_CURRENT,&cp_current_reading,sizeof(float));
 	  apps_current_reading = APPS_MESSAGE.current;
-	  shunt_voltage_reading = FEB_TPS2482_PollShuntVolt(hi2c1p, CP_ADDR+1);
+	  ***/
+	  shunt_voltage_reading = FEB_TPS2482_PollShuntVolt(hi2c1p, CP_ADDR)/100.0;
+	  bus_voltage_reading = FEB_TPS2482_PollBusVolt(hi2c1p, CP_ADDR)/100.0;
+	  power_reading = FEB_TPS2482_PollPower(hi2c1p, CP_ADDR)/100.0;
 
 
-	  buf_len = sprintf((char*)buf, "ready: %d, brake: %.3f\r\n", SW_MESSAGE.ready_to_drive, APPS_MESSAGE.brake_pedal);
+//	  buf_len = sprintf((char*)buf, "ready: %d, brake: %.3f\r\n", SW_MESSAGE.ready_to_drive, APPS_MESSAGE.brake_pedal);
 //	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
 
 	  //buf_len = sprintf((char*) buf, "Current Draw (LV, EX, CP, APPS): %.3f, %.3f, %.3f, %.3f\r\n", current_reading, ex_current_reading, cp_current_reading, apps_current_reading);
-	  buf_len = sprintf((char*) buf, "TPS Draw: Shunt Voltage: %.3f, Current: %.3f\r\n", shunt_voltage_reading, cp_current_reading);
+	  buf_len = sprintf((char*) buf, "TPS Draw: Power: %.3f, Shunt Voltage (uV): %.3f, Current(mA): %.3f\r\n", power_reading, shunt_voltage_reading, cp_current_reading);
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buf, buf_len, HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 

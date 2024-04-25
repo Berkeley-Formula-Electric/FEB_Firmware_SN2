@@ -88,8 +88,13 @@ float FEB_TPS2482_PollBusCurrent(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 	if(ret == HAL_OK){
 		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);
 		if(ret == HAL_OK){
-			int16_t val = (buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
-			returnVal = val * 0.002; // LSB-weight = 2mA/bit
+//			int val = ((int16_t)buf[0] << 4) | (buf[1] >> 4); // combine the 2 bytes
+//			val = val - 1;
+//			val |= 0xF000;
+			int16_t val = ((int16_t)buf[0] << 8) | buf[1];
+//			int16_t val = (buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
+//			returnVal = (int)(val * 0.0006 * 1000 * 100); // LSB-weight = 2mA/bit
+			returnVal = (int)(val * 0.00046 * 1000 * 100); // Current LSB-weight = .46mA/bit, multiplies by 100 so can round later
 		}
 	}
 //	HAL_I2C_IsDeviceReady(hi2c, DEV_ADDR, 1, 100);
@@ -110,8 +115,8 @@ float FEB_TPS2482_PollShuntVolt(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 	if(ret == HAL_OK){
 		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);
 		if(ret == HAL_OK){
-			int16_t val = (buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
-			returnVal = val * 0.0000025; // LSB-weight = 2.5uV/bit
+			int16_t val = ((int16_t)buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
+			returnVal = (int)(val * 0.0000025 * 1000000 * 100);// convert to decimal and multiply by 2.5uV, multiplies by 100 so can round later
 			// COULD BE IN BINARY, MAP FROM 0 - 2^(ADC conversion factor)
 		}
 	}
@@ -122,5 +127,54 @@ float FEB_TPS2482_PollShuntVolt(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
 
 	return returnVal;
 }
+
+float FEB_TPS2482_PollBusVolt(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
+	//Buffer to store data;
+	uint8_t buf[12];
+	buf[0] = 2; //1 is the register that stores the bus voltage value
+	float returnVal = -1; //Set return val default to -1 as an "error". Not that great since we can actually have negative current
+	HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
+	if(ret == HAL_OK){
+		ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);
+		if(ret == HAL_OK){
+			int16_t val = ((int16_t)buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
+			float parsed = (int)(val * 0.00125 * 100);// convert to decimal and multiply by 1.25mV, multiplies by 100 so can round later
+			returnVal = parsed;
+			//Rounds to 2 decimal points
+		}
+
+	}
+
+//	HAL_I2C_IsDeviceReady(hi2c, DEV_ADDR, 1, 100);
+	if(ret == HAL_ERROR) return -2.0;
+	if(ret == HAL_BUSY) return -3.0;
+	if(ret == HAL_TIMEOUT) return -4.0;
+
+	return returnVal;
+}
+
+float FEB_TPS2482_PollPower(I2C_HandleTypeDef * hi2c, uint8_t DEV_ADDR){
+		//Buffer to store data;
+		uint8_t buf[12];
+		buf[0] = 3; // is the register that stores the bus voltage value
+		float returnVal = -1; //Set return val default to -1 as an "error". Not that great since we can actually have negative current
+		HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(hi2c, DEV_ADDR, buf, 1, 100);
+		if(ret == HAL_OK){
+			ret = HAL_I2C_Master_Receive(hi2c, DEV_ADDR, buf, 2,100);
+			if(ret == HAL_OK){
+				int16_t val = ((int16_t)buf[0]<<8) | buf[1]; //Not sure if little endian or not, needs testing!
+				float parsed = (int)(val * 25 * 0.00046 * 1000 * 100);// convert to decimal and multiply by 1.25mV, multiplies by 100 so can round later
+				returnVal = parsed;
+				//Rounds to 2 decimal points
+			}
+
+		}
+		//	HAL_I2C_IsDeviceReady(hi2c, DEV_ADDR, 1, 100);
+			if(ret == HAL_ERROR) return -2.0;
+			if(ret == HAL_BUSY) return -3.0;
+			if(ret == HAL_TIMEOUT) return -4.0;
+
+			return returnVal;
+		}
 
 

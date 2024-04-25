@@ -1,5 +1,7 @@
 ../Core/Src/FEB_TPS2482.c:3:6:FEB_TPS2482_SETUP	48	static
 ../Core/Src/FEB_TPS2482.c:31:6:FEB_TPS2482_shutdownIfError	56	static
-../Core/Src/FEB_TPS2482.c:55:6:FEB_TPS2482_pullLowIfOutOfBounds	64	static
-../Core/Src/FEB_TPS2482.c:82:7:FEB_TPS2482_PollBusCurrent	48	static
-../Core/Src/FEB_TPS2482.c:104:7:FEB_TPS2482_PollShuntVolt	48	static
+../Core/Src/FEB_TPS2482.c:55:6:FEB_TPS2482_pullLowIfOutOfBounds	72	static
+../Core/Src/FEB_TPS2482.c:99:7:FEB_TPS2482_PollBusCurrent	48	static
+../Core/Src/FEB_TPS2482.c:126:7:FEB_TPS2482_PollShuntVolt	48	static
+../Core/Src/FEB_TPS2482.c:148:7:FEB_TPS2482_PollBusVolt	48	static
+../Core/Src/FEB_TPS2482.c:173:7:FEB_TPS2482_PollPower	48	static
